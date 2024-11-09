@@ -11,8 +11,24 @@ from ._models_py3 import DnsForwardingRuleset
 from ._models_py3 import DnsForwardingRulesetListResult
 from ._models_py3 import DnsForwardingRulesetPatch
 from ._models_py3 import DnsResolver
+from ._models_py3 import DnsResolverDomainList
+from ._models_py3 import DnsResolverDomainListPatch
+from ._models_py3 import DnsResolverDomainListResult
 from ._models_py3 import DnsResolverListResult
 from ._models_py3 import DnsResolverPatch
+from ._models_py3 import DnsResolverPolicy
+from ._models_py3 import DnsResolverPolicyListResult
+from ._models_py3 import DnsResolverPolicyPatch
+from ._models_py3 import DnsResolverPolicyVirtualNetworkLink
+from ._models_py3 import DnsResolverPolicyVirtualNetworkLinkListResult
+from ._models_py3 import DnsResolverPolicyVirtualNetworkLinkPatch
+from ._models_py3 import DnsSecurityRule
+from ._models_py3 import DnsSecurityRuleAction
+from ._models_py3 import DnsSecurityRuleListResult
+from ._models_py3 import DnsSecurityRulePatch
+from ._models_py3 import ErrorAdditionalInfo
+from ._models_py3 import ErrorDetail
+from ._models_py3 import ErrorResponse
 from ._models_py3 import ForwardingRule
 from ._models_py3 import ForwardingRuleListResult
 from ._models_py3 import ForwardingRulePatch
@@ -36,48 +52,72 @@ from ._models_py3 import VirtualNetworkLink
 from ._models_py3 import VirtualNetworkLinkListResult
 from ._models_py3 import VirtualNetworkLinkPatch
 
-
-from ._dns_resolver_management_client_enums import (
-    CreatedByType,
-    DnsResolverState,
-    ForwardingRuleState,
-    IpAllocationMethod,
-    ProvisioningState,
-)
+from ._dns_resolver_management_client_enums import ActionType
+from ._dns_resolver_management_client_enums import BlockResponseCode
+from ._dns_resolver_management_client_enums import CreatedByType
+from ._dns_resolver_management_client_enums import DnsResolverState
+from ._dns_resolver_management_client_enums import DnsSecurityRuleState
+from ._dns_resolver_management_client_enums import ForwardingRuleState
+from ._dns_resolver_management_client_enums import IpAllocationMethod
+from ._dns_resolver_management_client_enums import ProvisioningState
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'CloudErrorBody',
-    'DnsForwardingRuleset',
-    'DnsForwardingRulesetListResult',
-    'DnsForwardingRulesetPatch',
-    'DnsResolver',
-    'DnsResolverListResult',
-    'DnsResolverPatch',
-    'ForwardingRule',
-    'ForwardingRuleListResult',
-    'ForwardingRulePatch',
-    'InboundEndpoint',
-    'InboundEndpointListResult',
-    'InboundEndpointPatch',
-    'IpConfiguration',
-    'OutboundEndpoint',
-    'OutboundEndpointListResult',
-    'OutboundEndpointPatch',
-    'ProxyResource',
-    'Resource',
-    'SubResource',
-    'SubResourceListResult',
-    'SystemData',
-    'TargetDnsServer',
-    'TrackedResource',
-    'VirtualNetworkDnsForwardingRuleset',
-    'VirtualNetworkDnsForwardingRulesetListResult',
-    'VirtualNetworkLink',
-    'VirtualNetworkLinkListResult',
-    'VirtualNetworkLinkPatch',
-    'CreatedByType',
-    'DnsResolverState',
-    'ForwardingRuleState',
-    'IpAllocationMethod',
-    'ProvisioningState',
+    "CloudErrorBody",
+    "DnsForwardingRuleset",
+    "DnsForwardingRulesetListResult",
+    "DnsForwardingRulesetPatch",
+    "DnsResolver",
+    "DnsResolverDomainList",
+    "DnsResolverDomainListPatch",
+    "DnsResolverDomainListResult",
+    "DnsResolverListResult",
+    "DnsResolverPatch",
+    "DnsResolverPolicy",
+    "DnsResolverPolicyListResult",
+    "DnsResolverPolicyPatch",
+    "DnsResolverPolicyVirtualNetworkLink",
+    "DnsResolverPolicyVirtualNetworkLinkListResult",
+    "DnsResolverPolicyVirtualNetworkLinkPatch",
+    "DnsSecurityRule",
+    "DnsSecurityRuleAction",
+    "DnsSecurityRuleListResult",
+    "DnsSecurityRulePatch",
+    "ErrorAdditionalInfo",
+    "ErrorDetail",
+    "ErrorResponse",
+    "ForwardingRule",
+    "ForwardingRuleListResult",
+    "ForwardingRulePatch",
+    "InboundEndpoint",
+    "InboundEndpointListResult",
+    "InboundEndpointPatch",
+    "IpConfiguration",
+    "OutboundEndpoint",
+    "OutboundEndpointListResult",
+    "OutboundEndpointPatch",
+    "ProxyResource",
+    "Resource",
+    "SubResource",
+    "SubResourceListResult",
+    "SystemData",
+    "TargetDnsServer",
+    "TrackedResource",
+    "VirtualNetworkDnsForwardingRuleset",
+    "VirtualNetworkDnsForwardingRulesetListResult",
+    "VirtualNetworkLink",
+    "VirtualNetworkLinkListResult",
+    "VirtualNetworkLinkPatch",
+    "ActionType",
+    "BlockResponseCode",
+    "CreatedByType",
+    "DnsResolverState",
+    "DnsSecurityRuleState",
+    "ForwardingRuleState",
+    "IpAllocationMethod",
+    "ProvisioningState",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

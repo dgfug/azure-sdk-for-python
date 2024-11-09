@@ -52,27 +52,33 @@ setup(
     author='Microsoft Corporation',
     author_email='azpysdkhelp@microsoft.com',
     url='https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/eventhub/azure-eventhub-checkpointstoreblob-aio',
+    keywords="azure, azure sdk",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         'Programming Language :: Python',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'License :: OSI Approved :: MIT License',
     ],
     zip_safe=False,
     packages=find_packages(exclude=exclude_packages),
-    python_requires=">=3.6",
+    include_package_data=True,
+    package_data={
+        'pytyped': ['py.typed'],
+    },
+    python_requires=">=3.8",
     install_requires=[
         # dependencies for the vendored storage blob
-        "azure-core<2.0.0,>=1.20.1",
+        "azure-core>=1.20.1",
         "msrest>=0.6.18",
         "cryptography>=2.1.4",
         # end of dependencies for the vendored storage blob
-        'azure-eventhub<6.0.0,>=5.0.0',
-        'aiohttp<4.0,>=3.0',
+        'azure-eventhub>=5.0.0',
+        'aiohttp>=3.8.3',
     ]
 )

@@ -19,7 +19,7 @@ autorest --use=C:/work/autorest.python --version=2.0.4280
 
 ### Settings
 ``` yaml
-input-file: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/storage/data-plane/Microsoft.QueueStorage/preview/2018-03-28/queue.json
+input-file: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/storage/data-plane/Microsoft.QueueStorage/stable/2018-03-28/queue.json
 output-folder: ../azure/storage/queue/_generated
 namespace: azure.storage.queue
 no-namespace-folders: true
@@ -28,6 +28,9 @@ enable-xml: true
 vanilla: true
 clear-output-folder: true
 python: true
+version-tolerant: false
+modelerfour:
+    seal-single-value-enum-by-default: true
 ```
 
 ### Remove x-ms-pageable
@@ -96,7 +99,7 @@ directive:
     $["x-ms-parameterized-host"] = undefined;
 ```
 
-### Add url parameter to each operation and add it to the url
+### Add url parameter to each operation and add url to the path
 ``` yaml
 directive:
 - from: swagger-document
@@ -107,8 +110,47 @@ directive:
         $[property]["parameters"].push({"$ref": "#/parameters/Url"});
 
         var oldName = property;
-        var newName = '{url}' + property;
+        // For service operations (where the path is just '/') we need to
+        // remove the '/' at the begining to avoid having an extra '/' in
+        // the final URL.
+        if (property === '/' || property.startsWith('/?'))
+        {
+            var newName = '{url}' + property.substring(1);
+        }
+        else
+        {
+            var newName = '{url}' + property;
+        }
         $[newName] = $[oldName];
         delete $[oldName];
+    }
+```
+
+## Remove {queueName} from url
+
+This directive is necessary for Python (also this directive is copied from .net) because we removed our call to
+_format_url_section in our generated code. We also add dummy query parameters to avoid collisions.
+
+```yaml
+directive:
+- from: swagger-document
+  where: $["x-ms-paths"]
+  transform: >
+    for (const property in $)
+    {
+        if (property.includes('/{queueName}/messages/{messageid}'))
+        {
+            var oldName = property;
+            var newName = property.replace('/{queueName}', '').replace('/{messageid}', '?restype=dummpyMessage');
+            $[newName] = $[oldName];
+            delete $[oldName];
+        }
+        else if (property.includes('/{queueName}'))
+        {
+            var oldName = property;
+            var newName = property.replace('/{queueName}', '');
+            $[newName] = $[oldName];
+            delete $[oldName];
+        }
     }
 ```

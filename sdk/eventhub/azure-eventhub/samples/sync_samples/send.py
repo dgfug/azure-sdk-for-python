@@ -13,17 +13,22 @@ import time
 import os
 from azure.eventhub import EventHubProducerClient, EventData
 from azure.eventhub.exceptions import EventHubError
+from azure.identity import DefaultAzureCredential
 
-CONNECTION_STR = os.environ['EVENT_HUB_CONN_STR']
-EVENTHUB_NAME = os.environ['EVENT_HUB_NAME']
+FULLY_QUALIFIED_NAMESPACE = os.environ["EVENT_HUB_HOSTNAME"]
+EVENTHUB_NAME = os.environ["EVENT_HUB_NAME"]
 
 
+# [START send_event_data_batch]
 def send_event_data_batch(producer):
     # Without specifying partition_id or partition_key
     # the events will be distributed to available partitions via round-robin.
     event_data_batch = producer.create_batch()
-    event_data_batch.add(EventData('Single message'))
+    event_data_batch.add(EventData("Single message"))
     producer.send_batch(event_data_batch)
+
+
+# [END send_event_data_batch]
 
 
 def send_event_data_batch_with_limited_size(producer):
@@ -33,7 +38,7 @@ def send_event_data_batch_with_limited_size(producer):
 
     while True:
         try:
-            event_data_batch_with_limited_size.add(EventData('Message inside EventBatchData'))
+            event_data_batch_with_limited_size.add(EventData("Message inside EventBatchData"))
         except ValueError:
             # EventDataBatch object reaches max_size.
             # New EventDataBatch object can be created here to send more data.
@@ -44,24 +49,26 @@ def send_event_data_batch_with_limited_size(producer):
 
 def send_event_data_batch_with_partition_key(producer):
     # Specifying partition_key.
-    event_data_batch_with_partition_key = producer.create_batch(partition_key='pkey')
-    event_data_batch_with_partition_key.add(EventData('Message will be sent to a partition determined by the partition key'))
+    event_data_batch_with_partition_key = producer.create_batch(partition_key="pkey")
+    event_data_batch_with_partition_key.add(
+        EventData("Message will be sent to a partition determined by the partition key")
+    )
 
     producer.send_batch(event_data_batch_with_partition_key)
 
 
 def send_event_data_batch_with_partition_id(producer):
     # Specifying partition_id.
-    event_data_batch_with_partition_id = producer.create_batch(partition_id='0')
-    event_data_batch_with_partition_id.add(EventData('Message will be sent to target-id partition'))
+    event_data_batch_with_partition_id = producer.create_batch(partition_id="0")
+    event_data_batch_with_partition_id.add(EventData("Message will be sent to target-id partition"))
 
     producer.send_batch(event_data_batch_with_partition_id)
 
 
 def send_event_data_batch_with_properties(producer):
     event_data_batch = producer.create_batch()
-    event_data = EventData('Message with properties')
-    event_data.properties = {'prop_key': 'prop_value'}
+    event_data = EventData("Message with properties")
+    event_data.properties = {"prop_key": "prop_value"}
     event_data_batch.add(event_data)
     producer.send_batch(event_data_batch)
 
@@ -73,7 +80,7 @@ def send_event_data_list(producer):
     # Without specifying partition_id or partition_key
     # the events will be distributed to available partitions via round-robin.
 
-    event_data_list = [EventData('Event Data {}'.format(i)) for i in range(10)]
+    event_data_list = [EventData("Event Data {}".format(i)) for i in range(10)]
     try:
         producer.send_batch(event_data_list)
     except ValueError:  # Size exceeds limit. This shouldn't happen if you make sure before hand.
@@ -82,9 +89,10 @@ def send_event_data_list(producer):
         print("Sending error: ", eh_err)
 
 
-producer = EventHubProducerClient.from_connection_string(
-    conn_str=CONNECTION_STR,
-    eventhub_name=EVENTHUB_NAME
+producer = EventHubProducerClient(
+    fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,
+    eventhub_name=EVENTHUB_NAME,
+    credential=DefaultAzureCredential(),
 )
 
 start_time = time.time()

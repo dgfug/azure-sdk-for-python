@@ -16,13 +16,14 @@ try:
     from subprocess import TimeoutExpired, check_call, CalledProcessError
 except ImportError:
     from subprocess32 import TimeoutExpired, check_call, CalledProcessError
-from common_tasks import run_check_call, compare_python_version
+from ci_tools.functions import compare_python_version
+from common_tasks import run_check_call
 
 logging.getLogger().setLevel(logging.INFO)
 
 root_dir = os.path.abspath(os.path.join(os.path.abspath(__file__), "..", "..", ".."))
 
-MINIMUM_TESTED_PYTHON_VERSION = ">=3.7.0"
+MINIMUM_TESTED_PYTHON_VERSION = ">=3.8.0"
 
 """
 Some samples may "run forever" or need to be timed out after a period of time. Add them here in the following format:
@@ -78,6 +79,14 @@ TIMEOUT_SAMPLES = {
 
 # Add your library + sample file if you do not want a particular sample to be run
 IGNORED_SAMPLES = {
+    "azure-appconfiguration-provider": [
+        "key_vault_reference_customized_clients_sample.py",
+        "aad_sample.py",
+        "key_vault_reference_sample.py"
+    ],
+    "azure-ai-ml": [
+        "ml_samples_authentication_sovereign_cloud.py"
+    ],
     "azure-eventgrid": [
         "__init__.py",
         "consume_cloud_events_from_eventhub.py",
@@ -86,20 +95,25 @@ IGNORED_SAMPLES = {
         "sample_publish_events_to_a_topic_using_sas_credential_async.py"
     ],
     "azure-eventhub": [
+        "client_identity_authentication.py",    # TODO: remove after fixing issue #29177
+        "client_identity_authentication_async.py",    # TODO: remove after fixing issue #29177
         "connection_to_custom_endpoint_address.py",
         "proxy.py",
         "connection_to_custom_endpoint_address_async.py",
         "iot_hub_connection_string_receive_async.py",
         "proxy_async.py",
+        "send_stream.py",    # TODO: remove after fixing issue #29177
     ],
     "azure-eventhub-checkpointstoretable": ["receive_events_using_checkpoint_store.py"],
     "azure-servicebus": [
+        "connection_to_custom_endpoint_address.py",
         "mgmt_queue.py",
         "mgmt_rule.py",
         "mgmt_subscription.py",
         "mgmt_topic.py",
         "proxy.py",
         "receive_deferred_message_queue.py",
+        "connection_to_custom_endpoint_address_async.py",
         "mgmt_queue_async.py",
         "mgmt_rule_async.py",
         "mgmt_subscription_async.py",
@@ -129,13 +143,16 @@ IGNORED_SAMPLES = {
         "sample_begin_translation_with_filters.py",
         "sample_begin_translation_with_filters_async.py"
     ],
-    "azure-ai-formrecognizer": [
-        "sample_manage_custom_models.py",
-        "sample_manage_custom_models_async.py",
-        "sample_copy_model.py",
-        "sample_copy_model_async.py",
+    "azure-ai-language-questionanswering": [
+        "sample_export_import_project.py",
+        "sample_export_import_project_async.py"
     ],
-    "azure-ai-language-questionanswering": ["sample_chat.py"],
+    "azure-ai-textanalytics": [
+        "sample_analyze_healthcare_entities_with_cancellation.py",
+        "sample_analyze_healthcare_entities_with_cancellation_async.py",
+        "sample_abstract_summary.py",
+        "sample_abstract_summary_async.py",
+    ],
 }
 
 def run_check_call_with_timeout(

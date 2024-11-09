@@ -36,6 +36,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Azure/azure-sdk-for-python",
+    keywords="azure, azure sdk",
     author="Microsoft Corporation",
     author_email="azuresdkengsysadmins@microsoft.com",
     license="MIT License",
@@ -51,6 +52,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         "License :: OSI Approved :: MIT License",
     ],
     packages=find_packages(
@@ -66,6 +68,10 @@ setup(
             'azure.eventhub.extensions',
         ]
     ),
+    include_package_data=True,
+    package_data={
+        'pytyped': ['py.typed'],
+    },
     install_requires=[
         "azure-core<2.0.0,>=1.14.0",
         'azure-eventhub<6.0.0,>=5.0.0',
@@ -80,6 +86,6 @@ setup(
     },
     project_urls={
         "Bug Reports": "https://github.com/Azure/azure-sdk-for-python/issues",
-        "Source": "https://github.com/Azure/azure-sdk-python",
+        "Source": "https://github.com/Azure/azure-sdk-for-python",
     },
 )

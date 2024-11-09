@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -6,14 +7,16 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import List, Optional, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
-import msrest.serialization
+from ... import _serialization
 
-from ._policy_client_enums import *
+if TYPE_CHECKING:
+    # pylint: disable=unused-import,ungrouped-imports
+    from .. import models as _models
 
 
-class ErrorAdditionalInfo(msrest.serialization.Model):
+class ErrorAdditionalInfo(_serialization.Model):
     """The resource management error additional info.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -21,32 +24,29 @@ class ErrorAdditionalInfo(msrest.serialization.Model):
     :ivar type: The additional info type.
     :vartype type: str
     :ivar info: The additional info.
-    :vartype info: any
+    :vartype info: JSON
     """
 
     _validation = {
-        'type': {'readonly': True},
-        'info': {'readonly': True},
+        "type": {"readonly": True},
+        "info": {"readonly": True},
     }
 
     _attribute_map = {
-        'type': {'key': 'type', 'type': 'str'},
-        'info': {'key': 'info', 'type': 'object'},
+        "type": {"key": "type", "type": "str"},
+        "info": {"key": "info", "type": "object"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(ErrorAdditionalInfo, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.type = None
         self.info = None
 
 
-class ErrorResponse(msrest.serialization.Model):
-    """Common error response for all Azure Resource Manager APIs to return error details for failed operations. (This also follows the OData error response format.).
+class ErrorResponse(_serialization.Model):
+    """Common error response for all Azure Resource Manager APIs to return error details for failed
+    operations. (This also follows the OData error response format.).
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
@@ -64,28 +64,24 @@ class ErrorResponse(msrest.serialization.Model):
     """
 
     _validation = {
-        'code': {'readonly': True},
-        'message': {'readonly': True},
-        'target': {'readonly': True},
-        'details': {'readonly': True},
-        'additional_info': {'readonly': True},
+        "code": {"readonly": True},
+        "message": {"readonly": True},
+        "target": {"readonly": True},
+        "details": {"readonly": True},
+        "additional_info": {"readonly": True},
     }
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
-        'details': {'key': 'details', 'type': '[ErrorResponse]'},
-        'additional_info': {'key': 'additionalInfo', 'type': '[ErrorAdditionalInfo]'},
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
+        "details": {"key": "details", "type": "[ErrorResponse]"},
+        "additional_info": {"key": "additionalInfo", "type": "[ErrorAdditionalInfo]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(ErrorResponse, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.code = None
         self.message = None
         self.target = None
@@ -93,7 +89,7 @@ class ErrorResponse(msrest.serialization.Model):
         self.additional_info = None
 
 
-class PrivateLinkAssociation(msrest.serialization.Model):
+class PrivateLinkAssociation(_serialization.Model):
     """PrivateLinkAssociation.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -110,37 +106,34 @@ class PrivateLinkAssociation(msrest.serialization.Model):
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'type': {'readonly': True},
-        'name': {'readonly': True},
+        "id": {"readonly": True},
+        "type": {"readonly": True},
+        "name": {"readonly": True},
     }
 
     _attribute_map = {
-        'properties': {'key': 'properties', 'type': 'PrivateLinkAssociationPropertiesExpanded'},
-        'id': {'key': 'id', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
+        "properties": {"key": "properties", "type": "PrivateLinkAssociationPropertiesExpanded"},
+        "id": {"key": "id", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "name": {"key": "name", "type": "str"},
     }
 
     def __init__(
-        self,
-        *,
-        properties: Optional["PrivateLinkAssociationPropertiesExpanded"] = None,
-        **kwargs
-    ):
+        self, *, properties: Optional["_models.PrivateLinkAssociationPropertiesExpanded"] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword properties: The private link association properties.
         :paramtype properties:
          ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PrivateLinkAssociationPropertiesExpanded
         """
-        super(PrivateLinkAssociation, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.properties = properties
         self.id = None
         self.type = None
         self.name = None
 
 
-class PrivateLinkAssociationGetResult(msrest.serialization.Model):
+class PrivateLinkAssociationGetResult(_serialization.Model):
     """Result of the request to get PLA for a MG scope.
 
     :ivar value: private link association information.
@@ -149,64 +142,83 @@ class PrivateLinkAssociationGetResult(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[PrivateLinkAssociation]'},
+        "value": {"key": "value", "type": "[PrivateLinkAssociation]"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["PrivateLinkAssociation"]] = None,
-        **kwargs
-    ):
+    def __init__(self, *, value: Optional[List["_models.PrivateLinkAssociation"]] = None, **kwargs: Any) -> None:
         """
         :keyword value: private link association information.
         :paramtype value:
          list[~azure.mgmt.resource.privatelinks.v2020_05_01.models.PrivateLinkAssociation]
         """
-        super(PrivateLinkAssociationGetResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.value = value
 
 
-class PrivateLinkAssociationProperties(msrest.serialization.Model):
+class PrivateLinkAssociationObject(_serialization.Model):
+    """PrivateLinkAssociationObject.
+
+    :ivar properties: The properties of the PrivateLinkAssociation.
+    :vartype properties:
+     ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PrivateLinkAssociationProperties
+    """
+
+    _attribute_map = {
+        "properties": {"key": "properties", "type": "PrivateLinkAssociationProperties"},
+    }
+
+    def __init__(
+        self, *, properties: Optional["_models.PrivateLinkAssociationProperties"] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword properties: The properties of the PrivateLinkAssociation.
+        :paramtype properties:
+         ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PrivateLinkAssociationProperties
+        """
+        super().__init__(**kwargs)
+        self.properties = properties
+
+
+class PrivateLinkAssociationProperties(_serialization.Model):
     """PrivateLinkAssociationProperties.
 
     :ivar private_link: The rmpl Resource ID.
     :vartype private_link: str
-    :ivar public_network_access: Possible values include: "Enabled", "Disabled".
+    :ivar public_network_access: Known values are: "Enabled" and "Disabled".
     :vartype public_network_access: str or
      ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PublicNetworkAccessOptions
     """
 
     _attribute_map = {
-        'private_link': {'key': 'privateLink', 'type': 'str'},
-        'public_network_access': {'key': 'publicNetworkAccess', 'type': 'str'},
+        "private_link": {"key": "privateLink", "type": "str"},
+        "public_network_access": {"key": "publicNetworkAccess", "type": "str"},
     }
 
     def __init__(
         self,
         *,
         private_link: Optional[str] = None,
-        public_network_access: Optional[Union[str, "PublicNetworkAccessOptions"]] = None,
-        **kwargs
-    ):
+        public_network_access: Optional[Union[str, "_models.PublicNetworkAccessOptions"]] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword private_link: The rmpl Resource ID.
         :paramtype private_link: str
-        :keyword public_network_access: Possible values include: "Enabled", "Disabled".
+        :keyword public_network_access: Known values are: "Enabled" and "Disabled".
         :paramtype public_network_access: str or
          ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PublicNetworkAccessOptions
         """
-        super(PrivateLinkAssociationProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.private_link = private_link
         self.public_network_access = public_network_access
 
 
-class PrivateLinkAssociationPropertiesExpanded(msrest.serialization.Model):
+class PrivateLinkAssociationPropertiesExpanded(_serialization.Model):
     """Private Link Association Properties.
 
     :ivar private_link: The rmpl Resource ID.
     :vartype private_link: str
-    :ivar public_network_access: Possible values include: "Enabled", "Disabled".
+    :ivar public_network_access: Known values are: "Enabled" and "Disabled".
     :vartype public_network_access: str or
      ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PublicNetworkAccessOptions
     :ivar tenant_id: The TenantID.
@@ -216,25 +228,25 @@ class PrivateLinkAssociationPropertiesExpanded(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'private_link': {'key': 'privateLink', 'type': 'str'},
-        'public_network_access': {'key': 'publicNetworkAccess', 'type': 'str'},
-        'tenant_id': {'key': 'tenantID', 'type': 'str'},
-        'scope': {'key': 'scope', 'type': 'str'},
+        "private_link": {"key": "privateLink", "type": "str"},
+        "public_network_access": {"key": "publicNetworkAccess", "type": "str"},
+        "tenant_id": {"key": "tenantID", "type": "str"},
+        "scope": {"key": "scope", "type": "str"},
     }
 
     def __init__(
         self,
         *,
         private_link: Optional[str] = None,
-        public_network_access: Optional[Union[str, "PublicNetworkAccessOptions"]] = None,
+        public_network_access: Optional[Union[str, "_models.PublicNetworkAccessOptions"]] = None,
         tenant_id: Optional[str] = None,
         scope: Optional[str] = None,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         """
         :keyword private_link: The rmpl Resource ID.
         :paramtype private_link: str
-        :keyword public_network_access: Possible values include: "Enabled", "Disabled".
+        :keyword public_network_access: Known values are: "Enabled" and "Disabled".
         :paramtype public_network_access: str or
          ~azure.mgmt.resource.privatelinks.v2020_05_01.models.PublicNetworkAccessOptions
         :keyword tenant_id: The TenantID.
@@ -242,14 +254,14 @@ class PrivateLinkAssociationPropertiesExpanded(msrest.serialization.Model):
         :keyword scope: The scope of the private link association.
         :paramtype scope: str
         """
-        super(PrivateLinkAssociationPropertiesExpanded, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.private_link = private_link
         self.public_network_access = public_network_access
         self.tenant_id = tenant_id
         self.scope = scope
 
 
-class ResourceManagementPrivateLink(msrest.serialization.Model):
+class ResourceManagementPrivateLink(_serialization.Model):
     """ResourceManagementPrivateLink.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -268,26 +280,26 @@ class ResourceManagementPrivateLink(msrest.serialization.Model):
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
     }
 
     _attribute_map = {
-        'properties': {'key': 'properties', 'type': 'ResourceManagementPrivateLinkEndpointConnections'},
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
+        "properties": {"key": "properties", "type": "ResourceManagementPrivateLinkEndpointConnections"},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
     }
 
     def __init__(
         self,
         *,
-        properties: Optional["ResourceManagementPrivateLinkEndpointConnections"] = None,
+        properties: Optional["_models.ResourceManagementPrivateLinkEndpointConnections"] = None,
         location: Optional[str] = None,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         """
         :keyword properties:
         :paramtype properties:
@@ -295,7 +307,7 @@ class ResourceManagementPrivateLink(msrest.serialization.Model):
         :keyword location: the region of the rmpl.
         :paramtype location: str
         """
-        super(ResourceManagementPrivateLink, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.properties = properties
         self.id = None
         self.name = None
@@ -303,7 +315,7 @@ class ResourceManagementPrivateLink(msrest.serialization.Model):
         self.location = location
 
 
-class ResourceManagementPrivateLinkEndpointConnections(msrest.serialization.Model):
+class ResourceManagementPrivateLinkEndpointConnections(_serialization.Model):  # pylint: disable=name-too-long
     """ResourceManagementPrivateLinkEndpointConnections.
 
     :ivar private_endpoint_connections: The private endpoint connections.
@@ -311,24 +323,19 @@ class ResourceManagementPrivateLinkEndpointConnections(msrest.serialization.Mode
     """
 
     _attribute_map = {
-        'private_endpoint_connections': {'key': 'privateEndpointConnections', 'type': '[str]'},
+        "private_endpoint_connections": {"key": "privateEndpointConnections", "type": "[str]"},
     }
 
-    def __init__(
-        self,
-        *,
-        private_endpoint_connections: Optional[List[str]] = None,
-        **kwargs
-    ):
+    def __init__(self, *, private_endpoint_connections: Optional[List[str]] = None, **kwargs: Any) -> None:
         """
         :keyword private_endpoint_connections: The private endpoint connections.
         :paramtype private_endpoint_connections: list[str]
         """
-        super(ResourceManagementPrivateLinkEndpointConnections, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.private_endpoint_connections = private_endpoint_connections
 
 
-class ResourceManagementPrivateLinkListResult(msrest.serialization.Model):
+class ResourceManagementPrivateLinkListResult(_serialization.Model):
     """ResourceManagementPrivateLinkListResult.
 
     :ivar value: An array of resource management private links.
@@ -337,25 +344,20 @@ class ResourceManagementPrivateLinkListResult(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[ResourceManagementPrivateLink]'},
+        "value": {"key": "value", "type": "[ResourceManagementPrivateLink]"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["ResourceManagementPrivateLink"]] = None,
-        **kwargs
-    ):
+    def __init__(self, *, value: Optional[List["_models.ResourceManagementPrivateLink"]] = None, **kwargs: Any) -> None:
         """
         :keyword value: An array of resource management private links.
         :paramtype value:
          list[~azure.mgmt.resource.privatelinks.v2020_05_01.models.ResourceManagementPrivateLink]
         """
-        super(ResourceManagementPrivateLinkListResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.value = value
 
 
-class ResourceManagementPrivateLinkLocation(msrest.serialization.Model):
+class ResourceManagementPrivateLinkLocation(_serialization.Model):
     """ResourceManagementPrivateLinkLocation.
 
     :ivar location: the region to create private link association.
@@ -363,18 +365,13 @@ class ResourceManagementPrivateLinkLocation(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'location': {'key': 'location', 'type': 'str'},
+        "location": {"key": "location", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        location: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *, location: Optional[str] = None, **kwargs: Any) -> None:
         """
         :keyword location: the region to create private link association.
         :paramtype location: str
         """
-        super(ResourceManagementPrivateLinkLocation, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.location = location

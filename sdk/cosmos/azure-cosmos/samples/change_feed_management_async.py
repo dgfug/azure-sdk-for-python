@@ -1,4 +1,11 @@
-import azure.cosmos.aio.cosmos_client as cosmos_client
+# -------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See LICENSE.txt in the project root for
+# license information.
+# -------------------------------------------------------------------------
+from datetime import datetime, timezone
+
+from azure.cosmos.aio import CosmosClient
 import azure.cosmos.exceptions as exceptions
 import azure.cosmos.documents as documents
 import azure.cosmos.partition_key as partition_key
@@ -8,7 +15,7 @@ import asyncio
 import config
 
 # ----------------------------------------------------------------------------------------------------------
-# Prerequistes -
+# Prerequisites -
 #
 # 1. An Azure Cosmos account -
 #    https:#azure.microsoft.com/en-us/documentation/articles/documentdb-create-account/
@@ -31,12 +38,12 @@ async def create_items(container, size):
     for i in range(1, size):
         c = str(uuid.uuid4())
         item_definition = {'id': 'item' + c,
-                                'address': {'street': '1 Microsoft Way'+c,
-                                        'city': 'Redmond'+c,
-                                        'state': 'WA',
-                                        'zip code': 98052
-                                        }
-                                }
+                           'address': {'street': '1 Microsoft Way' + c,
+                                       'city': 'Redmond' + c,
+                                       'state': 'WA',
+                                       'zip code': 98052
+                                       }
+                           }
 
         await container.create_item(body=item_definition)
 
@@ -58,8 +65,21 @@ async def read_change_feed(container):
     print('\nFinished reading all the change feed\n')
 
 
+async def read_change_feed_with_start_time(container, start_time):
+    time = start_time.strftime('%a, %d %b %Y %H:%M:%S GMT')
+    print('\nReading Change Feed from start time of {}\n'.format(time))
+
+    # You can read change feed from a specific time.
+    # You must pass in a datetime object for the start_time field.
+    response = container.query_items_change_feed(start_time=start_time)
+    async for doc in response:
+        print(doc)
+
+    print('\nFinished reading all the change feed from start time of {}\n'.format(time))
+
+
 async def run_sample():
-    async with cosmos_client.CosmosClient(HOST, MASTER_KEY) as client:
+    async with CosmosClient(HOST, MASTER_KEY) as client:
         try:
             # setup database for this sample
             try:
@@ -78,8 +98,16 @@ async def run_sample():
             except exceptions.CosmosResourceExistsError:
                 raise RuntimeError("Container with id '{}' already exists".format(CONTAINER_ID))
 
+            # Create items
             await create_items(container, 100)
+            # Timestamp post item creations
+            timestamp = datetime.now(timezone.utc)
+            # Create more items after time stamp
+            await create_items(container, 50)
+            # Read change feed from beginning
             await read_change_feed(container)
+            # Read Change Feed from timestamp
+            await read_change_feed_with_start_time(container, timestamp)
 
             # cleanup database after sample
             try:
@@ -95,5 +123,4 @@ async def run_sample():
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(run_sample())
+    asyncio.run(run_sample())

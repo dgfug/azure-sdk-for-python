@@ -9,12 +9,14 @@ import os
 import datetime
 import logging
 
-from azure_devtools.scenario_tests import AzureTestError, ReservedResourceNameError
-
-from azure.mgmt.resource import ResourceManagementClient
+try:
+    from azure.mgmt.resource import ResourceManagementClient
+except ImportError:
+    pass
 
 from . import AzureMgmtPreparer
-from .sanitizers import add_general_regex_sanitizer
+from .exceptions import AzureTestError, ReservedResourceNameError
+from .sanitizers import add_general_string_sanitizer
 
 
 logging.getLogger().setLevel(logging.INFO)
@@ -63,7 +65,7 @@ class ResourceGroupPreparer(AzureMgmtPreparer):
         self.delete_after_tag_timedelta = delete_after_tag_timedelta
 
     def _prefix_name(self, name):
-        name = u"rgpy-" + name
+        name = "rgpy-" + name
         if len(name) > 90:
             name = name[:90]
         return name
@@ -96,11 +98,7 @@ class ResourceGroupPreparer(AzureMgmtPreparer):
                 id="/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/" + name,
             )
         if name != self.moniker:
-            try:
-                self.test_class_instance.scrubber.register_name_pair(name, self.moniker)
-            # tests using the test proxy don't have a scrubber instance
-            except AttributeError:
-                add_general_regex_sanitizer(regex=name, value=self.moniker)
+            add_general_string_sanitizer(target=name, value=self.moniker)
         return {
             self.parameter_name: self.resource,
             self.parameter_name_for_location: self.location,
@@ -118,7 +116,9 @@ class ResourceGroupPreparer(AzureMgmtPreparer):
                     raise AzureTestError("Timed out waiting for resource group to be deleted.")
                 else:
                     self.client.resource_groups.begin_delete(name, polling=False).result()
-            except Exception as err:  # NOTE: some track 1 libraries do not have azure-core installed. Cannot use HttpResponseError here
+            except (
+                Exception
+            ) as err:  # NOTE: some track 1 libraries do not have azure-core installed. Cannot use HttpResponseError here
                 logging.info("Failed to delete resource group with name {}".format(name))
                 logging.info("{}".format(err))
                 pass

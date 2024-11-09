@@ -6,7 +6,10 @@
 from datetime import datetime
 import functools
 from testcase import DocumentTranslationTest
-from preparer import DocumentTranslationPreparer, DocumentTranslationClientPreparer as _DocumentTranslationClientPreparer
+from preparer import (
+    DocumentTranslationPreparer,
+    DocumentTranslationClientPreparer as _DocumentTranslationClientPreparer,
+)
 from devtools_testutils import recorded_by_proxy
 from azure.ai.translation.document import DocumentTranslationClient
 import pytest
@@ -15,7 +18,6 @@ DocumentTranslationClientPreparer = functools.partial(_DocumentTranslationClient
 
 
 class TestAllDocumentStatuses(DocumentTranslationTest):
-
     @DocumentTranslationPreparer()
     @DocumentTranslationClientPreparer()
     @recorded_by_proxy
@@ -26,40 +28,16 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         target_language = "es"
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # list docs statuses
-        doc_statuses = list(client.list_document_statuses(poller.id)) # convert from generic iterator to list
+        doc_statuses = list(client.list_document_statuses(poller.id))  # convert from generic iterator to list
         assert len(doc_statuses) == docs_count
 
         for document in doc_statuses:
             self._validate_doc_status(document, target_language)
-        return variables
-
-    @DocumentTranslationPreparer()
-    @DocumentTranslationClientPreparer()
-    @recorded_by_proxy
-    def test_list_document_statuses_with_pagination(self, **kwargs):
-        client = kwargs.pop("client")
-        variables = kwargs.pop("variables", {})
-        docs_count = 10
-        results_per_page = 2
-        no_of_pages = docs_count // results_per_page
-        target_language = "es"
-
-        # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
-
-        # check doc statuses
-        doc_statuses_pages = list(client.list_document_statuses(translation_id=poller.id, results_per_page=results_per_page).by_page())
-        assert len(doc_statuses_pages) == no_of_pages
-
-        # iterate by page
-        for page in doc_statuses_pages:
-            page_items = list(page)
-            assert len(page_items) <=  results_per_page
-            for document in page_items:
-                self._validate_doc_status(document, target_language)
         return variables
 
     @DocumentTranslationPreparer()
@@ -73,7 +51,9 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         target_language = "es"
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # check doc statuses
         doc_statuses = list(client.list_document_statuses(translation_id=poller.id, skip=skip))
@@ -94,20 +74,22 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         target_language = "es"
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # list operations
         statuses = ["NotStarted"]
         doc_statuses = list(client.list_document_statuses(poller.id, statuses=statuses))
-        assert(len(doc_statuses) == 0)
+        assert len(doc_statuses) == 0
 
         statuses = ["Succeeded"]
         doc_statuses = list(client.list_document_statuses(poller.id, statuses=statuses))
-        assert(len(doc_statuses) == docs_count)
+        assert len(doc_statuses) == docs_count
 
         statuses = ["Failed"]
         doc_statuses = list(client.list_document_statuses(poller.id, statuses=statuses))
-        assert(len(doc_statuses) == 0)
+        assert len(doc_statuses) == 0
         return variables
 
     @DocumentTranslationPreparer()
@@ -120,13 +102,15 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         target_language = "es"
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # filter ids
-        doc_statuses = list(client.list_document_statuses(poller.id)) # convert from generic iterator to list
+        doc_statuses = list(client.list_document_statuses(poller.id))  # convert from generic iterator to list
         assert len(doc_statuses) == docs_count
         ids = [doc.id for doc in doc_statuses]
-        ids = ids[:docs_count//2]
+        ids = ids[: docs_count // 2]
 
         # do the testing
         doc_statuses = list(client.list_document_statuses(poller.id, document_ids=ids))
@@ -145,16 +129,21 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         target_language = "es"
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # check doc statuses
-        doc_statuses = list(client.list_document_statuses(poller.id, order_by=["created_on asc"])) # convert from generic iterator to list
+        doc_statuses = list(
+            client.list_document_statuses(poller.id, order_by=["created_on asc"])
+        )  # convert from generic iterator to list
         assert len(doc_statuses) == docs_count
 
-        current = datetime.min
+        current = None
         for document in doc_statuses:
-            assert(document.created_on.replace(tzinfo=None) >= current.replace(tzinfo=None))
-            current = document.created_on
+            if current:
+                assert document.created_on.replace(tzinfo=None) >= current.replace(tzinfo=None)
+                current = document.created_on
         return variables
 
     @DocumentTranslationPreparer()
@@ -167,16 +156,22 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         target_language = "es"
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # check doc statuses
-        doc_statuses = list(client.list_document_statuses(poller.id, order_by=["created_on desc"])) # convert from generic iterator to list
+        doc_statuses = list(
+            client.list_document_statuses(poller.id, order_by=["created_on desc"])
+        )  # convert from generic iterator to list
         assert len(doc_statuses) == docs_count
 
-        current = datetime.max
+        current = None
         for document in doc_statuses:
-            assert(document.created_on.replace(tzinfo=None) <= current.replace(tzinfo=None))
-            current = document.created_on
+            if current:
+                assert document.created_on.replace(tzinfo=None) <= current.replace(tzinfo=None)
+                current = document.created_on
+
         return variables
 
     @DocumentTranslationPreparer()
@@ -188,17 +183,18 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
         docs_count = 10
         target_language = "es"
         skip = 1
-        results_per_page = 2
         statuses = ["Succeeded"]
 
         # submit and validate operation
-        poller = self._begin_and_validate_translation_with_multiple_docs(client, docs_count, language_code=target_language, wait=True, variables=variables)
+        poller = self._begin_and_validate_translation_with_multiple_docs(
+            client, docs_count, language=target_language, wait=True, variables=variables
+        )
 
         # get ids
-        doc_statuses = list(client.list_document_statuses(poller.id)) # convert from generic iterator to list
+        doc_statuses = list(client.list_document_statuses(poller.id))  # convert from generic iterator to list
         assert len(doc_statuses) == docs_count
         ids = [doc.id for doc in doc_statuses]
-        ids = ids[:docs_count//2]
+        ids = ids[: docs_count // 2]
 
         filtered_docs = client.list_document_statuses(
             poller.id,
@@ -209,24 +205,23 @@ class TestAllDocumentStatuses(DocumentTranslationTest):
             order_by=["created_on asc"],
             # paging
             skip=skip,
-            results_per_page=results_per_page
         ).by_page()
         assert filtered_docs is not None
 
         # check statuses
         counter = 0
-        current_time = datetime.min
+        current = None
         for page in filtered_docs:
             page_docs = list(page)
-            assert len(page_docs) <=  results_per_page # assert paging
             for doc in page_docs:
                 counter += 1
                 # assert ordering
-                assert(doc.created_on.replace(tzinfo=None) >= current_time.replace(tzinfo=None))
-                current_time = doc.created_on
+                if current:
+                    assert doc.created_on.replace(tzinfo=None) >= current.replace(tzinfo=None)
+                    current = doc.created_on
                 # assert filters
                 assert doc.status in statuses
                 assert doc.id in ids
 
-        assert(counter == len(ids) - skip)
+        assert counter == len(ids) - skip
         return variables

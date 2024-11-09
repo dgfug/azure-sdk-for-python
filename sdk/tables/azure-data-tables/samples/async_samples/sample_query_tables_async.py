@@ -17,7 +17,9 @@ USAGE:
     python sample_query_tables_async.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_STORAGE_CONNECTION_STRING - the connection string to your storage account
+    1) TABLES_STORAGE_ENDPOINT_SUFFIX - the Table service account URL suffix
+    2) TABLES_STORAGE_ACCOUNT_NAME - the name of the storage account
+    3) TABLES_PRIMARY_STORAGE_ACCOUNT_KEY - the storage account access key
 """
 
 import asyncio
@@ -28,13 +30,10 @@ from dotenv import find_dotenv, load_dotenv
 class QueryTables(object):
     def __init__(self):
         load_dotenv(find_dotenv())
-        self.access_key = os.getenv("TABLES_PRIMARY_STORAGE_ACCOUNT_KEY")
-        self.endpoint_suffix = os.getenv("TABLES_STORAGE_ENDPOINT_SUFFIX")
-        self.account_name = os.getenv("TABLES_STORAGE_ACCOUNT_NAME")
-        self.endpoint = "{}.table.{}".format(self.account_name, self.endpoint_suffix)
-        self.connection_string = "DefaultEndpointsProtocol=https;AccountName={};AccountKey={};EndpointSuffix={}".format(
-            self.account_name, self.access_key, self.endpoint_suffix
-        )
+        self.access_key = os.environ["TABLES_PRIMARY_STORAGE_ACCOUNT_KEY"]
+        self.endpoint_suffix = os.environ["TABLES_STORAGE_ENDPOINT_SUFFIX"]
+        self.account_name = os.environ["TABLES_STORAGE_ACCOUNT_NAME"]
+        self.connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.account_name};AccountKey={self.access_key};EndpointSuffix={self.endpoint_suffix}"
 
     async def tables_in_account(self):
         # Instantiate the TableServiceClient from a connection string
@@ -51,16 +50,16 @@ class QueryTables(object):
                 # List all the tables in the service
                 print("Listing tables:")
                 async for table in table_service.list_tables():
-                    print("\t{}".format(table.name))
+                    print(f"\t{table.name}")
                 # [END tsc_list_tables]
 
                 # [START tsc_query_tables]
                 # Query for "table1" in the tables created
                 table_name = "mytableasync1"
-                name_filter = "TableName eq '{}'".format(table_name)
+                name_filter = f"TableName eq '{table_name}'"
                 print("Queried_tables")
                 async for table in table_service.query_tables(name_filter):
-                    print("\t{}".format(table.name))
+                    print(f"\t{table.name}")
                 # [END tsc_query_tables]
 
             finally:
@@ -78,24 +77,11 @@ class QueryTables(object):
                 except:
                     pass
 
-    async def clean_up(self):
-        from azure.data.tables.aio import TableServiceClient
-
-        tsc = TableServiceClient.from_connection_string(self.connection_string)
-        async with tsc:
-            async for table in tsc.list_tables():
-                await tsc.delete_table(table.name)
-
-            print("Cleaned up")
-
 
 async def main():
     sample = QueryTables()
-    await sample.delete_tables()
     await sample.tables_in_account()
-    await sample.clean_up()
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())

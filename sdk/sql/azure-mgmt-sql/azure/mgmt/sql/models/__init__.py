@@ -14,6 +14,11 @@ from ._models_py3 import AutomaticTuningServerOptions
 from ._models_py3 import AzureADOnlyAuthListResult
 from ._models_py3 import BackupShortTermRetentionPolicy
 from ._models_py3 import BackupShortTermRetentionPolicyListResult
+from ._models_py3 import Baseline
+from ._models_py3 import BaselineAdjustedResult
+from ._models_py3 import BenchmarkReference
+from ._models_py3 import CertificateInfo
+from ._models_py3 import ChangeLongTermRetentionBackupAccessTierParameters
 from ._models_py3 import CheckNameAvailabilityRequest
 from ._models_py3 import CheckNameAvailabilityResponse
 from ._models_py3 import CompleteDatabaseRestoreDefinition
@@ -25,6 +30,8 @@ from ._models_py3 import DataMaskingRuleListResult
 from ._models_py3 import DataWarehouseUserActivities
 from ._models_py3 import DataWarehouseUserActivitiesListResult
 from ._models_py3 import Database
+from ._models_py3 import DatabaseAdvancedThreatProtection
+from ._models_py3 import DatabaseAdvancedThreatProtectionListResult
 from ._models_py3 import DatabaseAutomaticTuning
 from ._models_py3 import DatabaseBlobAuditingPolicy
 from ._models_py3 import DatabaseBlobAuditingPolicyListResult
@@ -32,6 +39,7 @@ from ._models_py3 import DatabaseColumn
 from ._models_py3 import DatabaseColumnListResult
 from ._models_py3 import DatabaseExtensions
 from ._models_py3 import DatabaseIdentity
+from ._models_py3 import DatabaseKey
 from ._models_py3 import DatabaseListResult
 from ._models_py3 import DatabaseOperation
 from ._models_py3 import DatabaseOperationListResult
@@ -39,6 +47,12 @@ from ._models_py3 import DatabaseSchema
 from ._models_py3 import DatabaseSchemaListResult
 from ._models_py3 import DatabaseSecurityAlertListResult
 from ._models_py3 import DatabaseSecurityAlertPolicy
+from ._models_py3 import DatabaseSqlVulnerabilityAssessmentBaselineSet
+from ._models_py3 import DatabaseSqlVulnerabilityAssessmentBaselineSetListResult
+from ._models_py3 import DatabaseSqlVulnerabilityAssessmentRuleBaseline
+from ._models_py3 import DatabaseSqlVulnerabilityAssessmentRuleBaselineInput
+from ._models_py3 import DatabaseSqlVulnerabilityAssessmentRuleBaselineListInput
+from ._models_py3 import DatabaseSqlVulnerabilityAssessmentRuleBaselineListResult
 from ._models_py3 import DatabaseTable
 from ._models_py3 import DatabaseTableListResult
 from ._models_py3 import DatabaseUpdate
@@ -50,10 +64,12 @@ from ._models_py3 import DatabaseVulnerabilityAssessmentListResult
 from ._models_py3 import DatabaseVulnerabilityAssessmentRuleBaseline
 from ._models_py3 import DatabaseVulnerabilityAssessmentRuleBaselineItem
 from ._models_py3 import DatabaseVulnerabilityAssessmentScansExport
-from ._models_py3 import Delegation
 from ._models_py3 import DeletedServer
 from ._models_py3 import DeletedServerListResult
 from ._models_py3 import DistributedAvailabilityGroup
+from ._models_py3 import DistributedAvailabilityGroupDatabase
+from ._models_py3 import DistributedAvailabilityGroupSetRole
+from ._models_py3 import DistributedAvailabilityGroupsFailoverRequest
 from ._models_py3 import DistributedAvailabilityGroupsListResult
 from ._models_py3 import EditionCapability
 from ._models_py3 import ElasticPool
@@ -72,6 +88,13 @@ from ._models_py3 import ElasticPoolPerformanceLevelCapability
 from ._models_py3 import ElasticPoolUpdate
 from ._models_py3 import EncryptionProtector
 from ._models_py3 import EncryptionProtectorListResult
+from ._models_py3 import EndpointCertificate
+from ._models_py3 import EndpointCertificateListResult
+from ._models_py3 import EndpointDependency
+from ._models_py3 import EndpointDetail
+from ._models_py3 import ErrorAdditionalInfo
+from ._models_py3 import ErrorDetail
+from ._models_py3 import ErrorResponse
 from ._models_py3 import ExportDatabaseDefinition
 from ._models_py3 import ExtendedDatabaseBlobAuditingPolicy
 from ._models_py3 import ExtendedDatabaseBlobAuditingPolicyListResult
@@ -88,7 +111,6 @@ from ._models_py3 import FirewallRuleListResult
 from ._models_py3 import GeoBackupPolicy
 from ._models_py3 import GeoBackupPolicyListResult
 from ._models_py3 import IPv6FirewallRule
-from ._models_py3 import IPv6FirewallRuleList
 from ._models_py3 import IPv6FirewallRuleListResult
 from ._models_py3 import ImportExistingDatabaseDefinition
 from ._models_py3 import ImportExportExtensionsOperationListResult
@@ -115,6 +137,8 @@ from ._models_py3 import JobExecution
 from ._models_py3 import JobExecutionListResult
 from ._models_py3 import JobExecutionTarget
 from ._models_py3 import JobListResult
+from ._models_py3 import JobPrivateEndpoint
+from ._models_py3 import JobPrivateEndpointListResult
 from ._models_py3 import JobSchedule
 from ._models_py3 import JobStep
 from ._models_py3 import JobStepAction
@@ -133,6 +157,7 @@ from ._models_py3 import LocationCapabilities
 from ._models_py3 import LogSizeCapability
 from ._models_py3 import LogicalDatabaseTransparentDataEncryption
 from ._models_py3 import LogicalDatabaseTransparentDataEncryptionListResult
+from ._models_py3 import LogicalServerAdvancedThreatProtectionListResult
 from ._models_py3 import LogicalServerSecurityAlertPolicyListResult
 from ._models_py3 import LongTermRetentionBackup
 from ._models_py3 import LongTermRetentionBackupListResult
@@ -146,16 +171,30 @@ from ._models_py3 import MaintenanceWindows
 from ._models_py3 import ManagedBackupShortTermRetentionPolicy
 from ._models_py3 import ManagedBackupShortTermRetentionPolicyListResult
 from ._models_py3 import ManagedDatabase
+from ._models_py3 import ManagedDatabaseAdvancedThreatProtection
+from ._models_py3 import ManagedDatabaseAdvancedThreatProtectionListResult
 from ._models_py3 import ManagedDatabaseListResult
+from ._models_py3 import ManagedDatabaseMoveDefinition
+from ._models_py3 import ManagedDatabaseMoveOperationListResult
+from ._models_py3 import ManagedDatabaseMoveOperationResult
+from ._models_py3 import ManagedDatabaseRestoreDetailsBackupSetProperties
 from ._models_py3 import ManagedDatabaseRestoreDetailsResult
+from ._models_py3 import ManagedDatabaseRestoreDetailsUnrestorableFileProperties
 from ._models_py3 import ManagedDatabaseSecurityAlertPolicy
 from ._models_py3 import ManagedDatabaseSecurityAlertPolicyListResult
+from ._models_py3 import ManagedDatabaseStartMoveDefinition
 from ._models_py3 import ManagedDatabaseUpdate
 from ._models_py3 import ManagedInstance
 from ._models_py3 import ManagedInstanceAdministrator
 from ._models_py3 import ManagedInstanceAdministratorListResult
+from ._models_py3 import ManagedInstanceAdvancedThreatProtection
+from ._models_py3 import ManagedInstanceAdvancedThreatProtectionListResult
 from ._models_py3 import ManagedInstanceAzureADOnlyAuthListResult
 from ._models_py3 import ManagedInstanceAzureADOnlyAuthentication
+from ._models_py3 import ManagedInstanceDtc
+from ._models_py3 import ManagedInstanceDtcListResult
+from ._models_py3 import ManagedInstanceDtcSecuritySettings
+from ._models_py3 import ManagedInstanceDtcTransactionManagerCommunicationSettings
 from ._models_py3 import ManagedInstanceEditionCapability
 from ._models_py3 import ManagedInstanceEncryptionProtector
 from ._models_py3 import ManagedInstanceEncryptionProtectorListResult
@@ -190,6 +229,12 @@ from ._models_py3 import ManagedInstanceVcoresCapability
 from ._models_py3 import ManagedInstanceVersionCapability
 from ._models_py3 import ManagedInstanceVulnerabilityAssessment
 from ._models_py3 import ManagedInstanceVulnerabilityAssessmentListResult
+from ._models_py3 import ManagedLedgerDigestUploads
+from ._models_py3 import ManagedLedgerDigestUploadsListResult
+from ._models_py3 import ManagedServerDnsAlias
+from ._models_py3 import ManagedServerDnsAliasAcquisition
+from ._models_py3 import ManagedServerDnsAliasCreation
+from ._models_py3 import ManagedServerDnsAliasListResult
 from ._models_py3 import ManagedServerSecurityAlertPolicy
 from ._models_py3 import ManagedServerSecurityAlertPolicyListResult
 from ._models_py3 import ManagedTransparentDataEncryption
@@ -210,11 +255,14 @@ from ._models_py3 import Operation
 from ._models_py3 import OperationDisplay
 from ._models_py3 import OperationImpact
 from ._models_py3 import OperationListResult
+from ._models_py3 import OutboundEnvironmentEndpoint
+from ._models_py3 import OutboundEnvironmentEndpointCollection
 from ._models_py3 import OutboundFirewallRule
 from ._models_py3 import OutboundFirewallRuleListResult
 from ._models_py3 import PartnerInfo
 from ._models_py3 import PartnerRegionInfo
 from ._models_py3 import PerformanceLevelCapability
+from ._models_py3 import PhaseDetails
 from ._models_py3 import PrivateEndpointConnection
 from ._models_py3 import PrivateEndpointConnectionListResult
 from ._models_py3 import PrivateEndpointConnectionProperties
@@ -226,7 +274,9 @@ from ._models_py3 import PrivateLinkResourceProperties
 from ._models_py3 import PrivateLinkServiceConnectionStateProperty
 from ._models_py3 import ProxyResource
 from ._models_py3 import ProxyResourceWithWritableName
+from ._models_py3 import QueryCheck
 from ._models_py3 import QueryMetricInterval
+from ._models_py3 import QueryMetricIntervalAutoGenerated
 from ._models_py3 import QueryMetricProperties
 from ._models_py3 import QueryStatistics
 from ._models_py3 import QueryStatisticsProperties
@@ -243,8 +293,12 @@ from ._models_py3 import RecoverableDatabase
 from ._models_py3 import RecoverableDatabaseListResult
 from ._models_py3 import RecoverableManagedDatabase
 from ._models_py3 import RecoverableManagedDatabaseListResult
+from ._models_py3 import RefreshExternalGovernanceStatusOperationResult
+from ._models_py3 import RefreshExternalGovernanceStatusOperationResultMI
+from ._models_py3 import Remediation
 from ._models_py3 import ReplicationLink
 from ._models_py3 import ReplicationLinkListResult
+from ._models_py3 import ReplicationLinkUpdate
 from ._models_py3 import Resource
 from ._models_py3 import ResourceIdentity
 from ._models_py3 import ResourceMoveDefinition
@@ -255,6 +309,8 @@ from ._models_py3 import RestorableDroppedManagedDatabase
 from ._models_py3 import RestorableDroppedManagedDatabaseListResult
 from ._models_py3 import RestorePoint
 from ._models_py3 import RestorePointListResult
+from ._models_py3 import SQLVulnerabilityAssessmentScanListResult
+from ._models_py3 import ScheduleItem
 from ._models_py3 import SecurityEvent
 from ._models_py3 import SecurityEventCollection
 from ._models_py3 import SecurityEventSqlInjectionAdditionalProperties
@@ -264,6 +320,7 @@ from ._models_py3 import SensitivityLabelListResult
 from ._models_py3 import SensitivityLabelUpdate
 from ._models_py3 import SensitivityLabelUpdateList
 from ._models_py3 import Server
+from ._models_py3 import ServerAdvancedThreatProtection
 from ._models_py3 import ServerAutomaticTuning
 from ._models_py3 import ServerAzureADAdministrator
 from ._models_py3 import ServerAzureADOnlyAuthentication
@@ -271,6 +328,8 @@ from ._models_py3 import ServerBlobAuditingPolicy
 from ._models_py3 import ServerBlobAuditingPolicyListResult
 from ._models_py3 import ServerCommunicationLink
 from ._models_py3 import ServerCommunicationLinkListResult
+from ._models_py3 import ServerConfigurationOption
+from ._models_py3 import ServerConfigurationOptionListResult
 from ._models_py3 import ServerConnectionPolicy
 from ._models_py3 import ServerConnectionPolicyListResult
 from ._models_py3 import ServerDevOpsAuditSettingsListResult
@@ -304,9 +363,20 @@ from ._models_py3 import ServicePrincipal
 from ._models_py3 import Sku
 from ._models_py3 import SloUsageMetric
 from ._models_py3 import SqlAgentConfiguration
+from ._models_py3 import SqlVulnerabilityAssessment
+from ._models_py3 import SqlVulnerabilityAssessmentListResult
+from ._models_py3 import SqlVulnerabilityAssessmentScanError
+from ._models_py3 import SqlVulnerabilityAssessmentScanRecord
+from ._models_py3 import SqlVulnerabilityAssessmentScanRecordListResult
+from ._models_py3 import SqlVulnerabilityAssessmentScanResults
+from ._models_py3 import StartStopManagedInstanceSchedule
+from ._models_py3 import StartStopManagedInstanceScheduleListResult
 from ._models_py3 import StorageCapability
 from ._models_py3 import SubscriptionUsage
 from ._models_py3 import SubscriptionUsageListResult
+from ._models_py3 import SynapseLinkWorkspace
+from ._models_py3 import SynapseLinkWorkspaceInfoProperties
+from ._models_py3 import SynapseLinkWorkspaceListResult
 from ._models_py3 import SyncAgent
 from ._models_py3 import SyncAgentKeyProperties
 from ._models_py3 import SyncAgentLinkedDatabase
@@ -334,14 +404,14 @@ from ._models_py3 import TimeZoneListResult
 from ._models_py3 import TopQueries
 from ._models_py3 import TopQueriesListResult
 from ._models_py3 import TrackedResource
-from ._models_py3 import UnlinkParameters
 from ._models_py3 import UpdateLongTermRetentionBackupParameters
-from ._models_py3 import UpdateManagedInstanceDnsServersOperation
+from ._models_py3 import UpdateVirtualClusterDnsServersOperation
 from ._models_py3 import UpsertManagedServerOperationParameters
 from ._models_py3 import UpsertManagedServerOperationStep
 from ._models_py3 import Usage
 from ._models_py3 import UsageListResult
 from ._models_py3 import UserIdentity
+from ._models_py3 import VaRule
 from ._models_py3 import VirtualCluster
 from ._models_py3 import VirtualClusterListResult
 from ._models_py3 import VirtualClusterUpdate
@@ -356,624 +426,772 @@ from ._models_py3 import WorkloadClassifierListResult
 from ._models_py3 import WorkloadGroup
 from ._models_py3 import WorkloadGroupListResult
 
-
-from ._sql_management_client_enums import (
-    AdministratorName,
-    AdministratorType,
-    AdvisorStatus,
-    AggregationFunctionType,
-    AuthenticationName,
-    AutoExecuteStatus,
-    AutoExecuteStatusInheritedFrom,
-    AutomaticTuningDisabledReason,
-    AutomaticTuningMode,
-    AutomaticTuningOptionModeActual,
-    AutomaticTuningOptionModeDesired,
-    AutomaticTuningServerMode,
-    AutomaticTuningServerReason,
-    BackupStorageRedundancy,
-    BlobAuditingPolicyState,
-    CapabilityGroup,
-    CapabilityStatus,
-    CatalogCollationType,
-    CheckNameAvailabilityReason,
-    ColumnDataType,
-    ConnectionPolicyName,
-    CreateMode,
-    CreatedByType,
-    DataMaskingFunction,
-    DataMaskingRuleState,
-    DataMaskingState,
-    DataWarehouseUserActivityName,
-    DatabaseIdentityType,
-    DatabaseLicenseType,
-    DatabaseReadScale,
-    DatabaseState,
-    DatabaseStatus,
-    DayOfWeek,
-    DiffBackupIntervalInHours,
-    DnsRefreshConfigurationPropertiesStatus,
-    ElasticPoolLicenseType,
-    ElasticPoolState,
-    EncryptionProtectorName,
-    FailoverGroupReplicationRole,
-    GeoBackupPolicyName,
-    GeoBackupPolicyState,
-    IdentityType,
-    ImplementationMethod,
-    InstanceFailoverGroupReplicationRole,
-    InstancePoolLicenseType,
-    IsRetryable,
-    JobAgentState,
-    JobExecutionLifecycle,
-    JobScheduleType,
-    JobStepActionSource,
-    JobStepActionType,
-    JobStepOutputType,
-    JobTargetGroupMembershipType,
-    JobTargetType,
-    LedgerDigestUploadsName,
-    LedgerDigestUploadsState,
-    LogSizeUnit,
-    LongTermRetentionPolicyName,
-    ManagedDatabaseCreateMode,
-    ManagedDatabaseStatus,
-    ManagedInstanceAdministratorType,
-    ManagedInstanceLicenseType,
-    ManagedInstanceLongTermRetentionPolicyName,
-    ManagedInstancePropertiesProvisioningState,
-    ManagedInstanceProxyOverride,
-    ManagedServerCreateMode,
-    ManagedShortTermRetentionPolicyName,
-    ManagementOperationState,
-    MaxSizeUnit,
-    MetricType,
-    OperationMode,
-    OperationOrigin,
-    PauseDelayTimeUnit,
-    PerformanceLevelUnit,
-    PrimaryAggregationType,
-    PrincipalType,
-    PrivateEndpointProvisioningState,
-    PrivateLinkServiceConnectionStateActionsRequire,
-    PrivateLinkServiceConnectionStateStatus,
-    ProvisioningState,
-    QueryMetricUnitType,
-    QueryTimeGrainType,
-    ReadOnlyEndpointFailoverPolicy,
-    ReadWriteEndpointFailoverPolicy,
-    RecommendedActionCurrentState,
-    RecommendedActionInitiatedBy,
-    RecommendedSensitivityLabelUpdateKind,
-    ReplicaType,
-    ReplicationLinkType,
-    ReplicationMode,
-    ReplicationRole,
-    ReplicationState,
-    RestoreDetailsName,
-    RestorePointType,
-    SampleName,
-    SecondaryType,
-    SecurityAlertPolicyName,
-    SecurityAlertPolicyState,
-    SecurityAlertsPolicyState,
-    SecurityEventType,
-    SensitivityLabelRank,
-    SensitivityLabelSource,
-    SensitivityLabelUpdateKind,
-    ServerConnectionType,
-    ServerKeyType,
-    ServerNetworkAccessFlag,
-    ServerTrustGroupPropertiesTrustScopesItem,
-    ServerWorkspaceFeature,
-    ServiceObjectiveName,
-    ServicePrincipalType,
-    ShortTermRetentionPolicyName,
-    SqlAgentConfigurationPropertiesState,
-    StorageCapabilityStorageAccountType,
-    StorageKeyType,
-    SyncAgentState,
-    SyncConflictResolutionPolicy,
-    SyncDirection,
-    SyncGroupLogType,
-    SyncGroupState,
-    SyncGroupsType,
-    SyncMemberDbType,
-    SyncMemberState,
-    TableTemporalType,
-    TransparentDataEncryptionName,
-    TransparentDataEncryptionState,
-    UnitDefinitionType,
-    UnitType,
-    UpsertManagedServerOperationStepStatus,
-    VirtualNetworkRuleState,
-    VulnerabilityAssessmentName,
-    VulnerabilityAssessmentPolicyBaselineName,
-    VulnerabilityAssessmentScanState,
-    VulnerabilityAssessmentScanTriggerType,
-)
+from ._sql_management_client_enums import AdministratorName
+from ._sql_management_client_enums import AdministratorType
+from ._sql_management_client_enums import AdvancedThreatProtectionName
+from ._sql_management_client_enums import AdvancedThreatProtectionState
+from ._sql_management_client_enums import AdvisorStatus
+from ._sql_management_client_enums import AggregationFunctionType
+from ._sql_management_client_enums import AlwaysEncryptedEnclaveType
+from ._sql_management_client_enums import AuthMetadataLookupModes
+from ._sql_management_client_enums import AuthenticationName
+from ._sql_management_client_enums import AutoExecuteStatus
+from ._sql_management_client_enums import AutoExecuteStatusInheritedFrom
+from ._sql_management_client_enums import AutomaticTuningDisabledReason
+from ._sql_management_client_enums import AutomaticTuningMode
+from ._sql_management_client_enums import AutomaticTuningOptionModeActual
+from ._sql_management_client_enums import AutomaticTuningOptionModeDesired
+from ._sql_management_client_enums import AutomaticTuningServerMode
+from ._sql_management_client_enums import AutomaticTuningServerReason
+from ._sql_management_client_enums import AvailabilityZoneType
+from ._sql_management_client_enums import BackupStorageAccessTier
+from ._sql_management_client_enums import BackupStorageRedundancy
+from ._sql_management_client_enums import BaselineName
+from ._sql_management_client_enums import BlobAuditingPolicyState
+from ._sql_management_client_enums import CapabilityGroup
+from ._sql_management_client_enums import CapabilityStatus
+from ._sql_management_client_enums import CatalogCollationType
+from ._sql_management_client_enums import CheckNameAvailabilityReason
+from ._sql_management_client_enums import ColumnDataType
+from ._sql_management_client_enums import ConnectionPolicyName
+from ._sql_management_client_enums import CreateMode
+from ._sql_management_client_enums import CreatedByType
+from ._sql_management_client_enums import DNSRefreshOperationStatus
+from ._sql_management_client_enums import DataMaskingFunction
+from ._sql_management_client_enums import DataMaskingRuleState
+from ._sql_management_client_enums import DataMaskingState
+from ._sql_management_client_enums import DataWarehouseUserActivityName
+from ._sql_management_client_enums import DatabaseIdentityType
+from ._sql_management_client_enums import DatabaseKeyType
+from ._sql_management_client_enums import DatabaseLicenseType
+from ._sql_management_client_enums import DatabaseReadScale
+from ._sql_management_client_enums import DatabaseState
+from ._sql_management_client_enums import DatabaseStatus
+from ._sql_management_client_enums import DayOfWeek
+from ._sql_management_client_enums import DevOpsAuditingSettingsName
+from ._sql_management_client_enums import DiffBackupIntervalInHours
+from ._sql_management_client_enums import DtcName
+from ._sql_management_client_enums import ElasticPoolLicenseType
+from ._sql_management_client_enums import ElasticPoolState
+from ._sql_management_client_enums import EncryptionProtectorName
+from ._sql_management_client_enums import ExternalGovernanceStatus
+from ._sql_management_client_enums import FailoverGroupDatabasesSecondaryType
+from ._sql_management_client_enums import FailoverGroupReplicationRole
+from ._sql_management_client_enums import FailoverModeType
+from ._sql_management_client_enums import FailoverType
+from ._sql_management_client_enums import FreeLimitExhaustionBehavior
+from ._sql_management_client_enums import FreemiumType
+from ._sql_management_client_enums import GeoBackupPolicyName
+from ._sql_management_client_enums import GeoBackupPolicyState
+from ._sql_management_client_enums import HybridSecondaryUsage
+from ._sql_management_client_enums import HybridSecondaryUsageDetected
+from ._sql_management_client_enums import IdentityType
+from ._sql_management_client_enums import ImplementationMethod
+from ._sql_management_client_enums import InstanceFailoverGroupReplicationRole
+from ._sql_management_client_enums import InstancePoolLicenseType
+from ._sql_management_client_enums import InstanceRole
+from ._sql_management_client_enums import IsRetryable
+from ._sql_management_client_enums import JobAgentState
+from ._sql_management_client_enums import JobExecutionLifecycle
+from ._sql_management_client_enums import JobScheduleType
+from ._sql_management_client_enums import JobStepActionSource
+from ._sql_management_client_enums import JobStepActionType
+from ._sql_management_client_enums import JobStepOutputType
+from ._sql_management_client_enums import JobTargetGroupMembershipType
+from ._sql_management_client_enums import JobTargetType
+from ._sql_management_client_enums import LedgerDigestUploadsName
+from ._sql_management_client_enums import LedgerDigestUploadsState
+from ._sql_management_client_enums import LinkRole
+from ._sql_management_client_enums import LogSizeUnit
+from ._sql_management_client_enums import LongTermRetentionPolicyName
+from ._sql_management_client_enums import ManagedDatabaseCreateMode
+from ._sql_management_client_enums import ManagedDatabaseStatus
+from ._sql_management_client_enums import ManagedInstanceAdministratorType
+from ._sql_management_client_enums import ManagedInstanceDatabaseFormat
+from ._sql_management_client_enums import ManagedInstanceLicenseType
+from ._sql_management_client_enums import ManagedInstanceLongTermRetentionPolicyName
+from ._sql_management_client_enums import ManagedInstanceProxyOverride
+from ._sql_management_client_enums import ManagedLedgerDigestUploadsName
+from ._sql_management_client_enums import ManagedLedgerDigestUploadsState
+from ._sql_management_client_enums import ManagedServerCreateMode
+from ._sql_management_client_enums import ManagedShortTermRetentionPolicyName
+from ._sql_management_client_enums import ManagementOperationState
+from ._sql_management_client_enums import MaxSizeUnit
+from ._sql_management_client_enums import MetricType
+from ._sql_management_client_enums import MinimalTlsVersion
+from ._sql_management_client_enums import MoveOperationMode
+from ._sql_management_client_enums import OperationMode
+from ._sql_management_client_enums import OperationOrigin
+from ._sql_management_client_enums import PauseDelayTimeUnit
+from ._sql_management_client_enums import PerformanceLevelUnit
+from ._sql_management_client_enums import Phase
+from ._sql_management_client_enums import PrimaryAggregationType
+from ._sql_management_client_enums import PrincipalType
+from ._sql_management_client_enums import PrivateEndpointProvisioningState
+from ._sql_management_client_enums import PrivateLinkServiceConnectionStateActionsRequire
+from ._sql_management_client_enums import PrivateLinkServiceConnectionStateStatus
+from ._sql_management_client_enums import ProvisioningState
+from ._sql_management_client_enums import QueryMetricUnitType
+from ._sql_management_client_enums import QueryTimeGrainType
+from ._sql_management_client_enums import ReadOnlyEndpointFailoverPolicy
+from ._sql_management_client_enums import ReadWriteEndpointFailoverPolicy
+from ._sql_management_client_enums import RecommendedActionCurrentState
+from ._sql_management_client_enums import RecommendedActionInitiatedBy
+from ._sql_management_client_enums import RecommendedSensitivityLabelUpdateKind
+from ._sql_management_client_enums import ReplicaConnectedState
+from ._sql_management_client_enums import ReplicaSynchronizationHealth
+from ._sql_management_client_enums import ReplicaType
+from ._sql_management_client_enums import ReplicationLinkType
+from ._sql_management_client_enums import ReplicationModeType
+from ._sql_management_client_enums import ReplicationRole
+from ._sql_management_client_enums import ReplicationState
+from ._sql_management_client_enums import RestoreDetailsName
+from ._sql_management_client_enums import RestorePointType
+from ._sql_management_client_enums import RoleChangeType
+from ._sql_management_client_enums import RuleSeverity
+from ._sql_management_client_enums import RuleStatus
+from ._sql_management_client_enums import RuleType
+from ._sql_management_client_enums import SampleName
+from ._sql_management_client_enums import SecondaryInstanceType
+from ._sql_management_client_enums import SecondaryType
+from ._sql_management_client_enums import SecurityAlertPolicyName
+from ._sql_management_client_enums import SecurityAlertPolicyState
+from ._sql_management_client_enums import SecurityAlertsPolicyState
+from ._sql_management_client_enums import SecurityEventType
+from ._sql_management_client_enums import SeedingModeType
+from ._sql_management_client_enums import SensitivityLabelRank
+from ._sql_management_client_enums import SensitivityLabelSource
+from ._sql_management_client_enums import SensitivityLabelUpdateKind
+from ._sql_management_client_enums import ServerConfigurationOptionName
+from ._sql_management_client_enums import ServerConnectionType
+from ._sql_management_client_enums import ServerKeyType
+from ._sql_management_client_enums import ServerNetworkAccessFlag
+from ._sql_management_client_enums import ServerPublicNetworkAccessFlag
+from ._sql_management_client_enums import ServerTrustGroupPropertiesTrustScopesItem
+from ._sql_management_client_enums import ServerWorkspaceFeature
+from ._sql_management_client_enums import ServiceObjectiveName
+from ._sql_management_client_enums import ServicePrincipalType
+from ._sql_management_client_enums import ShortTermRetentionPolicyName
+from ._sql_management_client_enums import SqlAgentConfigurationPropertiesState
+from ._sql_management_client_enums import SqlVulnerabilityAssessmentName
+from ._sql_management_client_enums import SqlVulnerabilityAssessmentState
+from ._sql_management_client_enums import StartStopScheduleName
+from ._sql_management_client_enums import StorageCapabilityStorageAccountType
+from ._sql_management_client_enums import StorageKeyType
+from ._sql_management_client_enums import SyncAgentState
+from ._sql_management_client_enums import SyncConflictResolutionPolicy
+from ._sql_management_client_enums import SyncDirection
+from ._sql_management_client_enums import SyncGroupLogType
+from ._sql_management_client_enums import SyncGroupState
+from ._sql_management_client_enums import SyncGroupsType
+from ._sql_management_client_enums import SyncMemberDbType
+from ._sql_management_client_enums import SyncMemberState
+from ._sql_management_client_enums import TableTemporalType
+from ._sql_management_client_enums import TransparentDataEncryptionName
+from ._sql_management_client_enums import TransparentDataEncryptionState
+from ._sql_management_client_enums import UnitDefinitionType
+from ._sql_management_client_enums import UnitType
+from ._sql_management_client_enums import UpsertManagedServerOperationStepStatus
+from ._sql_management_client_enums import VirtualNetworkRuleState
+from ._sql_management_client_enums import VulnerabilityAssessmentName
+from ._sql_management_client_enums import VulnerabilityAssessmentPolicyBaselineName
+from ._sql_management_client_enums import VulnerabilityAssessmentScanState
+from ._sql_management_client_enums import VulnerabilityAssessmentScanTriggerType
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'AdministratorListResult',
-    'Advisor',
-    'AutoPauseDelayTimeRange',
-    'AutomaticTuningOptions',
-    'AutomaticTuningServerOptions',
-    'AzureADOnlyAuthListResult',
-    'BackupShortTermRetentionPolicy',
-    'BackupShortTermRetentionPolicyListResult',
-    'CheckNameAvailabilityRequest',
-    'CheckNameAvailabilityResponse',
-    'CompleteDatabaseRestoreDefinition',
-    'CopyLongTermRetentionBackupParameters',
-    'CreateDatabaseRestorePointDefinition',
-    'DataMaskingPolicy',
-    'DataMaskingRule',
-    'DataMaskingRuleListResult',
-    'DataWarehouseUserActivities',
-    'DataWarehouseUserActivitiesListResult',
-    'Database',
-    'DatabaseAutomaticTuning',
-    'DatabaseBlobAuditingPolicy',
-    'DatabaseBlobAuditingPolicyListResult',
-    'DatabaseColumn',
-    'DatabaseColumnListResult',
-    'DatabaseExtensions',
-    'DatabaseIdentity',
-    'DatabaseListResult',
-    'DatabaseOperation',
-    'DatabaseOperationListResult',
-    'DatabaseSchema',
-    'DatabaseSchemaListResult',
-    'DatabaseSecurityAlertListResult',
-    'DatabaseSecurityAlertPolicy',
-    'DatabaseTable',
-    'DatabaseTableListResult',
-    'DatabaseUpdate',
-    'DatabaseUsage',
-    'DatabaseUsageListResult',
-    'DatabaseUserIdentity',
-    'DatabaseVulnerabilityAssessment',
-    'DatabaseVulnerabilityAssessmentListResult',
-    'DatabaseVulnerabilityAssessmentRuleBaseline',
-    'DatabaseVulnerabilityAssessmentRuleBaselineItem',
-    'DatabaseVulnerabilityAssessmentScansExport',
-    'Delegation',
-    'DeletedServer',
-    'DeletedServerListResult',
-    'DistributedAvailabilityGroup',
-    'DistributedAvailabilityGroupsListResult',
-    'EditionCapability',
-    'ElasticPool',
-    'ElasticPoolActivity',
-    'ElasticPoolActivityListResult',
-    'ElasticPoolDatabaseActivity',
-    'ElasticPoolDatabaseActivityListResult',
-    'ElasticPoolEditionCapability',
-    'ElasticPoolListResult',
-    'ElasticPoolOperation',
-    'ElasticPoolOperationListResult',
-    'ElasticPoolPerDatabaseMaxPerformanceLevelCapability',
-    'ElasticPoolPerDatabaseMinPerformanceLevelCapability',
-    'ElasticPoolPerDatabaseSettings',
-    'ElasticPoolPerformanceLevelCapability',
-    'ElasticPoolUpdate',
-    'EncryptionProtector',
-    'EncryptionProtectorListResult',
-    'ExportDatabaseDefinition',
-    'ExtendedDatabaseBlobAuditingPolicy',
-    'ExtendedDatabaseBlobAuditingPolicyListResult',
-    'ExtendedServerBlobAuditingPolicy',
-    'ExtendedServerBlobAuditingPolicyListResult',
-    'FailoverGroup',
-    'FailoverGroupListResult',
-    'FailoverGroupReadOnlyEndpoint',
-    'FailoverGroupReadWriteEndpoint',
-    'FailoverGroupUpdate',
-    'FirewallRule',
-    'FirewallRuleList',
-    'FirewallRuleListResult',
-    'GeoBackupPolicy',
-    'GeoBackupPolicyListResult',
-    'IPv6FirewallRule',
-    'IPv6FirewallRuleList',
-    'IPv6FirewallRuleListResult',
-    'ImportExistingDatabaseDefinition',
-    'ImportExportExtensionsOperationListResult',
-    'ImportExportExtensionsOperationResult',
-    'ImportExportOperationResult',
-    'ImportNewDatabaseDefinition',
-    'InstanceFailoverGroup',
-    'InstanceFailoverGroupListResult',
-    'InstanceFailoverGroupReadOnlyEndpoint',
-    'InstanceFailoverGroupReadWriteEndpoint',
-    'InstancePool',
-    'InstancePoolEditionCapability',
-    'InstancePoolFamilyCapability',
-    'InstancePoolListResult',
-    'InstancePoolUpdate',
-    'InstancePoolVcoresCapability',
-    'Job',
-    'JobAgent',
-    'JobAgentListResult',
-    'JobAgentUpdate',
-    'JobCredential',
-    'JobCredentialListResult',
-    'JobExecution',
-    'JobExecutionListResult',
-    'JobExecutionTarget',
-    'JobListResult',
-    'JobSchedule',
-    'JobStep',
-    'JobStepAction',
-    'JobStepExecutionOptions',
-    'JobStepListResult',
-    'JobStepOutput',
-    'JobTarget',
-    'JobTargetGroup',
-    'JobTargetGroupListResult',
-    'JobVersion',
-    'JobVersionListResult',
-    'LedgerDigestUploads',
-    'LedgerDigestUploadsListResult',
-    'LicenseTypeCapability',
-    'LocationCapabilities',
-    'LogSizeCapability',
-    'LogicalDatabaseTransparentDataEncryption',
-    'LogicalDatabaseTransparentDataEncryptionListResult',
-    'LogicalServerSecurityAlertPolicyListResult',
-    'LongTermRetentionBackup',
-    'LongTermRetentionBackupListResult',
-    'LongTermRetentionBackupOperationResult',
-    'LongTermRetentionPolicy',
-    'LongTermRetentionPolicyListResult',
-    'MaintenanceConfigurationCapability',
-    'MaintenanceWindowOptions',
-    'MaintenanceWindowTimeRange',
-    'MaintenanceWindows',
-    'ManagedBackupShortTermRetentionPolicy',
-    'ManagedBackupShortTermRetentionPolicyListResult',
-    'ManagedDatabase',
-    'ManagedDatabaseListResult',
-    'ManagedDatabaseRestoreDetailsResult',
-    'ManagedDatabaseSecurityAlertPolicy',
-    'ManagedDatabaseSecurityAlertPolicyListResult',
-    'ManagedDatabaseUpdate',
-    'ManagedInstance',
-    'ManagedInstanceAdministrator',
-    'ManagedInstanceAdministratorListResult',
-    'ManagedInstanceAzureADOnlyAuthListResult',
-    'ManagedInstanceAzureADOnlyAuthentication',
-    'ManagedInstanceEditionCapability',
-    'ManagedInstanceEncryptionProtector',
-    'ManagedInstanceEncryptionProtectorListResult',
-    'ManagedInstanceExternalAdministrator',
-    'ManagedInstanceFamilyCapability',
-    'ManagedInstanceKey',
-    'ManagedInstanceKeyListResult',
-    'ManagedInstanceListResult',
-    'ManagedInstanceLongTermRetentionBackup',
-    'ManagedInstanceLongTermRetentionBackupListResult',
-    'ManagedInstanceLongTermRetentionPolicy',
-    'ManagedInstanceLongTermRetentionPolicyListResult',
-    'ManagedInstanceMaintenanceConfigurationCapability',
-    'ManagedInstanceOperation',
-    'ManagedInstanceOperationListResult',
-    'ManagedInstanceOperationParametersPair',
-    'ManagedInstanceOperationSteps',
-    'ManagedInstancePairInfo',
-    'ManagedInstancePecProperty',
-    'ManagedInstancePrivateEndpointConnection',
-    'ManagedInstancePrivateEndpointConnectionListResult',
-    'ManagedInstancePrivateEndpointConnectionProperties',
-    'ManagedInstancePrivateEndpointProperty',
-    'ManagedInstancePrivateLink',
-    'ManagedInstancePrivateLinkListResult',
-    'ManagedInstancePrivateLinkProperties',
-    'ManagedInstancePrivateLinkServiceConnectionStateProperty',
-    'ManagedInstanceQuery',
-    'ManagedInstanceQueryStatistics',
-    'ManagedInstanceUpdate',
-    'ManagedInstanceVcoresCapability',
-    'ManagedInstanceVersionCapability',
-    'ManagedInstanceVulnerabilityAssessment',
-    'ManagedInstanceVulnerabilityAssessmentListResult',
-    'ManagedServerSecurityAlertPolicy',
-    'ManagedServerSecurityAlertPolicyListResult',
-    'ManagedTransparentDataEncryption',
-    'ManagedTransparentDataEncryptionListResult',
-    'MaxSizeCapability',
-    'MaxSizeRangeCapability',
-    'Metric',
-    'MetricAvailability',
-    'MetricDefinition',
-    'MetricDefinitionListResult',
-    'MetricListResult',
-    'MetricName',
-    'MetricValue',
-    'MinCapacityCapability',
-    'Name',
-    'NetworkIsolationSettings',
-    'Operation',
-    'OperationDisplay',
-    'OperationImpact',
-    'OperationListResult',
-    'OutboundFirewallRule',
-    'OutboundFirewallRuleListResult',
-    'PartnerInfo',
-    'PartnerRegionInfo',
-    'PerformanceLevelCapability',
-    'PrivateEndpointConnection',
-    'PrivateEndpointConnectionListResult',
-    'PrivateEndpointConnectionProperties',
-    'PrivateEndpointConnectionRequestStatus',
-    'PrivateEndpointProperty',
-    'PrivateLinkResource',
-    'PrivateLinkResourceListResult',
-    'PrivateLinkResourceProperties',
-    'PrivateLinkServiceConnectionStateProperty',
-    'ProxyResource',
-    'ProxyResourceWithWritableName',
-    'QueryMetricInterval',
-    'QueryMetricProperties',
-    'QueryStatistics',
-    'QueryStatisticsProperties',
-    'ReadScaleCapability',
-    'RecommendedAction',
-    'RecommendedActionErrorInfo',
-    'RecommendedActionImpactRecord',
-    'RecommendedActionImplementationInfo',
-    'RecommendedActionMetricInfo',
-    'RecommendedActionStateInfo',
-    'RecommendedSensitivityLabelUpdate',
-    'RecommendedSensitivityLabelUpdateList',
-    'RecoverableDatabase',
-    'RecoverableDatabaseListResult',
-    'RecoverableManagedDatabase',
-    'RecoverableManagedDatabaseListResult',
-    'ReplicationLink',
-    'ReplicationLinkListResult',
-    'Resource',
-    'ResourceIdentity',
-    'ResourceMoveDefinition',
-    'ResourceWithWritableName',
-    'RestorableDroppedDatabase',
-    'RestorableDroppedDatabaseListResult',
-    'RestorableDroppedManagedDatabase',
-    'RestorableDroppedManagedDatabaseListResult',
-    'RestorePoint',
-    'RestorePointListResult',
-    'SecurityEvent',
-    'SecurityEventCollection',
-    'SecurityEventSqlInjectionAdditionalProperties',
-    'SecurityEventsFilterParameters',
-    'SensitivityLabel',
-    'SensitivityLabelListResult',
-    'SensitivityLabelUpdate',
-    'SensitivityLabelUpdateList',
-    'Server',
-    'ServerAutomaticTuning',
-    'ServerAzureADAdministrator',
-    'ServerAzureADOnlyAuthentication',
-    'ServerBlobAuditingPolicy',
-    'ServerBlobAuditingPolicyListResult',
-    'ServerCommunicationLink',
-    'ServerCommunicationLinkListResult',
-    'ServerConnectionPolicy',
-    'ServerConnectionPolicyListResult',
-    'ServerDevOpsAuditSettingsListResult',
-    'ServerDevOpsAuditingSettings',
-    'ServerDnsAlias',
-    'ServerDnsAliasAcquisition',
-    'ServerDnsAliasListResult',
-    'ServerExternalAdministrator',
-    'ServerInfo',
-    'ServerKey',
-    'ServerKeyListResult',
-    'ServerListResult',
-    'ServerOperation',
-    'ServerOperationListResult',
-    'ServerPrivateEndpointConnection',
-    'ServerSecurityAlertPolicy',
-    'ServerTrustCertificate',
-    'ServerTrustCertificatesListResult',
-    'ServerTrustGroup',
-    'ServerTrustGroupListResult',
-    'ServerUpdate',
-    'ServerUsage',
-    'ServerUsageListResult',
-    'ServerVersionCapability',
-    'ServerVulnerabilityAssessment',
-    'ServerVulnerabilityAssessmentListResult',
-    'ServiceObjective',
-    'ServiceObjectiveCapability',
-    'ServiceObjectiveListResult',
-    'ServicePrincipal',
-    'Sku',
-    'SloUsageMetric',
-    'SqlAgentConfiguration',
-    'StorageCapability',
-    'SubscriptionUsage',
-    'SubscriptionUsageListResult',
-    'SyncAgent',
-    'SyncAgentKeyProperties',
-    'SyncAgentLinkedDatabase',
-    'SyncAgentLinkedDatabaseListResult',
-    'SyncAgentListResult',
-    'SyncDatabaseIdListResult',
-    'SyncDatabaseIdProperties',
-    'SyncFullSchemaProperties',
-    'SyncFullSchemaPropertiesListResult',
-    'SyncFullSchemaTable',
-    'SyncFullSchemaTableColumn',
-    'SyncGroup',
-    'SyncGroupListResult',
-    'SyncGroupLogListResult',
-    'SyncGroupLogProperties',
-    'SyncGroupSchema',
-    'SyncGroupSchemaTable',
-    'SyncGroupSchemaTableColumn',
-    'SyncMember',
-    'SyncMemberListResult',
-    'SystemData',
-    'TdeCertificate',
-    'TimeZone',
-    'TimeZoneListResult',
-    'TopQueries',
-    'TopQueriesListResult',
-    'TrackedResource',
-    'UnlinkParameters',
-    'UpdateLongTermRetentionBackupParameters',
-    'UpdateManagedInstanceDnsServersOperation',
-    'UpsertManagedServerOperationParameters',
-    'UpsertManagedServerOperationStep',
-    'Usage',
-    'UsageListResult',
-    'UserIdentity',
-    'VirtualCluster',
-    'VirtualClusterListResult',
-    'VirtualClusterUpdate',
-    'VirtualNetworkRule',
-    'VirtualNetworkRuleListResult',
-    'VulnerabilityAssessmentRecurringScansProperties',
-    'VulnerabilityAssessmentScanError',
-    'VulnerabilityAssessmentScanRecord',
-    'VulnerabilityAssessmentScanRecordListResult',
-    'WorkloadClassifier',
-    'WorkloadClassifierListResult',
-    'WorkloadGroup',
-    'WorkloadGroupListResult',
-    'AdministratorName',
-    'AdministratorType',
-    'AdvisorStatus',
-    'AggregationFunctionType',
-    'AuthenticationName',
-    'AutoExecuteStatus',
-    'AutoExecuteStatusInheritedFrom',
-    'AutomaticTuningDisabledReason',
-    'AutomaticTuningMode',
-    'AutomaticTuningOptionModeActual',
-    'AutomaticTuningOptionModeDesired',
-    'AutomaticTuningServerMode',
-    'AutomaticTuningServerReason',
-    'BackupStorageRedundancy',
-    'BlobAuditingPolicyState',
-    'CapabilityGroup',
-    'CapabilityStatus',
-    'CatalogCollationType',
-    'CheckNameAvailabilityReason',
-    'ColumnDataType',
-    'ConnectionPolicyName',
-    'CreateMode',
-    'CreatedByType',
-    'DataMaskingFunction',
-    'DataMaskingRuleState',
-    'DataMaskingState',
-    'DataWarehouseUserActivityName',
-    'DatabaseIdentityType',
-    'DatabaseLicenseType',
-    'DatabaseReadScale',
-    'DatabaseState',
-    'DatabaseStatus',
-    'DayOfWeek',
-    'DiffBackupIntervalInHours',
-    'DnsRefreshConfigurationPropertiesStatus',
-    'ElasticPoolLicenseType',
-    'ElasticPoolState',
-    'EncryptionProtectorName',
-    'FailoverGroupReplicationRole',
-    'GeoBackupPolicyName',
-    'GeoBackupPolicyState',
-    'IdentityType',
-    'ImplementationMethod',
-    'InstanceFailoverGroupReplicationRole',
-    'InstancePoolLicenseType',
-    'IsRetryable',
-    'JobAgentState',
-    'JobExecutionLifecycle',
-    'JobScheduleType',
-    'JobStepActionSource',
-    'JobStepActionType',
-    'JobStepOutputType',
-    'JobTargetGroupMembershipType',
-    'JobTargetType',
-    'LedgerDigestUploadsName',
-    'LedgerDigestUploadsState',
-    'LogSizeUnit',
-    'LongTermRetentionPolicyName',
-    'ManagedDatabaseCreateMode',
-    'ManagedDatabaseStatus',
-    'ManagedInstanceAdministratorType',
-    'ManagedInstanceLicenseType',
-    'ManagedInstanceLongTermRetentionPolicyName',
-    'ManagedInstancePropertiesProvisioningState',
-    'ManagedInstanceProxyOverride',
-    'ManagedServerCreateMode',
-    'ManagedShortTermRetentionPolicyName',
-    'ManagementOperationState',
-    'MaxSizeUnit',
-    'MetricType',
-    'OperationMode',
-    'OperationOrigin',
-    'PauseDelayTimeUnit',
-    'PerformanceLevelUnit',
-    'PrimaryAggregationType',
-    'PrincipalType',
-    'PrivateEndpointProvisioningState',
-    'PrivateLinkServiceConnectionStateActionsRequire',
-    'PrivateLinkServiceConnectionStateStatus',
-    'ProvisioningState',
-    'QueryMetricUnitType',
-    'QueryTimeGrainType',
-    'ReadOnlyEndpointFailoverPolicy',
-    'ReadWriteEndpointFailoverPolicy',
-    'RecommendedActionCurrentState',
-    'RecommendedActionInitiatedBy',
-    'RecommendedSensitivityLabelUpdateKind',
-    'ReplicaType',
-    'ReplicationLinkType',
-    'ReplicationMode',
-    'ReplicationRole',
-    'ReplicationState',
-    'RestoreDetailsName',
-    'RestorePointType',
-    'SampleName',
-    'SecondaryType',
-    'SecurityAlertPolicyName',
-    'SecurityAlertPolicyState',
-    'SecurityAlertsPolicyState',
-    'SecurityEventType',
-    'SensitivityLabelRank',
-    'SensitivityLabelSource',
-    'SensitivityLabelUpdateKind',
-    'ServerConnectionType',
-    'ServerKeyType',
-    'ServerNetworkAccessFlag',
-    'ServerTrustGroupPropertiesTrustScopesItem',
-    'ServerWorkspaceFeature',
-    'ServiceObjectiveName',
-    'ServicePrincipalType',
-    'ShortTermRetentionPolicyName',
-    'SqlAgentConfigurationPropertiesState',
-    'StorageCapabilityStorageAccountType',
-    'StorageKeyType',
-    'SyncAgentState',
-    'SyncConflictResolutionPolicy',
-    'SyncDirection',
-    'SyncGroupLogType',
-    'SyncGroupState',
-    'SyncGroupsType',
-    'SyncMemberDbType',
-    'SyncMemberState',
-    'TableTemporalType',
-    'TransparentDataEncryptionName',
-    'TransparentDataEncryptionState',
-    'UnitDefinitionType',
-    'UnitType',
-    'UpsertManagedServerOperationStepStatus',
-    'VirtualNetworkRuleState',
-    'VulnerabilityAssessmentName',
-    'VulnerabilityAssessmentPolicyBaselineName',
-    'VulnerabilityAssessmentScanState',
-    'VulnerabilityAssessmentScanTriggerType',
+    "AdministratorListResult",
+    "Advisor",
+    "AutoPauseDelayTimeRange",
+    "AutomaticTuningOptions",
+    "AutomaticTuningServerOptions",
+    "AzureADOnlyAuthListResult",
+    "BackupShortTermRetentionPolicy",
+    "BackupShortTermRetentionPolicyListResult",
+    "Baseline",
+    "BaselineAdjustedResult",
+    "BenchmarkReference",
+    "CertificateInfo",
+    "ChangeLongTermRetentionBackupAccessTierParameters",
+    "CheckNameAvailabilityRequest",
+    "CheckNameAvailabilityResponse",
+    "CompleteDatabaseRestoreDefinition",
+    "CopyLongTermRetentionBackupParameters",
+    "CreateDatabaseRestorePointDefinition",
+    "DataMaskingPolicy",
+    "DataMaskingRule",
+    "DataMaskingRuleListResult",
+    "DataWarehouseUserActivities",
+    "DataWarehouseUserActivitiesListResult",
+    "Database",
+    "DatabaseAdvancedThreatProtection",
+    "DatabaseAdvancedThreatProtectionListResult",
+    "DatabaseAutomaticTuning",
+    "DatabaseBlobAuditingPolicy",
+    "DatabaseBlobAuditingPolicyListResult",
+    "DatabaseColumn",
+    "DatabaseColumnListResult",
+    "DatabaseExtensions",
+    "DatabaseIdentity",
+    "DatabaseKey",
+    "DatabaseListResult",
+    "DatabaseOperation",
+    "DatabaseOperationListResult",
+    "DatabaseSchema",
+    "DatabaseSchemaListResult",
+    "DatabaseSecurityAlertListResult",
+    "DatabaseSecurityAlertPolicy",
+    "DatabaseSqlVulnerabilityAssessmentBaselineSet",
+    "DatabaseSqlVulnerabilityAssessmentBaselineSetListResult",
+    "DatabaseSqlVulnerabilityAssessmentRuleBaseline",
+    "DatabaseSqlVulnerabilityAssessmentRuleBaselineInput",
+    "DatabaseSqlVulnerabilityAssessmentRuleBaselineListInput",
+    "DatabaseSqlVulnerabilityAssessmentRuleBaselineListResult",
+    "DatabaseTable",
+    "DatabaseTableListResult",
+    "DatabaseUpdate",
+    "DatabaseUsage",
+    "DatabaseUsageListResult",
+    "DatabaseUserIdentity",
+    "DatabaseVulnerabilityAssessment",
+    "DatabaseVulnerabilityAssessmentListResult",
+    "DatabaseVulnerabilityAssessmentRuleBaseline",
+    "DatabaseVulnerabilityAssessmentRuleBaselineItem",
+    "DatabaseVulnerabilityAssessmentScansExport",
+    "DeletedServer",
+    "DeletedServerListResult",
+    "DistributedAvailabilityGroup",
+    "DistributedAvailabilityGroupDatabase",
+    "DistributedAvailabilityGroupSetRole",
+    "DistributedAvailabilityGroupsFailoverRequest",
+    "DistributedAvailabilityGroupsListResult",
+    "EditionCapability",
+    "ElasticPool",
+    "ElasticPoolActivity",
+    "ElasticPoolActivityListResult",
+    "ElasticPoolDatabaseActivity",
+    "ElasticPoolDatabaseActivityListResult",
+    "ElasticPoolEditionCapability",
+    "ElasticPoolListResult",
+    "ElasticPoolOperation",
+    "ElasticPoolOperationListResult",
+    "ElasticPoolPerDatabaseMaxPerformanceLevelCapability",
+    "ElasticPoolPerDatabaseMinPerformanceLevelCapability",
+    "ElasticPoolPerDatabaseSettings",
+    "ElasticPoolPerformanceLevelCapability",
+    "ElasticPoolUpdate",
+    "EncryptionProtector",
+    "EncryptionProtectorListResult",
+    "EndpointCertificate",
+    "EndpointCertificateListResult",
+    "EndpointDependency",
+    "EndpointDetail",
+    "ErrorAdditionalInfo",
+    "ErrorDetail",
+    "ErrorResponse",
+    "ExportDatabaseDefinition",
+    "ExtendedDatabaseBlobAuditingPolicy",
+    "ExtendedDatabaseBlobAuditingPolicyListResult",
+    "ExtendedServerBlobAuditingPolicy",
+    "ExtendedServerBlobAuditingPolicyListResult",
+    "FailoverGroup",
+    "FailoverGroupListResult",
+    "FailoverGroupReadOnlyEndpoint",
+    "FailoverGroupReadWriteEndpoint",
+    "FailoverGroupUpdate",
+    "FirewallRule",
+    "FirewallRuleList",
+    "FirewallRuleListResult",
+    "GeoBackupPolicy",
+    "GeoBackupPolicyListResult",
+    "IPv6FirewallRule",
+    "IPv6FirewallRuleListResult",
+    "ImportExistingDatabaseDefinition",
+    "ImportExportExtensionsOperationListResult",
+    "ImportExportExtensionsOperationResult",
+    "ImportExportOperationResult",
+    "ImportNewDatabaseDefinition",
+    "InstanceFailoverGroup",
+    "InstanceFailoverGroupListResult",
+    "InstanceFailoverGroupReadOnlyEndpoint",
+    "InstanceFailoverGroupReadWriteEndpoint",
+    "InstancePool",
+    "InstancePoolEditionCapability",
+    "InstancePoolFamilyCapability",
+    "InstancePoolListResult",
+    "InstancePoolUpdate",
+    "InstancePoolVcoresCapability",
+    "Job",
+    "JobAgent",
+    "JobAgentListResult",
+    "JobAgentUpdate",
+    "JobCredential",
+    "JobCredentialListResult",
+    "JobExecution",
+    "JobExecutionListResult",
+    "JobExecutionTarget",
+    "JobListResult",
+    "JobPrivateEndpoint",
+    "JobPrivateEndpointListResult",
+    "JobSchedule",
+    "JobStep",
+    "JobStepAction",
+    "JobStepExecutionOptions",
+    "JobStepListResult",
+    "JobStepOutput",
+    "JobTarget",
+    "JobTargetGroup",
+    "JobTargetGroupListResult",
+    "JobVersion",
+    "JobVersionListResult",
+    "LedgerDigestUploads",
+    "LedgerDigestUploadsListResult",
+    "LicenseTypeCapability",
+    "LocationCapabilities",
+    "LogSizeCapability",
+    "LogicalDatabaseTransparentDataEncryption",
+    "LogicalDatabaseTransparentDataEncryptionListResult",
+    "LogicalServerAdvancedThreatProtectionListResult",
+    "LogicalServerSecurityAlertPolicyListResult",
+    "LongTermRetentionBackup",
+    "LongTermRetentionBackupListResult",
+    "LongTermRetentionBackupOperationResult",
+    "LongTermRetentionPolicy",
+    "LongTermRetentionPolicyListResult",
+    "MaintenanceConfigurationCapability",
+    "MaintenanceWindowOptions",
+    "MaintenanceWindowTimeRange",
+    "MaintenanceWindows",
+    "ManagedBackupShortTermRetentionPolicy",
+    "ManagedBackupShortTermRetentionPolicyListResult",
+    "ManagedDatabase",
+    "ManagedDatabaseAdvancedThreatProtection",
+    "ManagedDatabaseAdvancedThreatProtectionListResult",
+    "ManagedDatabaseListResult",
+    "ManagedDatabaseMoveDefinition",
+    "ManagedDatabaseMoveOperationListResult",
+    "ManagedDatabaseMoveOperationResult",
+    "ManagedDatabaseRestoreDetailsBackupSetProperties",
+    "ManagedDatabaseRestoreDetailsResult",
+    "ManagedDatabaseRestoreDetailsUnrestorableFileProperties",
+    "ManagedDatabaseSecurityAlertPolicy",
+    "ManagedDatabaseSecurityAlertPolicyListResult",
+    "ManagedDatabaseStartMoveDefinition",
+    "ManagedDatabaseUpdate",
+    "ManagedInstance",
+    "ManagedInstanceAdministrator",
+    "ManagedInstanceAdministratorListResult",
+    "ManagedInstanceAdvancedThreatProtection",
+    "ManagedInstanceAdvancedThreatProtectionListResult",
+    "ManagedInstanceAzureADOnlyAuthListResult",
+    "ManagedInstanceAzureADOnlyAuthentication",
+    "ManagedInstanceDtc",
+    "ManagedInstanceDtcListResult",
+    "ManagedInstanceDtcSecuritySettings",
+    "ManagedInstanceDtcTransactionManagerCommunicationSettings",
+    "ManagedInstanceEditionCapability",
+    "ManagedInstanceEncryptionProtector",
+    "ManagedInstanceEncryptionProtectorListResult",
+    "ManagedInstanceExternalAdministrator",
+    "ManagedInstanceFamilyCapability",
+    "ManagedInstanceKey",
+    "ManagedInstanceKeyListResult",
+    "ManagedInstanceListResult",
+    "ManagedInstanceLongTermRetentionBackup",
+    "ManagedInstanceLongTermRetentionBackupListResult",
+    "ManagedInstanceLongTermRetentionPolicy",
+    "ManagedInstanceLongTermRetentionPolicyListResult",
+    "ManagedInstanceMaintenanceConfigurationCapability",
+    "ManagedInstanceOperation",
+    "ManagedInstanceOperationListResult",
+    "ManagedInstanceOperationParametersPair",
+    "ManagedInstanceOperationSteps",
+    "ManagedInstancePairInfo",
+    "ManagedInstancePecProperty",
+    "ManagedInstancePrivateEndpointConnection",
+    "ManagedInstancePrivateEndpointConnectionListResult",
+    "ManagedInstancePrivateEndpointConnectionProperties",
+    "ManagedInstancePrivateEndpointProperty",
+    "ManagedInstancePrivateLink",
+    "ManagedInstancePrivateLinkListResult",
+    "ManagedInstancePrivateLinkProperties",
+    "ManagedInstancePrivateLinkServiceConnectionStateProperty",
+    "ManagedInstanceQuery",
+    "ManagedInstanceQueryStatistics",
+    "ManagedInstanceUpdate",
+    "ManagedInstanceVcoresCapability",
+    "ManagedInstanceVersionCapability",
+    "ManagedInstanceVulnerabilityAssessment",
+    "ManagedInstanceVulnerabilityAssessmentListResult",
+    "ManagedLedgerDigestUploads",
+    "ManagedLedgerDigestUploadsListResult",
+    "ManagedServerDnsAlias",
+    "ManagedServerDnsAliasAcquisition",
+    "ManagedServerDnsAliasCreation",
+    "ManagedServerDnsAliasListResult",
+    "ManagedServerSecurityAlertPolicy",
+    "ManagedServerSecurityAlertPolicyListResult",
+    "ManagedTransparentDataEncryption",
+    "ManagedTransparentDataEncryptionListResult",
+    "MaxSizeCapability",
+    "MaxSizeRangeCapability",
+    "Metric",
+    "MetricAvailability",
+    "MetricDefinition",
+    "MetricDefinitionListResult",
+    "MetricListResult",
+    "MetricName",
+    "MetricValue",
+    "MinCapacityCapability",
+    "Name",
+    "NetworkIsolationSettings",
+    "Operation",
+    "OperationDisplay",
+    "OperationImpact",
+    "OperationListResult",
+    "OutboundEnvironmentEndpoint",
+    "OutboundEnvironmentEndpointCollection",
+    "OutboundFirewallRule",
+    "OutboundFirewallRuleListResult",
+    "PartnerInfo",
+    "PartnerRegionInfo",
+    "PerformanceLevelCapability",
+    "PhaseDetails",
+    "PrivateEndpointConnection",
+    "PrivateEndpointConnectionListResult",
+    "PrivateEndpointConnectionProperties",
+    "PrivateEndpointConnectionRequestStatus",
+    "PrivateEndpointProperty",
+    "PrivateLinkResource",
+    "PrivateLinkResourceListResult",
+    "PrivateLinkResourceProperties",
+    "PrivateLinkServiceConnectionStateProperty",
+    "ProxyResource",
+    "ProxyResourceWithWritableName",
+    "QueryCheck",
+    "QueryMetricInterval",
+    "QueryMetricIntervalAutoGenerated",
+    "QueryMetricProperties",
+    "QueryStatistics",
+    "QueryStatisticsProperties",
+    "ReadScaleCapability",
+    "RecommendedAction",
+    "RecommendedActionErrorInfo",
+    "RecommendedActionImpactRecord",
+    "RecommendedActionImplementationInfo",
+    "RecommendedActionMetricInfo",
+    "RecommendedActionStateInfo",
+    "RecommendedSensitivityLabelUpdate",
+    "RecommendedSensitivityLabelUpdateList",
+    "RecoverableDatabase",
+    "RecoverableDatabaseListResult",
+    "RecoverableManagedDatabase",
+    "RecoverableManagedDatabaseListResult",
+    "RefreshExternalGovernanceStatusOperationResult",
+    "RefreshExternalGovernanceStatusOperationResultMI",
+    "Remediation",
+    "ReplicationLink",
+    "ReplicationLinkListResult",
+    "ReplicationLinkUpdate",
+    "Resource",
+    "ResourceIdentity",
+    "ResourceMoveDefinition",
+    "ResourceWithWritableName",
+    "RestorableDroppedDatabase",
+    "RestorableDroppedDatabaseListResult",
+    "RestorableDroppedManagedDatabase",
+    "RestorableDroppedManagedDatabaseListResult",
+    "RestorePoint",
+    "RestorePointListResult",
+    "SQLVulnerabilityAssessmentScanListResult",
+    "ScheduleItem",
+    "SecurityEvent",
+    "SecurityEventCollection",
+    "SecurityEventSqlInjectionAdditionalProperties",
+    "SecurityEventsFilterParameters",
+    "SensitivityLabel",
+    "SensitivityLabelListResult",
+    "SensitivityLabelUpdate",
+    "SensitivityLabelUpdateList",
+    "Server",
+    "ServerAdvancedThreatProtection",
+    "ServerAutomaticTuning",
+    "ServerAzureADAdministrator",
+    "ServerAzureADOnlyAuthentication",
+    "ServerBlobAuditingPolicy",
+    "ServerBlobAuditingPolicyListResult",
+    "ServerCommunicationLink",
+    "ServerCommunicationLinkListResult",
+    "ServerConfigurationOption",
+    "ServerConfigurationOptionListResult",
+    "ServerConnectionPolicy",
+    "ServerConnectionPolicyListResult",
+    "ServerDevOpsAuditSettingsListResult",
+    "ServerDevOpsAuditingSettings",
+    "ServerDnsAlias",
+    "ServerDnsAliasAcquisition",
+    "ServerDnsAliasListResult",
+    "ServerExternalAdministrator",
+    "ServerInfo",
+    "ServerKey",
+    "ServerKeyListResult",
+    "ServerListResult",
+    "ServerOperation",
+    "ServerOperationListResult",
+    "ServerPrivateEndpointConnection",
+    "ServerSecurityAlertPolicy",
+    "ServerTrustCertificate",
+    "ServerTrustCertificatesListResult",
+    "ServerTrustGroup",
+    "ServerTrustGroupListResult",
+    "ServerUpdate",
+    "ServerUsage",
+    "ServerUsageListResult",
+    "ServerVersionCapability",
+    "ServerVulnerabilityAssessment",
+    "ServerVulnerabilityAssessmentListResult",
+    "ServiceObjective",
+    "ServiceObjectiveCapability",
+    "ServiceObjectiveListResult",
+    "ServicePrincipal",
+    "Sku",
+    "SloUsageMetric",
+    "SqlAgentConfiguration",
+    "SqlVulnerabilityAssessment",
+    "SqlVulnerabilityAssessmentListResult",
+    "SqlVulnerabilityAssessmentScanError",
+    "SqlVulnerabilityAssessmentScanRecord",
+    "SqlVulnerabilityAssessmentScanRecordListResult",
+    "SqlVulnerabilityAssessmentScanResults",
+    "StartStopManagedInstanceSchedule",
+    "StartStopManagedInstanceScheduleListResult",
+    "StorageCapability",
+    "SubscriptionUsage",
+    "SubscriptionUsageListResult",
+    "SynapseLinkWorkspace",
+    "SynapseLinkWorkspaceInfoProperties",
+    "SynapseLinkWorkspaceListResult",
+    "SyncAgent",
+    "SyncAgentKeyProperties",
+    "SyncAgentLinkedDatabase",
+    "SyncAgentLinkedDatabaseListResult",
+    "SyncAgentListResult",
+    "SyncDatabaseIdListResult",
+    "SyncDatabaseIdProperties",
+    "SyncFullSchemaProperties",
+    "SyncFullSchemaPropertiesListResult",
+    "SyncFullSchemaTable",
+    "SyncFullSchemaTableColumn",
+    "SyncGroup",
+    "SyncGroupListResult",
+    "SyncGroupLogListResult",
+    "SyncGroupLogProperties",
+    "SyncGroupSchema",
+    "SyncGroupSchemaTable",
+    "SyncGroupSchemaTableColumn",
+    "SyncMember",
+    "SyncMemberListResult",
+    "SystemData",
+    "TdeCertificate",
+    "TimeZone",
+    "TimeZoneListResult",
+    "TopQueries",
+    "TopQueriesListResult",
+    "TrackedResource",
+    "UpdateLongTermRetentionBackupParameters",
+    "UpdateVirtualClusterDnsServersOperation",
+    "UpsertManagedServerOperationParameters",
+    "UpsertManagedServerOperationStep",
+    "Usage",
+    "UsageListResult",
+    "UserIdentity",
+    "VaRule",
+    "VirtualCluster",
+    "VirtualClusterListResult",
+    "VirtualClusterUpdate",
+    "VirtualNetworkRule",
+    "VirtualNetworkRuleListResult",
+    "VulnerabilityAssessmentRecurringScansProperties",
+    "VulnerabilityAssessmentScanError",
+    "VulnerabilityAssessmentScanRecord",
+    "VulnerabilityAssessmentScanRecordListResult",
+    "WorkloadClassifier",
+    "WorkloadClassifierListResult",
+    "WorkloadGroup",
+    "WorkloadGroupListResult",
+    "AdministratorName",
+    "AdministratorType",
+    "AdvancedThreatProtectionName",
+    "AdvancedThreatProtectionState",
+    "AdvisorStatus",
+    "AggregationFunctionType",
+    "AlwaysEncryptedEnclaveType",
+    "AuthMetadataLookupModes",
+    "AuthenticationName",
+    "AutoExecuteStatus",
+    "AutoExecuteStatusInheritedFrom",
+    "AutomaticTuningDisabledReason",
+    "AutomaticTuningMode",
+    "AutomaticTuningOptionModeActual",
+    "AutomaticTuningOptionModeDesired",
+    "AutomaticTuningServerMode",
+    "AutomaticTuningServerReason",
+    "AvailabilityZoneType",
+    "BackupStorageAccessTier",
+    "BackupStorageRedundancy",
+    "BaselineName",
+    "BlobAuditingPolicyState",
+    "CapabilityGroup",
+    "CapabilityStatus",
+    "CatalogCollationType",
+    "CheckNameAvailabilityReason",
+    "ColumnDataType",
+    "ConnectionPolicyName",
+    "CreateMode",
+    "CreatedByType",
+    "DNSRefreshOperationStatus",
+    "DataMaskingFunction",
+    "DataMaskingRuleState",
+    "DataMaskingState",
+    "DataWarehouseUserActivityName",
+    "DatabaseIdentityType",
+    "DatabaseKeyType",
+    "DatabaseLicenseType",
+    "DatabaseReadScale",
+    "DatabaseState",
+    "DatabaseStatus",
+    "DayOfWeek",
+    "DevOpsAuditingSettingsName",
+    "DiffBackupIntervalInHours",
+    "DtcName",
+    "ElasticPoolLicenseType",
+    "ElasticPoolState",
+    "EncryptionProtectorName",
+    "ExternalGovernanceStatus",
+    "FailoverGroupDatabasesSecondaryType",
+    "FailoverGroupReplicationRole",
+    "FailoverModeType",
+    "FailoverType",
+    "FreeLimitExhaustionBehavior",
+    "FreemiumType",
+    "GeoBackupPolicyName",
+    "GeoBackupPolicyState",
+    "HybridSecondaryUsage",
+    "HybridSecondaryUsageDetected",
+    "IdentityType",
+    "ImplementationMethod",
+    "InstanceFailoverGroupReplicationRole",
+    "InstancePoolLicenseType",
+    "InstanceRole",
+    "IsRetryable",
+    "JobAgentState",
+    "JobExecutionLifecycle",
+    "JobScheduleType",
+    "JobStepActionSource",
+    "JobStepActionType",
+    "JobStepOutputType",
+    "JobTargetGroupMembershipType",
+    "JobTargetType",
+    "LedgerDigestUploadsName",
+    "LedgerDigestUploadsState",
+    "LinkRole",
+    "LogSizeUnit",
+    "LongTermRetentionPolicyName",
+    "ManagedDatabaseCreateMode",
+    "ManagedDatabaseStatus",
+    "ManagedInstanceAdministratorType",
+    "ManagedInstanceDatabaseFormat",
+    "ManagedInstanceLicenseType",
+    "ManagedInstanceLongTermRetentionPolicyName",
+    "ManagedInstanceProxyOverride",
+    "ManagedLedgerDigestUploadsName",
+    "ManagedLedgerDigestUploadsState",
+    "ManagedServerCreateMode",
+    "ManagedShortTermRetentionPolicyName",
+    "ManagementOperationState",
+    "MaxSizeUnit",
+    "MetricType",
+    "MinimalTlsVersion",
+    "MoveOperationMode",
+    "OperationMode",
+    "OperationOrigin",
+    "PauseDelayTimeUnit",
+    "PerformanceLevelUnit",
+    "Phase",
+    "PrimaryAggregationType",
+    "PrincipalType",
+    "PrivateEndpointProvisioningState",
+    "PrivateLinkServiceConnectionStateActionsRequire",
+    "PrivateLinkServiceConnectionStateStatus",
+    "ProvisioningState",
+    "QueryMetricUnitType",
+    "QueryTimeGrainType",
+    "ReadOnlyEndpointFailoverPolicy",
+    "ReadWriteEndpointFailoverPolicy",
+    "RecommendedActionCurrentState",
+    "RecommendedActionInitiatedBy",
+    "RecommendedSensitivityLabelUpdateKind",
+    "ReplicaConnectedState",
+    "ReplicaSynchronizationHealth",
+    "ReplicaType",
+    "ReplicationLinkType",
+    "ReplicationModeType",
+    "ReplicationRole",
+    "ReplicationState",
+    "RestoreDetailsName",
+    "RestorePointType",
+    "RoleChangeType",
+    "RuleSeverity",
+    "RuleStatus",
+    "RuleType",
+    "SampleName",
+    "SecondaryInstanceType",
+    "SecondaryType",
+    "SecurityAlertPolicyName",
+    "SecurityAlertPolicyState",
+    "SecurityAlertsPolicyState",
+    "SecurityEventType",
+    "SeedingModeType",
+    "SensitivityLabelRank",
+    "SensitivityLabelSource",
+    "SensitivityLabelUpdateKind",
+    "ServerConfigurationOptionName",
+    "ServerConnectionType",
+    "ServerKeyType",
+    "ServerNetworkAccessFlag",
+    "ServerPublicNetworkAccessFlag",
+    "ServerTrustGroupPropertiesTrustScopesItem",
+    "ServerWorkspaceFeature",
+    "ServiceObjectiveName",
+    "ServicePrincipalType",
+    "ShortTermRetentionPolicyName",
+    "SqlAgentConfigurationPropertiesState",
+    "SqlVulnerabilityAssessmentName",
+    "SqlVulnerabilityAssessmentState",
+    "StartStopScheduleName",
+    "StorageCapabilityStorageAccountType",
+    "StorageKeyType",
+    "SyncAgentState",
+    "SyncConflictResolutionPolicy",
+    "SyncDirection",
+    "SyncGroupLogType",
+    "SyncGroupState",
+    "SyncGroupsType",
+    "SyncMemberDbType",
+    "SyncMemberState",
+    "TableTemporalType",
+    "TransparentDataEncryptionName",
+    "TransparentDataEncryptionState",
+    "UnitDefinitionType",
+    "UnitType",
+    "UpsertManagedServerOperationStepStatus",
+    "VirtualNetworkRuleState",
+    "VulnerabilityAssessmentName",
+    "VulnerabilityAssessmentPolicyBaselineName",
+    "VulnerabilityAssessmentScanState",
+    "VulnerabilityAssessmentScanTriggerType",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

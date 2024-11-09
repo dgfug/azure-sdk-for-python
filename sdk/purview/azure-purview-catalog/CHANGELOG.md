@@ -1,16 +1,25 @@
 # Release History
 
-## 1.0.0b3 (Unreleased)
+## 1.0.0b5 (2024-04-17)
 
-### Features Added
+ - This package is no longer being maintained. Use the [azure-purview-datamap](https://pypi.org/project/azure-purview-datamap/) package instead.
 
-### Breaking Changes
+## 1.0.0b4 (2022-06-13)
 
-### Bugs Fixed
+**Features**
 
-- Fix `delete_by_guids` to get rid of bad request error #22487
+  - Support Atlas 2.2 APIs
 
-### Other Changes
+**Bugs Fixed**
+
+  - Add missing query parameter `includeTermHierarchy` for update term API
+  - Add missing query parameter `excludeRelationshipTypes` for get term API
+
+## 1.0.0b3 (2022-03-15)
+
+**Bugs Fixed**
+
+  - Fix `delete_by_guids` to get rid of bad request error #22487
 
 ## 1.0.0b2 (2021-09-29)
 

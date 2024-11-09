@@ -1,5 +1,54 @@
 # Release History
 
+## 7.1.0b1 (2023-02-16)
+
+### Other Changes
+
+  - Added generated samples in github repo
+  - Drop support for python<3.7.0
+
+## 7.0.0 (2023-02-02)
+
+### Features Added
+
+  - Model FederatedIdentityCredential has a new parameter system_data
+  - Model Identity has a new parameter system_data
+  - Model IdentityUpdate has a new parameter system_data
+  - Model ProxyResource has a new parameter system_data
+  - Model Resource has a new parameter system_data
+  - Model SystemAssignedIdentity has a new parameter system_data
+  - Model TrackedResource has a new parameter system_data
+
+### Breaking Changes
+
+  - Removed operation UserAssignedIdentitiesOperations.list_associated_resources
+
+## 6.1.0 (2022-06-29)
+
+**Features**
+
+  - Added operation group FederatedIdentityCredentialsOperations
+
+## 6.0.1 (2022-05-05)
+
+**Other Changes**
+
+  - Change the internal folder name from `v2019_09_01_preview` to `v2021_09_30_preview` 
+
+
+## 6.0.0 (2022-03-29)
+
+**Breaking changes**
+
+  - Change from single-api package to multiple-api package which permits users to pass in different api version in client.
+
+
+## 6.0.0b2 (2022-03-24)
+
+**Features**
+
+  - Added operation UserAssignedIdentitiesOperations.list_associated_resources
+
 ## 6.0.0b1 (2021-05-19)
 
 This is beta preview version.

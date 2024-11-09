@@ -12,18 +12,23 @@ In the `receive` method of `EventHubConsumerClient`:
 If no partition id is specified, the checkpoint_store are used for load-balance and checkpoint.
 If partition id is specified, the checkpoint_store can only be used for checkpoint.
 """
+from typing import Dict
 import os
 import time
 from azure.eventhub import EventHubConsumerClient
 from azure.eventhub.extensions.checkpointstoreblob import BlobCheckpointStore
+from azure.identity import DefaultAzureCredential
 
+FULLY_QUALIFIED_NAMESPACE = os.environ["EVENT_HUB_HOSTNAME"]
+EVENTHUB_NAME = os.environ["EVENT_HUB_NAME"]
 
-CONNECTION_STR = os.environ["EVENT_HUB_CONN_STR"]
-EVENTHUB_NAME = os.environ['EVENT_HUB_NAME']
-STORAGE_CONNECTION_STR = os.environ["AZURE_STORAGE_CONN_STR"]
+storage_account_name = os.environ["AZURE_STORAGE_ACCOUNT"]
+protocol = os.environ.get("PROTOCOL", "https")
+suffix = os.environ.get("ACCOUNT_URL_SUFFIX", "core.windows.net")
+BLOB_ACCOUNT_URL = f"{protocol}://{storage_account_name}.blob.{suffix}"
 BLOB_CONTAINER_NAME = "your-blob-container-name"  # Please make sure the blob container resource exists.
 
-partition_last_checkpoint_time = dict()
+partition_last_checkpoint_time: Dict[str, float] = {}
 checkpoint_time_interval = 15
 
 
@@ -40,12 +45,15 @@ def on_event(partition_context, event):
         partition_last_checkpoint_time[p_id] = now_time
 
 
-if __name__ == '__main__':
-    checkpoint_store = BlobCheckpointStore.from_connection_string(STORAGE_CONNECTION_STR, BLOB_CONTAINER_NAME)
-    consumer_client = EventHubConsumerClient.from_connection_string(
-        conn_str=CONNECTION_STR,
-        consumer_group='$Default',
+if __name__ == "__main__":
+    checkpoint_store = BlobCheckpointStore(
+        blob_account_url=BLOB_ACCOUNT_URL, container_name=BLOB_CONTAINER_NAME, credential=DefaultAzureCredential()
+    )
+    consumer_client = EventHubConsumerClient(
+        fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,
         eventhub_name=EVENTHUB_NAME,
+        credential=DefaultAzureCredential(),
+        consumer_group="$Default",
         checkpoint_store=checkpoint_store,  # For load-balancing and checkpoint. Leave None for no load-balancing.
     )
 
@@ -63,4 +71,4 @@ if __name__ == '__main__':
             # With specified partition_id, load-balance will be disabled, for example:
             # client.receive(on_event=on_event, partition_id='0')
     except KeyboardInterrupt:
-        print('Stopped receiving.')
+        print("Stopped receiving.")

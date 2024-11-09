@@ -9,8 +9,8 @@ pr:
       - eng/pipelines/aggregate-reports.yml
 
 pool:
-  name: azsdk-pool-mms-win-2019-general
-  vmImage: MMS2019
+  name: azsdk-pool-mms-win-2022-general
+  vmImage: MMS2022
 
 variables:
   - template: ./templates/variables/globals.yml
@@ -26,9 +26,9 @@ stages:
 
           - template: /eng/pipelines/templates/steps/analyze_dependency.yml
             parameters:
-              ScanPath: $(Build.SourcesDirectory)
+              ScanPath: $(Build.SourcesDirectory)/sdk
 
-          - task: AzureFileCopy@4
+          - task: AzureFileCopy@6
             displayName: 'Upload Dependency Report'
             condition: and(succeededOrFailed(), eq(variables['System.TeamProject'], 'internal'))
             inputs:
@@ -40,7 +40,7 @@ stages:
               blobPrefix: dependencies
               AdditionalArgumentsForBlobCopy: '--exclude-pattern=*data.js*'
 
-          - task: AzureFileCopy@4
+          - task: AzureFileCopy@6
             displayName: 'Upload Dependency Graph'
             condition: and(succeededOrFailed(), eq(variables['System.TeamProject'], 'internal'))
             inputs:
@@ -58,6 +58,24 @@ stages:
               pwsh: true
               workingDirectory: $(Build.SourcesDirectory)
               filePath: eng/common/scripts/Verify-Resource-Ref.ps1
+
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.11'
+            inputs:
+              versionSpec: '3.11'
+
+          - script: |
+              python -m pip install -r scripts/repo_health_status_report/dev_requirements.txt
+            displayName: 'Prep Environment'
+
+          - task: PythonScript@0
+            condition: succeededOrFailed()
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              GH_TOKEN: $(azuresdk-github-pat)
+            inputs:
+              scriptPath: 'scripts/repo_health_status_report/output_health_report.py'
+            displayName: 'Generate Health Status Report'
 
           - template: ../common/pipelines/templates/steps/verify-links.yml
             parameters:
@@ -77,33 +95,10 @@ stages:
             parameters:
               BaselineFilePath: $(Build.SourcesDirectory)\eng\python.gdnbaselines
 
-          - pwsh: |
-              azcopy copy "https://azuresdkartifacts.blob.core.windows.net/policheck/PythonPoliCheckExclusion.mdb?$(azuresdk-policheck-blob-SAS)" `
-              "$(Build.BinariesDirectory)"
-            displayName: 'Download PoliCheck Exclusion Database'
-            condition: succeededOrFailed()
-
-          - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
-            displayName: 'Run PoliCheck'
-            inputs:
-              targetType: F
-              targetArgument: '$(Build.SourcesDirectory)'
-              result: PoliCheck.sarif
-              optionsFC: 0
-              optionsXS: 1
-              optionsPE: 1|2|3|4
-              optionsRulesDBPath: "$(Build.BinariesDirectory)/PythonPoliCheckExclusion.mdb"
-              optionsUEPATH: "$(Build.SourcesDirectory)/eng/guardian-tools/policheck/PolicheckExclusions.xml"
-            condition: succeededOrFailed()
-
-          - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
-            displayName: 'Post Analysis (PoliCheck)'
-            inputs:
-              GdnBreakAllTools: false
-              GdnBreakGdnToolPoliCheck: true
-              GdnBreakGdnToolPoliCheckSeverity: Warning
-            condition: succeededOrFailed()
-            continueOnError: true
+          - template: /eng/common/pipelines/templates/steps/policheck.yml
+            parameters:
+              PublishAnalysisLogs: false
+              ExclusionDataBaseFileName: PythonPoliCheckExclusion
 
           - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@3
             displayName: 'Publish Security Analysis Logs'

@@ -6,49 +6,34 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class AccessRights(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+class AccessRights(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """AccessRights."""
 
     MANAGE = "Manage"
     SEND = "Send"
     LISTEN = "Listen"
 
-class DefaultAction(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Default Action for Network Rule Set
-    """
+
+class DefaultAction(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Default Action for Network Rule Set."""
 
     ALLOW = "Allow"
     DENY = "Deny"
 
-class EncodingCaptureDescription(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Enumerates the possible values for the encoding format of capture description.
-    """
+
+class EncodingCaptureDescription(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enumerates the possible values for the encoding format of capture description."""
 
     AVRO = "Avro"
     AVRO_DEFLATE = "AvroDeflate"
 
-class EndPointProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Provisioning state of the Private Endpoint Connection.
-    """
+
+class EndPointProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Provisioning state of the Private Endpoint Connection."""
 
     CREATING = "Creating"
     UPDATING = "Updating"
@@ -57,9 +42,9 @@ class EndPointProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, En
     CANCELED = "Canceled"
     FAILED = "Failed"
 
-class EntityStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Entity status.
-    """
+
+class EntityStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Entity status."""
 
     ACTIVE = "Active"
     DISABLED = "Disabled"
@@ -71,34 +56,36 @@ class EntityStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     RENAMING = "Renaming"
     UNKNOWN = "Unknown"
 
-class FilterType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Rule filter types
-    """
+
+class FilterType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Rule filter types."""
 
     SQL_FILTER = "SqlFilter"
     CORRELATION_FILTER = "CorrelationFilter"
 
-class IPAction(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The IP Filter Action
-    """
+
+class IPAction(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The IP Filter Action."""
 
     ACCEPT = "Accept"
     REJECT = "Reject"
 
-class KeyType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The access key to regenerate.
-    """
+
+class KeyType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The access key to regenerate."""
 
     PRIMARY_KEY = "PrimaryKey"
     SECONDARY_KEY = "SecondaryKey"
 
-class MigrationConfigurationName(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class MigrationConfigurationName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """MigrationConfigurationName."""
 
     _DEFAULT = "$default"
 
-class NameSpaceType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of namespaces
-    """
+
+class NameSpaceType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of namespaces."""
 
     MESSAGING = "Messaging"
     NOTIFICATION_HUB = "NotificationHub"
@@ -106,58 +93,60 @@ class NameSpaceType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     EVENT_HUB = "EventHub"
     RELAY = "Relay"
 
-class NetworkRuleIPAction(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The IP Filter Action
-    """
+
+class NetworkRuleIPAction(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The IP Filter Action."""
 
     ALLOW = "Allow"
 
-class PrivateLinkConnectionStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Status of the connection.
-    """
+
+class PrivateLinkConnectionStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the connection."""
 
     PENDING = "Pending"
     APPROVED = "Approved"
     REJECTED = "Rejected"
     DISCONNECTED = "Disconnected"
 
-class ProvisioningStateDR(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class ProvisioningStateDR(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Provisioning state of the Alias(Disaster Recovery configuration) - possible values 'Accepted'
-    or 'Succeeded' or 'Failed'
+    or 'Succeeded' or 'Failed'.
     """
 
     ACCEPTED = "Accepted"
     SUCCEEDED = "Succeeded"
     FAILED = "Failed"
 
-class RoleDisasterRecovery(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class RoleDisasterRecovery(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """role of namespace in GEO DR - possible values 'Primary' or 'PrimaryNotReplicating' or
-    'Secondary'
+    'Secondary'.
     """
 
     PRIMARY = "Primary"
     PRIMARY_NOT_REPLICATING = "PrimaryNotReplicating"
     SECONDARY = "Secondary"
 
-class SkuName(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Name of this SKU.
-    """
+
+class SkuName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Name of this SKU."""
 
     BASIC = "Basic"
     STANDARD = "Standard"
     PREMIUM = "Premium"
 
-class SkuTier(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The billing tier of this particular SKU.
-    """
+
+class SkuTier(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The billing tier of this particular SKU."""
 
     BASIC = "Basic"
     STANDARD = "Standard"
     PREMIUM = "Premium"
 
-class UnavailableReason(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Specifies the reason for the unavailability of the service.
-    """
+
+class UnavailableReason(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Specifies the reason for the unavailability of the service."""
 
     NONE = "None"
     INVALID_NAME = "InvalidName"

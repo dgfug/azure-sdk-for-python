@@ -1,6 +1,3 @@
-## _Disclaimer_
-_Azure SDK Python packages support for Python 2.7 has ended 01 January 2022. For more information and questions, please refer to https://github.com/Azure/azure-sdk-for-python/issues/20691_
-
 # Azure Storage File Share client library for Python
 Azure File Share storage offers fully managed file shares in the cloud that are accessible via the industry standard [Server Message Block (SMB) protocol](https://docs.microsoft.com/windows/desktop/FileIO/microsoft-smb-protocol-and-cifs-protocol-overview). Azure file shares can be mounted concurrently by cloud or on-premises deployments of Windows, Linux, and macOS. Additionally, Azure file shares can be cached on Windows Servers with Azure File Sync for fast access near where the data is being used.
 
@@ -10,12 +7,17 @@ Azure file shares can be used to:
 * "Lift and shift" applications
 * Simplify cloud development with shared application settings, diagnostic share, and Dev/Test/Debug tools
 
-[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share/azure/storage/fileshare) | [Package (PyPI)](https://pypi.org/project/azure-storage-file-share/) | [API reference documentation](https://aka.ms/azsdk-python-storage-fileshare-ref) | [Product documentation](https://docs.microsoft.com/azure/storage/) | [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share/samples)
+[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share/azure/storage/fileshare)
+| [Package (PyPI)](https://pypi.org/project/azure-storage-file-share/)
+| [Package (Conda)](https://anaconda.org/microsoft/azure-storage/)
+| [API reference documentation](https://aka.ms/azsdk-python-storage-fileshare-ref)
+| [Product documentation](https://docs.microsoft.com/azure/storage/)
+| [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share/samples)
 
 ## Getting started
 
 ### Prerequisites
-* Python 3.6 or later is required to use this package.
+* Python 3.8 or later is required to use this package. For more details, please read our page on [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
 * You must have an [Azure subscription](https://azure.microsoft.com/free/) and an
 [Azure storage account](https://docs.microsoft.com/azure/storage/common/storage-account-overview) to use this package.
 
@@ -175,7 +177,7 @@ Create a file share to store your files
 ```python
 from azure.storage.fileshare import ShareClient
 
-share = ShareClient.from_connection_string(conn_str="<connection_string>", share_name="my_share")
+share = ShareClient.from_connection_string(conn_str="<connection_string>", share_name="myshare")
 share.create_share()
 ```
 
@@ -184,7 +186,7 @@ Use the async client to create a file share
 ```python
 from azure.storage.fileshare.aio import ShareClient
 
-share = ShareClient.from_connection_string(conn_str="<connection_string>", share_name="my_share")
+share = ShareClient.from_connection_string(conn_str="<connection_string>", share_name="myshare")
 await share.create_share()
 ```
 
@@ -194,7 +196,7 @@ Upload a file to the share
 ```python
 from azure.storage.fileshare import ShareFileClient
 
-file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="my_share", file_path="my_file")
+file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="myshare", file_path="my_file")
 
 with open("./SampleSource.txt", "rb") as source_file:
     file_client.upload_file(source_file)
@@ -205,7 +207,7 @@ Upload a file asynchronously
 ```python
 from azure.storage.fileshare.aio import ShareFileClient
 
-file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="my_share", file_path="my_file")
+file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="myshare", file_path="my_file")
 
 with open("./SampleSource.txt", "rb") as source_file:
     await file_client.upload_file(source_file)
@@ -217,7 +219,7 @@ Download a file from the share
 ```python
 from azure.storage.fileshare import ShareFileClient
 
-file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="my_share", file_path="my_file")
+file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="myshare", file_path="my_file")
 
 with open("DEST_FILE", "wb") as file_handle:
     data = file_client.download_file()
@@ -229,7 +231,7 @@ Download a file asynchronously
 ```python
 from azure.storage.fileshare.aio import ShareFileClient
 
-file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="my_share", file_path="my_file")
+file_client = ShareFileClient.from_connection_string(conn_str="<connection_string>", share_name="myshare", file_path="my_file")
 
 with open("DEST_FILE", "wb") as file_handle:
     data = await file_client.download_file()
@@ -242,7 +244,7 @@ List all directories and files under a parent directory
 ```python
 from azure.storage.fileshare import ShareDirectoryClient
 
-parent_dir = ShareDirectoryClient.from_connection_string(conn_str="<connection_string>", share_name="my_share", directory_path="parent_dir")
+parent_dir = ShareDirectoryClient.from_connection_string(conn_str="<connection_string>", share_name="myshare", directory_path="parent_dir")
 
 my_list = list(parent_dir.list_directories_and_files())
 print(my_list)
@@ -253,7 +255,7 @@ List contents of a directory asynchronously
 ```python
 from azure.storage.fileshare.aio import ShareDirectoryClient
 
-parent_dir = ShareDirectoryClient.from_connection_string(conn_str="<connection_string>", share_name="my_share", directory_path="parent_dir")
+parent_dir = ShareDirectoryClient.from_connection_string(conn_str="<connection_string>", share_name="myshare", directory_path="parent_dir")
 
 my_files = []
 async for item in parent_dir.list_directories_and_files():
@@ -284,7 +286,11 @@ Other optional configuration keyword arguments that can be specified on the clie
 
 **Client keyword arguments:**
 
-* __connection_timeout__ (int): Optionally sets the connect and read timeout value, in seconds.
+* __connection_timeout__ (int): The number of seconds the client will wait to establish a connection to the server.
+Defaults to 20 seconds.
+* __read_timeout__ (int): The number of seconds the client will wait, between consecutive read operations, for a
+response from the server. This is a socket level timeout and is not affected by overall data size. Client-side read 
+timeouts will be automatically retried. Defaults to 60 seconds.
 * __transport__ (Any): User-provided transport to send the HTTP request.
 
 **Per-operation keyword arguments:**
@@ -333,7 +339,7 @@ service_client = ShareServiceClient.from_connection_string("your_connection_stri
 
 Similarly, `logging_enable` can enable detailed logging for a single operation,
 even when it isn't enabled for the client:
-```py
+```python
 service_client.get_service_properties(logging_enable=True)
 ```
 

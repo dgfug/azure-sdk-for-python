@@ -1,5 +1,37 @@
 # Release History
 
+## 1.2.0 (2024-04-15)
+
+### Features Added
+
+  - Model CustomRule has a new parameter group_by
+  - Model PolicySettings has a new parameter javascript_challenge_expiration_in_minutes
+  - Model PolicySettings has a new parameter scrubbing_rules
+  - Model PolicySettings has a new parameter state
+
+## 1.1.0 (2023-05-19)
+
+### Features Added
+
+  - Added operation PoliciesOperations.begin_update
+  - Added operation PoliciesOperations.list_by_subscription
+  - Model FrontDoor has a new parameter extended_properties
+  - Model FrontDoorProperties has a new parameter extended_properties
+
+## 1.1.0b1 (2022-11-22)
+
+### Features Added
+
+  - Added operation PoliciesOperations.begin_update
+  - Model FrontDoor has a new parameter extended_properties
+  - Model FrontDoorProperties has a new parameter extended_properties
+
+## 1.0.1 (2022-03-29)
+
+**Fixes**
+
+- Fix duplicated description in annotation
+
 ## 1.0.0 (2021-03-26)
 
  - GA release

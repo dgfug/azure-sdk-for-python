@@ -6,53 +6,73 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class KeyType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Whether the operation refers to the primary or secondary key.
-    """
+
+class IdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Values can be systemAssignedIdentity or userAssignedIdentity."""
+
+    SYSTEM_ASSIGNED_IDENTITY = "systemAssignedIdentity"
+    USER_ASSIGNED_IDENTITY = "userAssignedIdentity"
+    DELEGATED_RESOURCE_IDENTITY = "delegatedResourceIdentity"
+
+
+class InfrastructureEncryption(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Values are enabled and disabled."""
+
+    ENABLED = "enabled"
+    DISABLED = "disabled"
+
+
+class KeyType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Whether the operation refers to the primary or secondary key."""
 
     PRIMARY = "primary"
     SECONDARY = "secondary"
 
-class Kind(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The Kind of the Maps Account.
-    """
+
+class Kind(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The Kind of the Maps Account."""
 
     GEN1 = "Gen1"
     GEN2 = "Gen2"
 
-class Name(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The name of the SKU, in standard format (such as S0).
+
+class ManagedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of managed service identity (where both SystemAssigned and UserAssigned types are
+    allowed).
     """
+
+    NONE = "None"
+    SYSTEM_ASSIGNED = "SystemAssigned"
+    USER_ASSIGNED = "UserAssigned"
+    SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned, UserAssigned"
+
+
+class Name(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The name of the SKU, in standard format (such as S0)."""
 
     S0 = "S0"
     S1 = "S1"
     G2 = "G2"
+
+
+class SigningKey(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The Map account key to use for signing. Picking ``primaryKey`` or ``secondaryKey`` will use the
+    Map account Shared Keys, and using ``managedIdentity`` will use the auto-renewed private key to
+    sign the SAS.
+    """
+
+    PRIMARY_KEY = "primaryKey"
+    SECONDARY_KEY = "secondaryKey"
+    MANAGED_IDENTITY = "managedIdentity"

@@ -1,8 +1,6 @@
 # Release History
 
-## 4.7.2 (Unreleased)
-
-- This version and all future versions will require Python 3.6+. Python 2.7 is no longer supported.
+## 4.20.1 (Unreleased)
 
 ### Features Added
 
@@ -11,6 +9,147 @@
 ### Bugs Fixed
 
 ### Other Changes
+
+## 4.20.0 (2024-06-12)
+
+### Features Added
+
+- This is a GA of the `EventGridConsumerClient`, the `EventGridConsumerClient` supports the following operations for Cloud Events in Event Grid Namespace: `receive`, `release`, `acknowledge`, `reject` and `renew_locks`.
+- The `EventGridPublisherClient` now supports the Event Grid Namespace tier. Initialize the client with the namespace endpoint, and the `namespace_topic` kwarg to send Cloud Events to an Event Grid Namespace topic.
+
+## 4.20.0b2 (2024-04-25)
+
+This is a Beta of the EventGridClient
+
+### Bugs Fixed
+
+- Fixed serialization issues with CloudEvent and CNCF Cloud Event
+
+## 4.20.0b1 (2024-04-11)
+
+### Features Added
+
+- This is a Beta of the EventGridClient
+  - EventGridClient `send` can be used for both Event Grid Namespace Resources and Event Grid Basic Resources.
+    - Added a kwarg `level` in the EventGridClient constructor. The default value is `Standard` which creates a client for an Event Grid Namespace Resource.
+
+### Breaking Changes
+
+- Removed the `AcknowledgeOptions`,`ReleaseOptions`, `RejectOptions`, and `RenewLockOptions` models. `lock_tokens` can now be specified as a `kwarg` on the operation.
+- Renamed `publish_cloud_events` to `send`.
+
+## 4.19.0 (2024-04-10)
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to Azure Communication Services.
+
+### Breaking Changes 
+
+- Fixed a bug where the Api Version was being hardcoded to `2018-01-01` on any request sent to the service.
+
+## 4.18.0 (2024-03-12)
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to Azure Api Center.
+
+## 4.17.0 (2024-02-08)
+This version and all future versions will require Python 3.8+.
+
+### Features Added
+
+- Added new enums values to `SystemEventNames` related to Azure Storage and Azure VMware Solution.
+## 4.17.0b1 (2023-11-09)
+
+### Features Added
+
+- Beta EventGridClient features were added on top of the last GA version of EventGrid.
+  - Added new features to the EventGridClient that supports `publish_cloud_events`, `receive_cloud_events`, `acknowledge_cloud_events` , `release_cloud_events`, and `reject_cloud_events` operations. These features include a `renew_cloud_event_locks` operation, as well as a `release_with_delay` parameter on the `release_cloud_events` operation.
+  - The `lock_tokens` parameter in `reject_cloud_events`, `release_cloud_events`, and `acknowledge_cloud_events` was renamed to `reject_options`, `release_options`, and `acknowledge_options`.
+  - The `binary_mode` keyword argument on `publish_cloud_events` was added to allow for binary mode support when publishing single Cloud Events.
+  - Added new models to support these new operations on EventGridClient.
+
+## 4.16.0 (2023-11-08)
+
+### Features Added
+
+- Added new enum values to `SystemEventnames` related to Azure Resource Notifications.
+
+## 4.15.0 (2023-10-12)
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to Azure Communication Services and Azure Resource Notifications.
+
+## 4.14.0 (2023-09-13)
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to Azure App Configuration and Azure EventGrid.
+
+## 4.13.0 (2023-06-08)
+
+### Features Added
+
+- Beta EventGridClient features were removed for this and future GA versions.
+- Added new enum values to `SystemEventNames` related to Azure Container Services.
+
+## 4.12.0b1 (2023-05-22)
+
+### Features Added
+
+- Added a new EventGridClient that supports `publish_cloud_events`, `receive_cloud_events`, `acknowledge_cloud_events` , `release_cloud_events`, and `reject_cloud_events` operations.
+- Added new models to support these new operations on EventGridClient.
+
+## 4.11.0 (2023-05-09)
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to Storage Tasks, Azure Communication Services and Azure HealthcareApis.
+
+## 4.10.0 (2023-04-11)
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to Azure Communication Services, DataBox and ApiManagementGateway APIs.
+
+### Bugs Fixed
+
+- `SystemEventNames` enums for APIManagement were incorrectly capitalized, changed `Api` to `API`.
+
+### Other Changes
+
+- Removed `msrest` dependency and `six` dependency
+- Added `isodate` dependency
+
+## 4.9.1 (2022-11-08)
+
+- This version and all future versions will require Python 3.7+.
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to health care APIs.
+
+## 4.9.0 (2022-07-05)
+
+### Features Added
+
+- Added support for publishing events to a channel.
+
+## 4.9.0b1 (2022-04-07)
+
+### Features Added
+
+- Added support for publishing events to a channel.
+
+## 4.8.0 (2022-04-06)
+
+- This version and all future versions will require Python 3.6+. Python 2.7 is no longer supported.
+
+### Features Added
+
+- Added new enum values to `SystemEventNames` related to health care APIs.
 
 ## 4.7.1 (2021-11-18)
 
@@ -172,7 +311,7 @@ introduce breaking changes.
       - "is" should not be used at all.
       - "format" will return the string value, where "%s" string
         formatting will return `NameOfEnum.stringvalue`. Format syntax
-        should be prefered.
+        should be preferred.
   - New Long Running Operation:
       - Return type changes from
         `msrestazure.azure_operation.AzureOperationPoller` to

@@ -34,8 +34,6 @@ from ._models_py3 import ListAccountSasResponse
 from ._models_py3 import ListContainerItem
 from ._models_py3 import ListContainerItems
 from ._models_py3 import ListServiceSasResponse
-from ._models_py3 import ManagementPoliciesRules
-from ._models_py3 import ManagementPoliciesRulesSetParameter
 from ._models_py3 import MetricSpecification
 from ._models_py3 import NetworkRuleSet
 from ._models_py3 import Operation
@@ -53,8 +51,6 @@ from ._models_py3 import StorageAccountCreateParameters
 from ._models_py3 import StorageAccountKey
 from ._models_py3 import StorageAccountListKeysResult
 from ._models_py3 import StorageAccountListResult
-from ._models_py3 import StorageAccountManagementPolicies
-from ._models_py3 import StorageAccountManagementPoliciesRulesProperty
 from ._models_py3 import StorageAccountRegenerateKeyParameters
 from ._models_py3 import StorageAccountUpdateParameters
 from ._models_py3 import StorageSkuListResult
@@ -66,126 +62,124 @@ from ._models_py3 import UsageListResult
 from ._models_py3 import UsageName
 from ._models_py3 import VirtualNetworkRule
 
-
-from ._storage_management_client_enums import (
-    AccessTier,
-    AccountStatus,
-    Bypass,
-    CorsRuleAllowedMethodsItem,
-    DefaultAction,
-    GeoReplicationStatus,
-    HttpProtocol,
-    ImmutabilityPolicyState,
-    ImmutabilityPolicyUpdateType,
-    KeyPermission,
-    KeySource,
-    Kind,
-    LeaseContainerRequestAction,
-    LeaseDuration,
-    LeaseState,
-    LeaseStatus,
-    ManagementPolicyName,
-    Permissions,
-    ProvisioningState,
-    PublicAccess,
-    Reason,
-    ReasonCode,
-    Services,
-    SignedResource,
-    SignedResourceTypes,
-    SkuName,
-    SkuTier,
-    State,
-    UsageUnit,
-)
+from ._storage_management_client_enums import AccessTier
+from ._storage_management_client_enums import AccountStatus
+from ._storage_management_client_enums import Bypass
+from ._storage_management_client_enums import CorsRuleAllowedMethodsItem
+from ._storage_management_client_enums import DefaultAction
+from ._storage_management_client_enums import Enum8
+from ._storage_management_client_enums import GeoReplicationStatus
+from ._storage_management_client_enums import HttpProtocol
+from ._storage_management_client_enums import ImmutabilityPolicyState
+from ._storage_management_client_enums import ImmutabilityPolicyUpdateType
+from ._storage_management_client_enums import KeyPermission
+from ._storage_management_client_enums import KeySource
+from ._storage_management_client_enums import Kind
+from ._storage_management_client_enums import LeaseContainerRequestAction
+from ._storage_management_client_enums import LeaseDuration
+from ._storage_management_client_enums import LeaseState
+from ._storage_management_client_enums import LeaseStatus
+from ._storage_management_client_enums import Permissions
+from ._storage_management_client_enums import ProvisioningState
+from ._storage_management_client_enums import PublicAccess
+from ._storage_management_client_enums import Reason
+from ._storage_management_client_enums import ReasonCode
+from ._storage_management_client_enums import Services
+from ._storage_management_client_enums import SignedResource
+from ._storage_management_client_enums import SignedResourceTypes
+from ._storage_management_client_enums import SkuName
+from ._storage_management_client_enums import SkuTier
+from ._storage_management_client_enums import State
+from ._storage_management_client_enums import UsageUnit
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'AccountSasParameters',
-    'AzureEntityResource',
-    'BlobContainer',
-    'BlobServiceProperties',
-    'CheckNameAvailabilityResult',
-    'CorsRule',
-    'CorsRules',
-    'CustomDomain',
-    'DeleteRetentionPolicy',
-    'Dimension',
-    'Encryption',
-    'EncryptionService',
-    'EncryptionServices',
-    'Endpoints',
-    'GeoReplicationStats',
-    'IPRule',
-    'Identity',
-    'ImmutabilityPolicy',
-    'ImmutabilityPolicyProperties',
-    'KeyVaultProperties',
-    'LeaseContainerRequest',
-    'LeaseContainerResponse',
-    'LegalHold',
-    'LegalHoldProperties',
-    'ListAccountSasResponse',
-    'ListContainerItem',
-    'ListContainerItems',
-    'ListServiceSasResponse',
-    'ManagementPoliciesRules',
-    'ManagementPoliciesRulesSetParameter',
-    'MetricSpecification',
-    'NetworkRuleSet',
-    'Operation',
-    'OperationDisplay',
-    'OperationListResult',
-    'Resource',
-    'Restriction',
-    'SKUCapability',
-    'ServiceSasParameters',
-    'ServiceSpecification',
-    'Sku',
-    'StorageAccount',
-    'StorageAccountCheckNameAvailabilityParameters',
-    'StorageAccountCreateParameters',
-    'StorageAccountKey',
-    'StorageAccountListKeysResult',
-    'StorageAccountListResult',
-    'StorageAccountManagementPolicies',
-    'StorageAccountManagementPoliciesRulesProperty',
-    'StorageAccountRegenerateKeyParameters',
-    'StorageAccountUpdateParameters',
-    'StorageSkuListResult',
-    'TagProperty',
-    'TrackedResource',
-    'UpdateHistoryProperty',
-    'Usage',
-    'UsageListResult',
-    'UsageName',
-    'VirtualNetworkRule',
-    'AccessTier',
-    'AccountStatus',
-    'Bypass',
-    'CorsRuleAllowedMethodsItem',
-    'DefaultAction',
-    'GeoReplicationStatus',
-    'HttpProtocol',
-    'ImmutabilityPolicyState',
-    'ImmutabilityPolicyUpdateType',
-    'KeyPermission',
-    'KeySource',
-    'Kind',
-    'LeaseContainerRequestAction',
-    'LeaseDuration',
-    'LeaseState',
-    'LeaseStatus',
-    'ManagementPolicyName',
-    'Permissions',
-    'ProvisioningState',
-    'PublicAccess',
-    'Reason',
-    'ReasonCode',
-    'Services',
-    'SignedResource',
-    'SignedResourceTypes',
-    'SkuName',
-    'SkuTier',
-    'State',
-    'UsageUnit',
+    "AccountSasParameters",
+    "AzureEntityResource",
+    "BlobContainer",
+    "BlobServiceProperties",
+    "CheckNameAvailabilityResult",
+    "CorsRule",
+    "CorsRules",
+    "CustomDomain",
+    "DeleteRetentionPolicy",
+    "Dimension",
+    "Encryption",
+    "EncryptionService",
+    "EncryptionServices",
+    "Endpoints",
+    "GeoReplicationStats",
+    "IPRule",
+    "Identity",
+    "ImmutabilityPolicy",
+    "ImmutabilityPolicyProperties",
+    "KeyVaultProperties",
+    "LeaseContainerRequest",
+    "LeaseContainerResponse",
+    "LegalHold",
+    "LegalHoldProperties",
+    "ListAccountSasResponse",
+    "ListContainerItem",
+    "ListContainerItems",
+    "ListServiceSasResponse",
+    "MetricSpecification",
+    "NetworkRuleSet",
+    "Operation",
+    "OperationDisplay",
+    "OperationListResult",
+    "Resource",
+    "Restriction",
+    "SKUCapability",
+    "ServiceSasParameters",
+    "ServiceSpecification",
+    "Sku",
+    "StorageAccount",
+    "StorageAccountCheckNameAvailabilityParameters",
+    "StorageAccountCreateParameters",
+    "StorageAccountKey",
+    "StorageAccountListKeysResult",
+    "StorageAccountListResult",
+    "StorageAccountRegenerateKeyParameters",
+    "StorageAccountUpdateParameters",
+    "StorageSkuListResult",
+    "TagProperty",
+    "TrackedResource",
+    "UpdateHistoryProperty",
+    "Usage",
+    "UsageListResult",
+    "UsageName",
+    "VirtualNetworkRule",
+    "AccessTier",
+    "AccountStatus",
+    "Bypass",
+    "CorsRuleAllowedMethodsItem",
+    "DefaultAction",
+    "Enum8",
+    "GeoReplicationStatus",
+    "HttpProtocol",
+    "ImmutabilityPolicyState",
+    "ImmutabilityPolicyUpdateType",
+    "KeyPermission",
+    "KeySource",
+    "Kind",
+    "LeaseContainerRequestAction",
+    "LeaseDuration",
+    "LeaseState",
+    "LeaseStatus",
+    "Permissions",
+    "ProvisioningState",
+    "PublicAccess",
+    "Reason",
+    "ReasonCode",
+    "Services",
+    "SignedResource",
+    "SignedResourceTypes",
+    "SkuName",
+    "SkuTier",
+    "State",
+    "UsageUnit",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

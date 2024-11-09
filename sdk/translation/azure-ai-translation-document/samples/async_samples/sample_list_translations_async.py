@@ -25,6 +25,7 @@ import asyncio
 
 async def sample_list_translations_async():
     import os
+
     # [START list_translations_async]
     from azure.core.credentials import AzureKeyCredential
     from azure.ai.translation.document.aio import DocumentTranslationClient
@@ -34,7 +35,7 @@ async def sample_list_translations_async():
 
     client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
     async with client:
-        operations = client.list_translation_statuses()  # type: AsyncItemPaged[TranslationStatus]
+        operations = client.list_translation_statuses()
 
         async for operation in operations:
             print(f"ID: {operation.id}")
@@ -54,5 +55,6 @@ async def sample_list_translations_async():
 async def main():
     await sample_list_translations_async()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())

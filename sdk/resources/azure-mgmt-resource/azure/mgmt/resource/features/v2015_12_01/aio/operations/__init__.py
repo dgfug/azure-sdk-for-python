@@ -6,10 +6,16 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from ._feature_client_operations import FeatureClientOperationsMixin
-from ._features_operations import FeaturesOperations
+from ._operations import FeatureClientOperationsMixin
+from ._operations import FeaturesOperations
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'FeatureClientOperationsMixin',
-    'FeaturesOperations',
+    "FeatureClientOperationsMixin",
+    "FeaturesOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

@@ -1,15 +1,20 @@
 # Release History
 
-## 1.0.0b9 (Unreleased)
+## 1.0.0b10 (2024-11-05)
 
-### Features Added
+### Other Changes
 
-### Breaking Changes
+- This package has been deprecated and will no longer be maintained after 11-05-2024. Use the [azure-core-tracing-opentelemetry](https://pypi.org/project/azure-core-tracing-opentelemetry/) package for tracing support in Azure SDK libraries.
 
-### Key Bugs Fixed
+## 1.0.0b9 (2023-05-09)
 
-### Fixed
+### Bugs Fixed
 
+- Fixed a bug where starting a span would fail if an unexpected keyword argument was passed in to `OpenCensusSpan`.
+
+### Other Changes
+
+- Python 2.7 is no longer supported. Please use Python version 3.7 or later.
 
 ## 1.0.0b8 (2021-07-01)
 

@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 from azure.core.exceptions import ClientAuthenticationError
 from azure.core.pipeline.policies import SansIOHTTPPolicy
-from azure.identity import CredentialUnavailableError
+from azure.identity import CredentialUnavailableError, TokenCachePersistenceOptions
 from azure.identity.aio import SharedTokenCacheCredential
 from azure.identity._constants import EnvironmentVariables
 from azure.identity._internal.shared_token_cache import (
@@ -21,7 +21,7 @@ from azure.identity._internal.user_agent import USER_AGENT
 from msal import TokenCache
 import pytest
 
-from helpers import build_aad_response, id_token_claims, mock_response, Request
+from helpers import build_aad_response, id_token_claims, mock_response, Request, GET_TOKEN_METHODS
 from helpers_async import async_validating_transport, AsyncMockTransport
 from test_shared_cache_credential import get_account_event, populated_cache
 
@@ -32,17 +32,22 @@ def test_supported():
 
 
 @pytest.mark.asyncio
-async def test_no_scopes():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_no_scopes(get_token_method):
     """The credential should raise when get_token is called with no scopes"""
 
     credential = SharedTokenCacheCredential(_cache=TokenCache())
     with pytest.raises(ValueError):
-        await credential.get_token()
+        await getattr(credential, get_token_method)()
 
 
 @pytest.mark.asyncio
-async def test_close():
-    async def send(*_, **__):
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_close(get_token_method):
+    async def send(*_, **kwargs):
+        # ensure the `claims` and `tenant_id` keywords from credential's `get_token` method don't make it to transport
+        assert "claims" not in kwargs
+        assert "tenant_id" not in kwargs
         return mock_response(json_payload=build_aad_response(access_token="**"))
 
     transport = AsyncMockTransport(send=send)
@@ -51,7 +56,7 @@ async def test_close():
     )
 
     # the credential doesn't open a transport session before one is needed, so we send a request
-    await credential.get_token("scope")
+    await getattr(credential, get_token_method)("scope")
 
     await credential.close()
 
@@ -59,8 +64,12 @@ async def test_close():
 
 
 @pytest.mark.asyncio
-async def test_context_manager():
-    async def send(*_, **__):
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_context_manager(get_token_method):
+    async def send(*_, **kwargs):
+        # ensure the `claims` and `tenant_id` keywords from credential's `get_token` method don't make it to transport
+        assert "claims" not in kwargs
+        assert "tenant_id" not in kwargs
         return mock_response(json_payload=build_aad_response(access_token="**"))
 
     transport = AsyncMockTransport(send=send)
@@ -68,16 +77,16 @@ async def test_context_manager():
         _cache=populated_cache(get_account_event("test@user", "uid", "utid")), transport=transport
     )
 
-    # async with before initialization: credential should call aexit but not aenter
+    # async with before initialization: credential should call __aexit__ but not __aenter__
     async with credential:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
     assert transport.__aenter__.call_count == 0
     assert transport.__aexit__.call_count == 1
 
-    # async with after initialization: credential should call aenter and aexit
+    # async with after initialization: credential should call __aenter__ and __aexit__
     async with credential:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
         assert transport.__aenter__.call_count == 1
     assert transport.__aexit__.call_count == 2
 
@@ -99,10 +108,14 @@ async def test_context_manager_no_cache():
 
 
 @pytest.mark.asyncio
-async def test_policies_configurable():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_policies_configurable(get_token_method):
     policy = Mock(spec_set=SansIOHTTPPolicy, on_request=Mock())
 
-    async def send(*_, **__):
+    async def send(*_, **kwargs):
+        # ensure the `claims` and `tenant_id` keywords from credential's `get_token` method don't make it to transport
+        assert "claims" not in kwargs
+        assert "tenant_id" not in kwargs
         return mock_response(json_payload=build_aad_response(access_token="**"))
 
     credential = SharedTokenCacheCredential(
@@ -111,13 +124,14 @@ async def test_policies_configurable():
         transport=Mock(send=send),
     )
 
-    await credential.get_token("scope")
+    await getattr(credential, get_token_method)("scope")
 
     assert policy.on_request.called
 
 
 @pytest.mark.asyncio
-async def test_user_agent():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_user_agent(get_token_method):
     transport = async_validating_transport(
         requests=[Request(required_headers={"User-Agent": USER_AGENT})],
         responses=[mock_response(json_payload=build_aad_response(access_token="**"))],
@@ -127,21 +141,27 @@ async def test_user_agent():
         _cache=populated_cache(get_account_event("test@user", "uid", "utid")), transport=transport
     )
 
-    await credential.get_token("scope")
+    await getattr(credential, get_token_method)("scope")
 
 
 @pytest.mark.asyncio
-async def test_tenant_id():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_tenant_id(get_token_method):
     transport = async_validating_transport(
         requests=[Request(required_headers={"User-Agent": USER_AGENT})],
         responses=[mock_response(json_payload=build_aad_response(access_token="**"))],
     )
 
     credential = SharedTokenCacheCredential(
-        _cache=populated_cache(get_account_event("test@user", "uid", "utid")), transport=transport
+        _cache=populated_cache(get_account_event("test@user", "uid", "utid")),
+        transport=transport,
+        additionally_allowed_tenants=["*"],
     )
 
-    await credential.get_token("scope", tenant_id="tenant_id")
+    kwargs = {"tenant_id": "tenant_id"}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
+    await getattr(credential, get_token_method)("scope", **kwargs)
 
 
 @pytest.mark.parametrize("authority", ("localhost", "https://localhost"))
@@ -165,22 +185,26 @@ def test_authority(authority):
 
 
 @pytest.mark.asyncio
-async def test_empty_cache():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_empty_cache(get_token_method):
     """the credential should raise CredentialUnavailableError when the cache is empty"""
 
     with pytest.raises(CredentialUnavailableError, match=NO_ACCOUNTS):
-        await SharedTokenCacheCredential(_cache=TokenCache()).get_token("scope")
+        await getattr(SharedTokenCacheCredential(_cache=TokenCache()), get_token_method)("scope")
     with pytest.raises(CredentialUnavailableError, match=NO_ACCOUNTS):
-        await SharedTokenCacheCredential(_cache=TokenCache(), username="not@cache").get_token("scope")
+        await getattr(SharedTokenCacheCredential(_cache=TokenCache(), username="not@cache"), get_token_method)("scope")
     with pytest.raises(CredentialUnavailableError, match=NO_ACCOUNTS):
-        await SharedTokenCacheCredential(_cache=TokenCache(), tenant_id="not-cached").get_token("scope")
+        await getattr(SharedTokenCacheCredential(_cache=TokenCache(), tenant_id="not-cached"), get_token_method)(
+            "scope"
+        )
     with pytest.raises(CredentialUnavailableError, match=NO_ACCOUNTS):
         credential = SharedTokenCacheCredential(_cache=TokenCache(), tenant_id="not-cached", username="not@cache")
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
 
 @pytest.mark.asyncio
-async def test_no_matching_account_for_username():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_no_matching_account_for_username(get_token_method):
     """one cached account, username specified, username doesn't match -> credential should raise"""
 
     upn = "spam@eggs"
@@ -189,14 +213,15 @@ async def test_no_matching_account_for_username():
     cache = populated_cache(account)
 
     with pytest.raises(CredentialUnavailableError) as ex:
-        await SharedTokenCacheCredential(_cache=cache, username="not" + upn).get_token("scope")
+        await getattr(SharedTokenCacheCredential(_cache=cache, username="not" + upn), get_token_method)("scope")
 
     assert ex.value.message.startswith(NO_MATCHING_ACCOUNTS[: NO_MATCHING_ACCOUNTS.index("{")])
     assert "not" + upn in ex.value.message
 
 
 @pytest.mark.asyncio
-async def test_no_matching_account_for_tenant():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_no_matching_account_for_tenant(get_token_method):
     """one cached account, tenant specified, tenant doesn't match -> credential should raise"""
 
     upn = "spam@eggs"
@@ -205,14 +230,15 @@ async def test_no_matching_account_for_tenant():
     cache = populated_cache(account)
 
     with pytest.raises(CredentialUnavailableError) as ex:
-        await SharedTokenCacheCredential(_cache=cache, tenant_id="not-" + tenant).get_token("scope")
+        await getattr(SharedTokenCacheCredential(_cache=cache, tenant_id="not-" + tenant), get_token_method)("scope")
 
     assert ex.value.message.startswith(NO_MATCHING_ACCOUNTS[: NO_MATCHING_ACCOUNTS.index("{")])
     assert "not-" + tenant in ex.value.message
 
 
 @pytest.mark.asyncio
-async def test_no_matching_account_for_tenant_and_username():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_no_matching_account_for_tenant_and_username(get_token_method):
     """one cached account, tenant and username specified, neither match -> credential should raise"""
 
     upn = "spam@eggs"
@@ -221,16 +247,18 @@ async def test_no_matching_account_for_tenant_and_username():
     cache = populated_cache(account)
 
     with pytest.raises(CredentialUnavailableError) as ex:
-        await SharedTokenCacheCredential(_cache=cache, tenant_id="not-" + tenant, username="not" + upn).get_token(
-            "scope"
-        )
+        await getattr(
+            SharedTokenCacheCredential(_cache=cache, tenant_id="not-" + tenant, username="not" + upn),
+            get_token_method,
+        )("scope")
 
     assert ex.value.message.startswith(NO_MATCHING_ACCOUNTS[: NO_MATCHING_ACCOUNTS.index("{")])
     assert "not" + upn in ex.value.message and "not-" + tenant in ex.value.message
 
 
 @pytest.mark.asyncio
-async def test_no_matching_account_for_tenant_or_username():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_no_matching_account_for_tenant_or_username(get_token_method):
     """two cached accounts, username and tenant specified, one account matches each -> credential should raise"""
 
     refresh_token_a = "refresh-token-a"
@@ -247,19 +275,20 @@ async def test_no_matching_account_for_tenant_or_username():
 
     credential = SharedTokenCacheCredential(username=upn_a, tenant_id=tenant_b, _cache=cache, transport=transport)
     with pytest.raises(CredentialUnavailableError) as ex:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
     assert ex.value.message.startswith(NO_MATCHING_ACCOUNTS[: NO_MATCHING_ACCOUNTS.index("{")])
     assert upn_a in ex.value.message and tenant_b in ex.value.message
 
     credential = SharedTokenCacheCredential(username=upn_b, tenant_id=tenant_a, _cache=cache, transport=transport)
     with pytest.raises(CredentialUnavailableError) as ex:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
     assert ex.value.message.startswith(NO_MATCHING_ACCOUNTS[: NO_MATCHING_ACCOUNTS.index("{")])
     assert upn_b in ex.value.message and tenant_a in ex.value.message
 
 
 @pytest.mark.asyncio
-async def test_single_account_matching_username():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_single_account_matching_username(get_token_method):
     """one cached account, username specified, username matches -> credential should auth that account"""
 
     upn = "spam@eggs"
@@ -274,12 +303,13 @@ async def test_single_account_matching_username():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_token))],
     )
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport, username=upn)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_single_account_matching_tenant():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_single_account_matching_tenant(get_token_method):
     """one cached account, tenant specified, tenant matches -> credential should auth that account"""
 
     tenant_id = "tenant-id"
@@ -294,12 +324,13 @@ async def test_single_account_matching_tenant():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_token))],
     )
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport, tenant_id=tenant_id)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_single_account_matching_tenant_and_username():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_single_account_matching_tenant_and_username(get_token_method):
     """one cached account, tenant and username specified, both match -> credential should auth that account"""
 
     upn = "spam@eggs"
@@ -315,12 +346,13 @@ async def test_single_account_matching_tenant_and_username():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_token))],
     )
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport, tenant_id=tenant_id, username=upn)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_single_account():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_single_account(get_token_method):
     """one cached account, no username specified -> credential should auth that account"""
 
     refresh_token = "refresh-token"
@@ -335,12 +367,13 @@ async def test_single_account():
     )
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport)
 
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_no_refresh_token():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_no_refresh_token(get_token_method):
     """one cached account, account has no refresh token -> credential should raise"""
 
     account = get_account_event(uid="uid_a", utid="utid", username="spam@eggs", refresh_token=None)
@@ -350,15 +383,16 @@ async def test_no_refresh_token():
 
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport)
     with pytest.raises(CredentialUnavailableError, match=NO_ACCOUNTS):
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport, username="not@cache")
     with pytest.raises(CredentialUnavailableError, match=NO_ACCOUNTS):
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
 
 @pytest.mark.asyncio
-async def test_two_accounts_no_username_or_tenant():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_two_accounts_no_username_or_tenant(get_token_method):
     """two cached accounts, no username or tenant specified -> credential should raise"""
 
     upn_a = "a@foo"
@@ -373,11 +407,12 @@ async def test_two_accounts_no_username_or_tenant():
     # two users in the cache, no username specified -> CredentialUnavailableError
     credential = SharedTokenCacheCredential(_cache=cache, transport=transport)
     with pytest.raises(ClientAuthenticationError, match=MULTIPLE_ACCOUNTS) as ex:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
 
 @pytest.mark.asyncio
-async def test_two_accounts_username_specified():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_two_accounts_username_specified(get_token_method):
     """two cached accounts, username specified, one account matches -> credential should auth that account"""
 
     scope = "scope"
@@ -394,12 +429,13 @@ async def test_two_accounts_username_specified():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_token))],
     )
     credential = SharedTokenCacheCredential(username=upn_a, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_two_accounts_tenant_specified():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_two_accounts_tenant_specified(get_token_method):
     """two cached accounts, tenant specified, one account matches -> credential should auth that account"""
 
     scope = "scope"
@@ -417,12 +453,13 @@ async def test_two_accounts_tenant_specified():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_token))],
     )
     credential = SharedTokenCacheCredential(tenant_id=tenant_id, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_two_accounts_tenant_and_username_specified():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_two_accounts_tenant_and_username_specified(get_token_method):
     """two cached accounts, tenant and username specified, one account matches both -> credential should auth that account"""
 
     scope = "scope"
@@ -440,12 +477,13 @@ async def test_two_accounts_tenant_and_username_specified():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_token))],
     )
     credential = SharedTokenCacheCredential(tenant_id=tenant_id, username=upn_a, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == expected_token
 
 
 @pytest.mark.asyncio
-async def test_same_username_different_tenants():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_same_username_different_tenants(get_token_method):
     """two cached accounts, same username, different tenants"""
 
     access_token_a = "access-token-a"
@@ -464,7 +502,7 @@ async def test_same_username_different_tenants():
     transport = Mock(side_effect=Exception())  # (so it shouldn't use the network)
     credential = SharedTokenCacheCredential(username=upn, _cache=cache, transport=transport)
     with pytest.raises(CredentialUnavailableError) as ex:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
     assert ex.value.message.startswith(MULTIPLE_MATCHING_ACCOUNTS[: MULTIPLE_MATCHING_ACCOUNTS.index("{")])
     assert upn in ex.value.message
@@ -476,7 +514,7 @@ async def test_same_username_different_tenants():
         responses=[mock_response(json_payload=build_aad_response(access_token=access_token_a))],
     )
     credential = SharedTokenCacheCredential(tenant_id=tenant_a, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == access_token_a
 
     transport = async_validating_transport(
@@ -484,12 +522,13 @@ async def test_same_username_different_tenants():
         responses=[mock_response(json_payload=build_aad_response(access_token=access_token_b))],
     )
     credential = SharedTokenCacheCredential(tenant_id=tenant_b, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == access_token_b
 
 
 @pytest.mark.asyncio
-async def test_same_tenant_different_usernames():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_same_tenant_different_usernames(get_token_method):
     """two cached accounts, same tenant, different usernames"""
 
     access_token_a = "access-token-a"
@@ -508,7 +547,7 @@ async def test_same_tenant_different_usernames():
     transport = Mock(side_effect=Exception())  # (so it shouldn't use the network)
     credential = SharedTokenCacheCredential(tenant_id=tenant_id, _cache=cache, transport=transport)
     with pytest.raises(CredentialUnavailableError) as ex:
-        await credential.get_token("scope")
+        await getattr(credential, get_token_method)("scope")
 
     assert ex.value.message.startswith(MULTIPLE_MATCHING_ACCOUNTS[: MULTIPLE_MATCHING_ACCOUNTS.index("{")])
     assert tenant_id in ex.value.message
@@ -520,7 +559,7 @@ async def test_same_tenant_different_usernames():
         responses=[mock_response(json_payload=build_aad_response(access_token=access_token_a))],
     )
     credential = SharedTokenCacheCredential(username=upn_b, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == access_token_a
 
     transport = async_validating_transport(
@@ -528,12 +567,13 @@ async def test_same_tenant_different_usernames():
         responses=[mock_response(json_payload=build_aad_response(access_token=access_token_a))],
     )
     credential = SharedTokenCacheCredential(username=upn_a, _cache=cache, transport=transport)
-    token = await credential.get_token(scope)
+    token = await getattr(credential, get_token_method)(scope)
     assert token.token == access_token_a
 
 
 @pytest.mark.asyncio
-async def test_authority_aliases():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_authority_aliases(get_token_method):
     """the credential should use a refresh token valid for any known alias of its authority"""
 
     expected_access_token = "access-token"
@@ -552,7 +592,7 @@ async def test_authority_aliases():
             responses=[mock_response(json_payload=build_aad_response(access_token=expected_access_token))],
         )
         credential = SharedTokenCacheCredential(authority=authority, _cache=cache, transport=transport)
-        token = await credential.get_token("scope")
+        token = await getattr(credential, get_token_method)("scope")
         assert token.token == expected_access_token
 
         # it should also be acceptable for every known alias of this authority
@@ -562,12 +602,13 @@ async def test_authority_aliases():
                 responses=[mock_response(json_payload=build_aad_response(access_token=expected_access_token))],
             )
             credential = SharedTokenCacheCredential(authority=alias, _cache=cache, transport=transport)
-            token = await credential.get_token("scope")
+            token = await getattr(credential, get_token_method)("scope")
             assert token.token == expected_access_token
 
 
 @pytest.mark.asyncio
-async def test_authority_with_no_known_alias():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_authority_with_no_known_alias(get_token_method):
     """given an appropriate token, an authority with no known aliases should work"""
 
     authority = "unknown.authority"
@@ -580,12 +621,13 @@ async def test_authority_with_no_known_alias():
         responses=[mock_response(json_payload=build_aad_response(access_token=expected_access_token))],
     )
     credential = SharedTokenCacheCredential(authority=authority, _cache=cache, transport=transport)
-    token = await credential.get_token("scope")
+    token = await getattr(credential, get_token_method)("scope")
     assert token.token == expected_access_token
 
 
 @pytest.mark.asyncio
-async def test_authority_environment_variable():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_authority_environment_variable(get_token_method):
     """the credential should accept an authority by environment variable when none is otherwise specified"""
 
     authority = "localhost"
@@ -599,13 +641,14 @@ async def test_authority_environment_variable():
     )
     with patch.dict("os.environ", {EnvironmentVariables.AZURE_AUTHORITY_HOST: authority}, clear=True):
         credential = SharedTokenCacheCredential(transport=transport, _cache=cache)
-    token = await credential.get_token("scope")
+    token = await getattr(credential, get_token_method)("scope")
     assert token.token == expected_access_token
 
 
 @pytest.mark.asyncio
-async def test_initialization():
-    """the credential should attempt to load the cache only once, when it's first needed"""
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_initialization(get_token_method):
+    """the credential should attempt to load the cache when it's needed and no cache has been established."""
 
     with patch("azure.identity._persistent_cache._get_persistence") as mock_cache_loader:
         mock_cache_loader.side_effect = Exception("it didn't work")
@@ -613,19 +656,40 @@ async def test_initialization():
         credential = SharedTokenCacheCredential()
         assert mock_cache_loader.call_count == 0
 
-        for _ in range(2):
-            with pytest.raises(CredentialUnavailableError, match="Shared token cache unavailable"):
-                await credential.get_token("scope")
-            assert mock_cache_loader.call_count == 1
+        with pytest.raises(CredentialUnavailableError, match="Shared token cache unavailable"):
+            await getattr(credential, get_token_method)("scope")
+        assert mock_cache_loader.call_count == 1
+
+        with pytest.raises(CredentialUnavailableError, match="Shared token cache unavailable"):
+            await getattr(credential, get_token_method)("scope")
+        assert mock_cache_loader.call_count == 2
 
 
 @pytest.mark.asyncio
-async def test_multitenant_authentication():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_initialization_with_cache_options(get_token_method):
+    """the credential should use user-supplied persistence options"""
+
+    with patch("azure.identity._internal.shared_token_cache._load_persistent_cache") as mock_cache_loader:
+        options = TokenCachePersistenceOptions(name="foo.cache")
+        credential = SharedTokenCacheCredential(cache_persistence_options=options)
+
+        with pytest.raises(CredentialUnavailableError):
+            await getattr(credential, get_token_method)("scope")
+        assert mock_cache_loader.call_count == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_multitenant_authentication(get_token_method):
     first_token = "***"
     second_tenant = "second-tenant"
     second_token = first_token * 2
 
-    async def send(request, **_):
+    async def send(request, **kwargs):
+        # ensure the `claims` and `tenant_id` keywords from credential's `get_token` method don't make it to transport
+        assert "claims" not in kwargs
+        assert "tenant_id" not in kwargs
         parsed = urlparse(request.url)
         tenant_id = parsed.path.split("/")[1]
         return mock_response(
@@ -642,27 +706,38 @@ async def test_multitenant_authentication():
     cache = populated_cache(expected_account)
 
     credential = SharedTokenCacheCredential(
-        authority=authority, transport=Mock(send=send), _cache=cache
+        authority=authority, transport=Mock(send=send), _cache=cache, additionally_allowed_tenants=["*"]
     )
-    token = await credential.get_token("scope")
+    token = await getattr(credential, get_token_method)("scope")
     assert token.token == first_token
 
-    token = await credential.get_token("scope", tenant_id="organizations")
+    kwargs = {"tenant_id": "organizations"}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
+    token = await getattr(credential, get_token_method)("scope", **kwargs)
     assert token.token == first_token
 
-    token = await credential.get_token("scope", tenant_id=second_tenant)
+    kwargs = {"tenant_id": second_tenant}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
+    token = await getattr(credential, get_token_method)("scope", **kwargs)
     assert token.token == second_token
 
     # should still default to the first tenant
-    token = await credential.get_token("scope")
+    token = await getattr(credential, get_token_method)("scope")
     assert token.token == first_token
 
+
 @pytest.mark.asyncio
-async def test_multitenant_authentication_not_allowed():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+async def test_multitenant_authentication_not_allowed(get_token_method):
     default_tenant = "organizations"
     expected_token = "***"
 
-    async def send(request, **_):
+    async def send(request, **kwargs):
+        # ensure the `claims` and `tenant_id` keywords from credential's `get_token` method don't make it to transport
+        assert "claims" not in kwargs
+        assert "tenant_id" not in kwargs
         parsed = urlparse(request.url)
         tenant_id = parsed.path.split("/")[1]
         assert tenant_id == default_tenant
@@ -681,12 +756,18 @@ async def test_multitenant_authentication_not_allowed():
 
     credential = SharedTokenCacheCredential(authority=authority, transport=Mock(send=send), _cache=cache)
 
-    token = await credential.get_token("scope")
+    token = await getattr(credential, get_token_method)("scope")
     assert token.token == expected_token
 
-    token = await credential.get_token("scope", tenant_id=default_tenant)
+    kwargs = {"tenant_id": default_tenant}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
+    token = await getattr(credential, get_token_method)("scope", **kwargs)
     assert token.token == expected_token
 
+    kwargs = {"tenant_id": "some_tenant"}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
     with patch.dict("os.environ", {EnvironmentVariables.AZURE_IDENTITY_DISABLE_MULTITENANTAUTH: "true"}):
-        token = await credential.get_token("scope", tenant_id="some tenant")
+        token = await getattr(credential, get_token_method)("scope", **kwargs)
         assert token.token == expected_token

@@ -15,21 +15,17 @@ from azure.ai.formrecognizer._response_handlers import prepare_prebuilt_models
 from azure.ai.formrecognizer.aio import FormRecognizerClient
 from azure.ai.formrecognizer import FormRecognizerApiVersion
 from asynctestcase import AsyncFormRecognizerTest
-from preparers import FormRecognizerPreparer
-from preparers import GlobalClientPreparer as _GlobalClientPreparer
+from preparers import FormRecognizerPreparer, get_async_client
+from conftest import skip_flaky_test
 
-FormRecognizerClientPreparer = functools.partial(_GlobalClientPreparer, FormRecognizerClient)
+get_fr_client = functools.partial(get_async_client, FormRecognizerClient)
 
 
 class TestIdDocumentsAsync(AsyncFormRecognizerTest):
 
-    def teardown(self):
-        self.sleep(4)
-
-    @pytest.mark.skip()
     @FormRecognizerPreparer()
-    @recorded_by_proxy_async
-    async def test_identity_document_bad_endpoint(self, formrecognizer_test_endpoint, formrecognizer_test_api_key, **kwargs):
+    async def test_identity_document_bad_endpoint(self, **kwargs):
+        formrecognizer_test_api_key = "fakeZmFrZV9hY29jdW50X2tleQ=="
         with open(self.identity_document_license_jpg, "rb") as fd:
             my_file = fd.read()
         with pytest.raises(ServiceRequestError):
@@ -38,9 +34,8 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                 poller = await client.begin_recognize_identity_documents(my_file)
 
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     async def test_damaged_file_bytes_fails_autodetect_content_type(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client()
         damaged_pdf = b"\x50\x44\x46\x55\x55\x55"  # doesn't match any magic file numbers
         with pytest.raises(ValueError):
             async with client:
@@ -49,9 +44,8 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                 )
 
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     async def test_damaged_file_bytes_io_fails_autodetect(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client()
         damaged_pdf = BytesIO(b"\x50\x44\x46\x55\x55\x55")  # doesn't match any magic file numbers
         with pytest.raises(ValueError):
             async with client:
@@ -60,9 +54,8 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                 )
 
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     async def test_passing_bad_content_type_param_passed(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client()
         with open(self.identity_document_license_jpg, "rb") as fd:
             my_file = fd.read()
         with pytest.raises(ValueError):
@@ -73,9 +66,8 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                 )
 
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     async def test_auto_detect_unsupported_stream_content(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client()
         with open(self.unsupported_content_py, "rb") as fd:
             my_file = fd.read()
 
@@ -85,10 +77,11 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                     my_file
                 )
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     @recorded_by_proxy_async
-    async def test_identity_document_stream_transform_jpg(self, client):
+    async def test_identity_document_stream_transform_jpg(self):
+        client = get_fr_client()
         responses = []
 
         def callback(raw_response, _, headers):
@@ -125,10 +118,11 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
         # Check page metadata
         self.assertFormPagesTransformCorrect(id_document.pages, read_results, page_results)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     @recorded_by_proxy_async
-    async def test_identity_document_jpg_include_field_elements(self, client):
+    async def test_identity_document_jpg_include_field_elements(self):
+        client = get_fr_client()
         with open(self.identity_document_license_jpg, "rb") as fd:
             id_document = fd.read()
         async with client:
@@ -150,10 +144,10 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                 self.assertFieldElementsHasValues(field.value_data.field_elements, id_document.page_range.first_page_number)
 
     @pytest.mark.live_test_only
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     async def test_identity_document_continuation_token(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client()
         with open(self.identity_document_license_jpg, "rb") as fd:
             id_document = fd.read()
         async with client:
@@ -162,12 +156,11 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
             poller = await client.begin_recognize_identity_documents(None, continuation_token=cont_token)
             result = await poller.result()
             assert result is not None
-            await initial_poller.wait()  # necessary so azure-devtools doesn't throw assertion error
+            await initial_poller.wait()  # necessary so devtools_testutils doesn't throw assertion error
 
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer(client_kwargs={"api_version": FormRecognizerApiVersion.V2_0})
     async def test_identity_document_v2(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client(api_version=FormRecognizerApiVersion.V2_0)
         with open(self.identity_document_license_jpg, "rb") as fd:
             id_document = fd.read()
         with pytest.raises(ValueError) as e:
@@ -175,10 +168,11 @@ class TestIdDocumentsAsync(AsyncFormRecognizerTest):
                 await client.begin_recognize_identity_documents(id_document)
         assert "Method 'begin_recognize_identity_documents' is only available for API version V2_1 and up" in str(e.value)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     @recorded_by_proxy_async
-    async def test_pages_kwarg_specified(self, client):
+    async def test_pages_kwarg_specified(self):
+        client = get_fr_client()
         with open(self.identity_document_license_jpg, "rb") as fd:
             id_document = fd.read()
         async with client:

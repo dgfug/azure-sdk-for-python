@@ -1,5 +1,50 @@
 # Release History
 
+## 1.4.0 (2024-06-17)
+
+### Features Added
+
+  - Model ImageTemplate has a new parameter auto_run
+  - Model ImageTemplate has a new parameter managed_resource_tags
+  - Model ImageTemplateUpdateParametersProperties has a new parameter vm_profile
+  - Model VirtualNetworkConfig has a new parameter container_instance_subnet_id
+
+## 1.3.0 (2023-12-18)
+
+### Features Added
+
+  - Model ImageTemplate has a new parameter error_handling
+  - Model ImageTemplateUpdateParameters has a new parameter properties
+
+## 1.2.0 (2023-04-20)
+
+### Features Added
+
+  - Added operation group TriggersOperations
+  - Model ImageTemplate has a new parameter optimize
+  - Model ImageTemplateSharedImageDistributor has a new parameter target_regions
+  - Model ImageTemplateSharedImageDistributor has a new parameter versioning
+  - Model ImageTemplateSharedImageVersionSource has a new parameter exact_version
+  - Model ImageTemplateVhdDistributor has a new parameter uri
+
+## 1.2.0b1 (2022-11-28)
+
+### Other Changes
+
+  - Added generated samples in github repo
+  - Drop support for python<3.7.0
+
+## 1.1.0 (2022-06-07)
+
+**Features**
+
+  - Model ImageTemplate has a new parameter exact_staging_resource_group
+  - Model ImageTemplate has a new parameter staging_resource_group
+  - Model ImageTemplate has a new parameter validate
+  - Model Resource has a new parameter system_data
+  - Model RunOutput has a new parameter system_data
+  - Model TrackedResource has a new parameter system_data
+
 ## 1.0.0 (2021-12-07)
 
 **Features**

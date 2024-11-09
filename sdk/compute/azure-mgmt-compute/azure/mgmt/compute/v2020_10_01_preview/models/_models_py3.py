@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -6,14 +7,16 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
-import msrest.serialization
+from ... import _serialization
 
-from ._compute_management_client_enums import *
+if TYPE_CHECKING:
+    # pylint: disable=unused-import,ungrouped-imports
+    from .. import models as _models
 
 
-class ApiError(msrest.serialization.Model):
+class ApiError(_serialization.Model):
     """Api error.
 
     :ivar details: The Api error details.
@@ -29,23 +32,23 @@ class ApiError(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'details': {'key': 'details', 'type': '[ApiErrorBase]'},
-        'innererror': {'key': 'innererror', 'type': 'InnerError'},
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
+        "details": {"key": "details", "type": "[ApiErrorBase]"},
+        "innererror": {"key": "innererror", "type": "InnerError"},
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
     }
 
     def __init__(
         self,
         *,
-        details: Optional[List["ApiErrorBase"]] = None,
-        innererror: Optional["InnerError"] = None,
+        details: Optional[List["_models.ApiErrorBase"]] = None,
+        innererror: Optional["_models.InnerError"] = None,
         code: Optional[str] = None,
         message: Optional[str] = None,
         target: Optional[str] = None,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         """
         :keyword details: The Api error details.
         :paramtype details: list[~azure.mgmt.compute.v2020_10_01_preview.models.ApiErrorBase]
@@ -58,7 +61,7 @@ class ApiError(msrest.serialization.Model):
         :keyword target: The target of the particular error.
         :paramtype target: str
         """
-        super(ApiError, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.details = details
         self.innererror = innererror
         self.code = code
@@ -66,7 +69,7 @@ class ApiError(msrest.serialization.Model):
         self.target = target
 
 
-class ApiErrorBase(msrest.serialization.Model):
+class ApiErrorBase(_serialization.Model):
     """Api error base.
 
     :ivar code: The error code.
@@ -78,19 +81,14 @@ class ApiErrorBase(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
     }
 
     def __init__(
-        self,
-        *,
-        code: Optional[str] = None,
-        message: Optional[str] = None,
-        target: Optional[str] = None,
-        **kwargs
-    ):
+        self, *, code: Optional[str] = None, message: Optional[str] = None, target: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword code: The error code.
         :paramtype code: str
@@ -99,18 +97,18 @@ class ApiErrorBase(msrest.serialization.Model):
         :keyword target: The target of the particular error.
         :paramtype target: str
         """
-        super(ApiErrorBase, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.code = code
         self.message = message
         self.target = target
 
 
-class CloudService(msrest.serialization.Model):
+class CloudService(_serialization.Model):
     """Describes the cloud service.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar id: Resource Id.
     :vartype id: str
@@ -118,28 +116,28 @@ class CloudService(msrest.serialization.Model):
     :vartype name: str
     :ivar type: Resource type.
     :vartype type: str
-    :ivar location: Required. Resource location.
+    :ivar location: Resource location. Required.
     :vartype location: str
-    :ivar tags: A set of tags. Resource tags.
+    :ivar tags: Resource tags.
     :vartype tags: dict[str, str]
     :ivar properties: Cloud service properties.
     :vartype properties: ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceProperties
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'location': {'required': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "location": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'properties': {'key': 'properties', 'type': 'CloudServiceProperties'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "properties": {"key": "properties", "type": "CloudServiceProperties"},
     }
 
     def __init__(
@@ -147,18 +145,18 @@ class CloudService(msrest.serialization.Model):
         *,
         location: str,
         tags: Optional[Dict[str, str]] = None,
-        properties: Optional["CloudServiceProperties"] = None,
-        **kwargs
-    ):
+        properties: Optional["_models.CloudServiceProperties"] = None,
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword location: Required. Resource location.
+        :keyword location: Resource location. Required.
         :paramtype location: str
-        :keyword tags: A set of tags. Resource tags.
+        :keyword tags: Resource tags.
         :paramtype tags: dict[str, str]
         :keyword properties: Cloud service properties.
         :paramtype properties: ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceProperties
         """
-        super(CloudService, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.type = None
@@ -167,7 +165,7 @@ class CloudService(msrest.serialization.Model):
         self.properties = properties
 
 
-class CloudServiceExtensionProfile(msrest.serialization.Model):
+class CloudServiceExtensionProfile(_serialization.Model):
     """Describes a cloud service extension profile.
 
     :ivar extensions: List of extensions for the cloud service.
@@ -175,24 +173,19 @@ class CloudServiceExtensionProfile(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'extensions': {'key': 'extensions', 'type': '[Extension]'},
+        "extensions": {"key": "extensions", "type": "[Extension]"},
     }
 
-    def __init__(
-        self,
-        *,
-        extensions: Optional[List["Extension"]] = None,
-        **kwargs
-    ):
+    def __init__(self, *, extensions: Optional[List["_models.Extension"]] = None, **kwargs: Any) -> None:
         """
         :keyword extensions: List of extensions for the cloud service.
         :paramtype extensions: list[~azure.mgmt.compute.v2020_10_01_preview.models.Extension]
         """
-        super(CloudServiceExtensionProfile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.extensions = extensions
 
 
-class CloudServiceExtensionProperties(msrest.serialization.Model):
+class CloudServiceExtensionProperties(_serialization.Model):
     """Extension Properties.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -239,20 +232,23 @@ class CloudServiceExtensionProperties(msrest.serialization.Model):
     """
 
     _validation = {
-        'provisioning_state': {'readonly': True},
+        "provisioning_state": {"readonly": True},
     }
 
     _attribute_map = {
-        'publisher': {'key': 'publisher', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'type_handler_version': {'key': 'typeHandlerVersion', 'type': 'str'},
-        'auto_upgrade_minor_version': {'key': 'autoUpgradeMinorVersion', 'type': 'bool'},
-        'settings': {'key': 'settings', 'type': 'str'},
-        'protected_settings': {'key': 'protectedSettings', 'type': 'str'},
-        'protected_settings_from_key_vault': {'key': 'protectedSettingsFromKeyVault', 'type': 'CloudServiceVaultAndSecretReference'},
-        'force_update_tag': {'key': 'forceUpdateTag', 'type': 'str'},
-        'provisioning_state': {'key': 'provisioningState', 'type': 'str'},
-        'roles_applied_to': {'key': 'rolesAppliedTo', 'type': '[str]'},
+        "publisher": {"key": "publisher", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "type_handler_version": {"key": "typeHandlerVersion", "type": "str"},
+        "auto_upgrade_minor_version": {"key": "autoUpgradeMinorVersion", "type": "bool"},
+        "settings": {"key": "settings", "type": "str"},
+        "protected_settings": {"key": "protectedSettings", "type": "str"},
+        "protected_settings_from_key_vault": {
+            "key": "protectedSettingsFromKeyVault",
+            "type": "CloudServiceVaultAndSecretReference",
+        },
+        "force_update_tag": {"key": "forceUpdateTag", "type": "str"},
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "roles_applied_to": {"key": "rolesAppliedTo", "type": "[str]"},
     }
 
     def __init__(
@@ -264,11 +260,11 @@ class CloudServiceExtensionProperties(msrest.serialization.Model):
         auto_upgrade_minor_version: Optional[bool] = None,
         settings: Optional[str] = None,
         protected_settings: Optional[str] = None,
-        protected_settings_from_key_vault: Optional["CloudServiceVaultAndSecretReference"] = None,
+        protected_settings_from_key_vault: Optional["_models.CloudServiceVaultAndSecretReference"] = None,
         force_update_tag: Optional[str] = None,
         roles_applied_to: Optional[List[str]] = None,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         """
         :keyword publisher: The name of the extension handler publisher.
         :paramtype publisher: str
@@ -308,7 +304,7 @@ class CloudServiceExtensionProperties(msrest.serialization.Model):
          specified or '*' is specified, extension is applied to all roles in the cloud service.
         :paramtype roles_applied_to: list[str]
         """
-        super(CloudServiceExtensionProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.publisher = publisher
         self.type = type
         self.type_handler_version = type_handler_version
@@ -321,7 +317,7 @@ class CloudServiceExtensionProperties(msrest.serialization.Model):
         self.roles_applied_to = roles_applied_to
 
 
-class CloudServiceInstanceView(msrest.serialization.Model):
+class CloudServiceInstanceView(_serialization.Model):
     """InstanceView of CloudService as a whole.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -338,37 +334,32 @@ class CloudServiceInstanceView(msrest.serialization.Model):
     """
 
     _validation = {
-        'sdk_version': {'readonly': True},
-        'statuses': {'readonly': True},
+        "sdk_version": {"readonly": True},
+        "statuses": {"readonly": True},
     }
 
     _attribute_map = {
-        'role_instance': {'key': 'roleInstance', 'type': 'InstanceViewStatusesSummary'},
-        'sdk_version': {'key': 'sdkVersion', 'type': 'str'},
-        'statuses': {'key': 'statuses', 'type': '[ResourceInstanceViewStatus]'},
+        "role_instance": {"key": "roleInstance", "type": "InstanceViewStatusesSummary"},
+        "sdk_version": {"key": "sdkVersion", "type": "str"},
+        "statuses": {"key": "statuses", "type": "[ResourceInstanceViewStatus]"},
     }
 
-    def __init__(
-        self,
-        *,
-        role_instance: Optional["InstanceViewStatusesSummary"] = None,
-        **kwargs
-    ):
+    def __init__(self, *, role_instance: Optional["_models.InstanceViewStatusesSummary"] = None, **kwargs: Any) -> None:
         """
         :keyword role_instance: Instance view statuses.
         :paramtype role_instance:
          ~azure.mgmt.compute.v2020_10_01_preview.models.InstanceViewStatusesSummary
         """
-        super(CloudServiceInstanceView, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.role_instance = role_instance
         self.sdk_version = None
         self.statuses = None
 
 
-class CloudServiceListResult(msrest.serialization.Model):
+class CloudServiceListResult(_serialization.Model):
     """CloudServiceListResult.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar value: Required.
     :vartype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudService]
@@ -377,33 +368,27 @@ class CloudServiceListResult(msrest.serialization.Model):
     """
 
     _validation = {
-        'value': {'required': True},
+        "value": {"required": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[CloudService]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[CloudService]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: List["CloudService"],
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *, value: List["_models.CloudService"], next_link: Optional[str] = None, **kwargs: Any) -> None:
         """
         :keyword value: Required.
         :paramtype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudService]
         :keyword next_link:
         :paramtype next_link: str
         """
-        super(CloudServiceListResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = next_link
 
 
-class CloudServiceNetworkProfile(msrest.serialization.Model):
+class CloudServiceNetworkProfile(_serialization.Model):
     """Network Profile for the cloud service.
 
     :ivar load_balancer_configurations: The list of load balancer configurations for the cloud
@@ -415,17 +400,17 @@ class CloudServiceNetworkProfile(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'load_balancer_configurations': {'key': 'loadBalancerConfigurations', 'type': '[LoadBalancerConfiguration]'},
-        'swappable_cloud_service': {'key': 'swappableCloudService', 'type': 'SubResource'},
+        "load_balancer_configurations": {"key": "loadBalancerConfigurations", "type": "[LoadBalancerConfiguration]"},
+        "swappable_cloud_service": {"key": "swappableCloudService", "type": "SubResource"},
     }
 
     def __init__(
         self,
         *,
-        load_balancer_configurations: Optional[List["LoadBalancerConfiguration"]] = None,
-        swappable_cloud_service: Optional["SubResource"] = None,
-        **kwargs
-    ):
+        load_balancer_configurations: Optional[List["_models.LoadBalancerConfiguration"]] = None,
+        swappable_cloud_service: Optional["_models.SubResource"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword load_balancer_configurations: The list of load balancer configurations for the cloud
          service.
@@ -434,12 +419,12 @@ class CloudServiceNetworkProfile(msrest.serialization.Model):
         :keyword swappable_cloud_service:
         :paramtype swappable_cloud_service: ~azure.mgmt.compute.v2020_10_01_preview.models.SubResource
         """
-        super(CloudServiceNetworkProfile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.load_balancer_configurations = load_balancer_configurations
         self.swappable_cloud_service = swappable_cloud_service
 
 
-class CloudServiceOsProfile(msrest.serialization.Model):
+class CloudServiceOsProfile(_serialization.Model):
     """Describes the OS profile for the cloud service.
 
     :ivar secrets: Specifies set of certificates that should be installed onto the role instances.
@@ -448,26 +433,23 @@ class CloudServiceOsProfile(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'secrets': {'key': 'secrets', 'type': '[CloudServiceVaultSecretGroup]'},
+        "secrets": {"key": "secrets", "type": "[CloudServiceVaultSecretGroup]"},
     }
 
     def __init__(
-        self,
-        *,
-        secrets: Optional[List["CloudServiceVaultSecretGroup"]] = None,
-        **kwargs
-    ):
+        self, *, secrets: Optional[List["_models.CloudServiceVaultSecretGroup"]] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword secrets: Specifies set of certificates that should be installed onto the role
          instances.
         :paramtype secrets:
          list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceVaultSecretGroup]
         """
-        super(CloudServiceOsProfile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.secrets = secrets
 
 
-class CloudServiceProperties(msrest.serialization.Model):
+class CloudServiceProperties(_serialization.Model):  # pylint: disable=too-many-instance-attributes
     """Cloud service properties.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -493,11 +475,11 @@ class CloudServiceProperties(msrest.serialization.Model):
     :ivar upgrade_mode: Update mode for the cloud service. Role instances are allocated to update
      domains when the service is deployed. Updates can be initiated manually in each update domain
      or initiated automatically in all update domains.
-     Possible Values are :code:`<br />`:code:`<br />`\ **Auto**\ :code:`<br />`:code:`<br />`\
-     **Manual** :code:`<br />`:code:`<br />`\ **Simultaneous**\ :code:`<br />`:code:`<br />`
+     Possible Values are :code:`<br />`:code:`<br />`\\ **Auto**\\ :code:`<br />`:code:`<br />`\\
+     **Manual** :code:`<br />`:code:`<br />`\\ **Simultaneous**\\ :code:`<br />`:code:`<br />`
      If not specified, the default value is Auto. If set to Manual, PUT UpdateDomain must be called
      to apply the update. If set to Auto, the update is automatically applied to each update domain
-     in sequence. Possible values include: "Auto", "Manual", "Simultaneous".
+     in sequence. Known values are: "Auto", "Manual", and "Simultaneous".
     :vartype upgrade_mode: str or
      ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceUpgradeMode
     :ivar role_profile: Describes the role profile for the cloud service.
@@ -517,22 +499,22 @@ class CloudServiceProperties(msrest.serialization.Model):
     """
 
     _validation = {
-        'provisioning_state': {'readonly': True},
-        'unique_id': {'readonly': True},
+        "provisioning_state": {"readonly": True},
+        "unique_id": {"readonly": True},
     }
 
     _attribute_map = {
-        'package_url': {'key': 'packageUrl', 'type': 'str'},
-        'configuration': {'key': 'configuration', 'type': 'str'},
-        'configuration_url': {'key': 'configurationUrl', 'type': 'str'},
-        'start_cloud_service': {'key': 'startCloudService', 'type': 'bool'},
-        'upgrade_mode': {'key': 'upgradeMode', 'type': 'str'},
-        'role_profile': {'key': 'roleProfile', 'type': 'CloudServiceRoleProfile'},
-        'os_profile': {'key': 'osProfile', 'type': 'CloudServiceOsProfile'},
-        'network_profile': {'key': 'networkProfile', 'type': 'CloudServiceNetworkProfile'},
-        'extension_profile': {'key': 'extensionProfile', 'type': 'CloudServiceExtensionProfile'},
-        'provisioning_state': {'key': 'provisioningState', 'type': 'str'},
-        'unique_id': {'key': 'uniqueId', 'type': 'str'},
+        "package_url": {"key": "packageUrl", "type": "str"},
+        "configuration": {"key": "configuration", "type": "str"},
+        "configuration_url": {"key": "configurationUrl", "type": "str"},
+        "start_cloud_service": {"key": "startCloudService", "type": "bool"},
+        "upgrade_mode": {"key": "upgradeMode", "type": "str"},
+        "role_profile": {"key": "roleProfile", "type": "CloudServiceRoleProfile"},
+        "os_profile": {"key": "osProfile", "type": "CloudServiceOsProfile"},
+        "network_profile": {"key": "networkProfile", "type": "CloudServiceNetworkProfile"},
+        "extension_profile": {"key": "extensionProfile", "type": "CloudServiceExtensionProfile"},
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "unique_id": {"key": "uniqueId", "type": "str"},
     }
 
     def __init__(
@@ -542,13 +524,13 @@ class CloudServiceProperties(msrest.serialization.Model):
         configuration: Optional[str] = None,
         configuration_url: Optional[str] = None,
         start_cloud_service: Optional[bool] = None,
-        upgrade_mode: Optional[Union[str, "CloudServiceUpgradeMode"]] = None,
-        role_profile: Optional["CloudServiceRoleProfile"] = None,
-        os_profile: Optional["CloudServiceOsProfile"] = None,
-        network_profile: Optional["CloudServiceNetworkProfile"] = None,
-        extension_profile: Optional["CloudServiceExtensionProfile"] = None,
-        **kwargs
-    ):
+        upgrade_mode: Optional[Union[str, "_models.CloudServiceUpgradeMode"]] = None,
+        role_profile: Optional["_models.CloudServiceRoleProfile"] = None,
+        os_profile: Optional["_models.CloudServiceOsProfile"] = None,
+        network_profile: Optional["_models.CloudServiceNetworkProfile"] = None,
+        extension_profile: Optional["_models.CloudServiceExtensionProfile"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword package_url: Specifies a URL that refers to the location of the service package in the
          Blob service. The service package URL can be Shared Access Signature (SAS) URI from any storage
@@ -571,11 +553,11 @@ class CloudServiceProperties(msrest.serialization.Model):
         :keyword upgrade_mode: Update mode for the cloud service. Role instances are allocated to
          update domains when the service is deployed. Updates can be initiated manually in each update
          domain or initiated automatically in all update domains.
-         Possible Values are :code:`<br />`:code:`<br />`\ **Auto**\ :code:`<br />`:code:`<br />`\
-         **Manual** :code:`<br />`:code:`<br />`\ **Simultaneous**\ :code:`<br />`:code:`<br />`
+         Possible Values are :code:`<br />`:code:`<br />`\\ **Auto**\\ :code:`<br />`:code:`<br />`\\
+         **Manual** :code:`<br />`:code:`<br />`\\ **Simultaneous**\\ :code:`<br />`:code:`<br />`
          If not specified, the default value is Auto. If set to Manual, PUT UpdateDomain must be called
          to apply the update. If set to Auto, the update is automatically applied to each update domain
-         in sequence. Possible values include: "Auto", "Manual", "Simultaneous".
+         in sequence. Known values are: "Auto", "Manual", and "Simultaneous".
         :paramtype upgrade_mode: str or
          ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceUpgradeMode
         :keyword role_profile: Describes the role profile for the cloud service.
@@ -589,7 +571,7 @@ class CloudServiceProperties(msrest.serialization.Model):
         :paramtype extension_profile:
          ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceExtensionProfile
         """
-        super(CloudServiceProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.package_url = package_url
         self.configuration = configuration
         self.configuration_url = configuration_url
@@ -603,7 +585,7 @@ class CloudServiceProperties(msrest.serialization.Model):
         self.unique_id = None
 
 
-class CloudServiceRole(msrest.serialization.Model):
+class CloudServiceRole(_serialization.Model):
     """Describes a role of the cloud service.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -623,28 +605,28 @@ class CloudServiceRole(msrest.serialization.Model):
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'location': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "location": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
-        'sku': {'key': 'sku', 'type': 'CloudServiceRoleSku'},
-        'properties': {'key': 'properties', 'type': 'CloudServiceRoleProperties'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "sku": {"key": "sku", "type": "CloudServiceRoleSku"},
+        "properties": {"key": "properties", "type": "CloudServiceRoleProperties"},
     }
 
     def __init__(
         self,
         *,
-        sku: Optional["CloudServiceRoleSku"] = None,
-        properties: Optional["CloudServiceRoleProperties"] = None,
-        **kwargs
-    ):
+        sku: Optional["_models.CloudServiceRoleSku"] = None,
+        properties: Optional["_models.CloudServiceRoleProperties"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword sku: Describes the cloud service role sku.
         :paramtype sku: ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceRoleSku
@@ -652,7 +634,7 @@ class CloudServiceRole(msrest.serialization.Model):
         :paramtype properties:
          ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceRoleProperties
         """
-        super(CloudServiceRole, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.type = None
@@ -661,10 +643,10 @@ class CloudServiceRole(msrest.serialization.Model):
         self.properties = properties
 
 
-class CloudServiceRoleListResult(msrest.serialization.Model):
+class CloudServiceRoleListResult(_serialization.Model):
     """CloudServiceRoleListResult.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar value: Required.
     :vartype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceRole]
@@ -673,33 +655,29 @@ class CloudServiceRoleListResult(msrest.serialization.Model):
     """
 
     _validation = {
-        'value': {'required': True},
+        "value": {"required": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[CloudServiceRole]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[CloudServiceRole]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
     def __init__(
-        self,
-        *,
-        value: List["CloudServiceRole"],
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
+        self, *, value: List["_models.CloudServiceRole"], next_link: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword value: Required.
         :paramtype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceRole]
         :keyword next_link:
         :paramtype next_link: str
         """
-        super(CloudServiceRoleListResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = next_link
 
 
-class CloudServiceRoleProfile(msrest.serialization.Model):
+class CloudServiceRoleProfile(_serialization.Model):
     """Describes the role profile for the cloud service.
 
     :ivar roles: List of roles for the cloud service.
@@ -708,25 +686,22 @@ class CloudServiceRoleProfile(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'roles': {'key': 'roles', 'type': '[CloudServiceRoleProfileProperties]'},
+        "roles": {"key": "roles", "type": "[CloudServiceRoleProfileProperties]"},
     }
 
     def __init__(
-        self,
-        *,
-        roles: Optional[List["CloudServiceRoleProfileProperties"]] = None,
-        **kwargs
-    ):
+        self, *, roles: Optional[List["_models.CloudServiceRoleProfileProperties"]] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword roles: List of roles for the cloud service.
         :paramtype roles:
          list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceRoleProfileProperties]
         """
-        super(CloudServiceRoleProfile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.roles = roles
 
 
-class CloudServiceRoleProfileProperties(msrest.serialization.Model):
+class CloudServiceRoleProfileProperties(_serialization.Model):
     """Describes the role properties.
 
     :ivar name: Resource name.
@@ -736,29 +711,25 @@ class CloudServiceRoleProfileProperties(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'sku': {'key': 'sku', 'type': 'CloudServiceRoleSku'},
+        "name": {"key": "name", "type": "str"},
+        "sku": {"key": "sku", "type": "CloudServiceRoleSku"},
     }
 
     def __init__(
-        self,
-        *,
-        name: Optional[str] = None,
-        sku: Optional["CloudServiceRoleSku"] = None,
-        **kwargs
-    ):
+        self, *, name: Optional[str] = None, sku: Optional["_models.CloudServiceRoleSku"] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword name: Resource name.
         :paramtype name: str
         :keyword sku: Describes the cloud service role sku.
         :paramtype sku: ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceRoleSku
         """
-        super(CloudServiceRoleProfileProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = name
         self.sku = sku
 
 
-class CloudServiceRoleProperties(msrest.serialization.Model):
+class CloudServiceRoleProperties(_serialization.Model):
     """CloudServiceRoleProperties.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -768,24 +739,20 @@ class CloudServiceRoleProperties(msrest.serialization.Model):
     """
 
     _validation = {
-        'unique_id': {'readonly': True},
+        "unique_id": {"readonly": True},
     }
 
     _attribute_map = {
-        'unique_id': {'key': 'uniqueId', 'type': 'str'},
+        "unique_id": {"key": "uniqueId", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(CloudServiceRoleProperties, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.unique_id = None
 
 
-class CloudServiceRoleSku(msrest.serialization.Model):
+class CloudServiceRoleSku(_serialization.Model):
     """Describes the cloud service role sku.
 
     :ivar name: The sku name. NOTE: If the new SKU is not supported on the hardware the cloud
@@ -796,23 +763,18 @@ class CloudServiceRoleSku(msrest.serialization.Model):
      />`:code:`<br />` **Standard** :code:`<br />`:code:`<br />` **Basic**.
     :vartype tier: str
     :ivar capacity: Specifies the number of role instances in the cloud service.
-    :vartype capacity: long
+    :vartype capacity: int
     """
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'tier': {'key': 'tier', 'type': 'str'},
-        'capacity': {'key': 'capacity', 'type': 'long'},
+        "name": {"key": "name", "type": "str"},
+        "tier": {"key": "tier", "type": "str"},
+        "capacity": {"key": "capacity", "type": "int"},
     }
 
     def __init__(
-        self,
-        *,
-        name: Optional[str] = None,
-        tier: Optional[str] = None,
-        capacity: Optional[int] = None,
-        **kwargs
-    ):
+        self, *, name: Optional[str] = None, tier: Optional[str] = None, capacity: Optional[int] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword name: The sku name. NOTE: If the new SKU is not supported on the hardware the cloud
          service is currently on, you need to delete and recreate the cloud service or move back to the
@@ -822,40 +784,35 @@ class CloudServiceRoleSku(msrest.serialization.Model):
          />`:code:`<br />` **Standard** :code:`<br />`:code:`<br />` **Basic**.
         :paramtype tier: str
         :keyword capacity: Specifies the number of role instances in the cloud service.
-        :paramtype capacity: long
+        :paramtype capacity: int
         """
-        super(CloudServiceRoleSku, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = name
         self.tier = tier
         self.capacity = capacity
 
 
-class CloudServiceUpdate(msrest.serialization.Model):
+class CloudServiceUpdate(_serialization.Model):
     """CloudServiceUpdate.
 
-    :ivar tags: A set of tags. Resource tags.
+    :ivar tags: Resource tags.
     :vartype tags: dict[str, str]
     """
 
     _attribute_map = {
-        'tags': {'key': 'tags', 'type': '{str}'},
+        "tags": {"key": "tags", "type": "{str}"},
     }
 
-    def __init__(
-        self,
-        *,
-        tags: Optional[Dict[str, str]] = None,
-        **kwargs
-    ):
+    def __init__(self, *, tags: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
         """
-        :keyword tags: A set of tags. Resource tags.
+        :keyword tags: Resource tags.
         :paramtype tags: dict[str, str]
         """
-        super(CloudServiceUpdate, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.tags = tags
 
 
-class CloudServiceVaultAndSecretReference(msrest.serialization.Model):
+class CloudServiceVaultAndSecretReference(_serialization.Model):
     """CloudServiceVaultAndSecretReference.
 
     :ivar source_vault:
@@ -865,30 +822,27 @@ class CloudServiceVaultAndSecretReference(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'source_vault': {'key': 'sourceVault', 'type': 'SubResource'},
-        'secret_url': {'key': 'secretUrl', 'type': 'str'},
+        "source_vault": {"key": "sourceVault", "type": "SubResource"},
+        "secret_url": {"key": "secretUrl", "type": "str"},
     }
 
     def __init__(
-        self,
-        *,
-        source_vault: Optional["SubResource"] = None,
-        secret_url: Optional[str] = None,
-        **kwargs
-    ):
+        self, *, source_vault: Optional["_models.SubResource"] = None, secret_url: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword source_vault:
         :paramtype source_vault: ~azure.mgmt.compute.v2020_10_01_preview.models.SubResource
         :keyword secret_url:
         :paramtype secret_url: str
         """
-        super(CloudServiceVaultAndSecretReference, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.source_vault = source_vault
         self.secret_url = secret_url
 
 
-class CloudServiceVaultCertificate(msrest.serialization.Model):
-    """Describes a single certificate reference in a Key Vault, and where the certificate should reside on the role instance.
+class CloudServiceVaultCertificate(_serialization.Model):
+    """Describes a single certificate reference in a Key Vault, and where the certificate should
+    reside on the role instance.
 
     :ivar certificate_url: This is the URL of a certificate that has been uploaded to Key Vault as
      a secret.
@@ -896,25 +850,20 @@ class CloudServiceVaultCertificate(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'certificate_url': {'key': 'certificateUrl', 'type': 'str'},
+        "certificate_url": {"key": "certificateUrl", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        certificate_url: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *, certificate_url: Optional[str] = None, **kwargs: Any) -> None:
         """
         :keyword certificate_url: This is the URL of a certificate that has been uploaded to Key Vault
          as a secret.
         :paramtype certificate_url: str
         """
-        super(CloudServiceVaultCertificate, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.certificate_url = certificate_url
 
 
-class CloudServiceVaultSecretGroup(msrest.serialization.Model):
+class CloudServiceVaultSecretGroup(_serialization.Model):
     """Describes a set of certificates which are all in the same Key Vault.
 
     :ivar source_vault: The relative URL of the Key Vault containing all of the certificates in
@@ -927,17 +876,17 @@ class CloudServiceVaultSecretGroup(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'source_vault': {'key': 'sourceVault', 'type': 'SubResource'},
-        'vault_certificates': {'key': 'vaultCertificates', 'type': '[CloudServiceVaultCertificate]'},
+        "source_vault": {"key": "sourceVault", "type": "SubResource"},
+        "vault_certificates": {"key": "vaultCertificates", "type": "[CloudServiceVaultCertificate]"},
     }
 
     def __init__(
         self,
         *,
-        source_vault: Optional["SubResource"] = None,
-        vault_certificates: Optional[List["CloudServiceVaultCertificate"]] = None,
-        **kwargs
-    ):
+        source_vault: Optional["_models.SubResource"] = None,
+        vault_certificates: Optional[List["_models.CloudServiceVaultCertificate"]] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword source_vault: The relative URL of the Key Vault containing all of the certificates in
          VaultCertificates.
@@ -947,12 +896,12 @@ class CloudServiceVaultSecretGroup(msrest.serialization.Model):
         :paramtype vault_certificates:
          list[~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceVaultCertificate]
         """
-        super(CloudServiceVaultSecretGroup, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.source_vault = source_vault
         self.vault_certificates = vault_certificates
 
 
-class Extension(msrest.serialization.Model):
+class Extension(_serialization.Model):
     """Describes a cloud service Extension.
 
     :ivar name: The name of the extension.
@@ -963,17 +912,17 @@ class Extension(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'properties': {'key': 'properties', 'type': 'CloudServiceExtensionProperties'},
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "CloudServiceExtensionProperties"},
     }
 
     def __init__(
         self,
         *,
         name: Optional[str] = None,
-        properties: Optional["CloudServiceExtensionProperties"] = None,
-        **kwargs
-    ):
+        properties: Optional["_models.CloudServiceExtensionProperties"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword name: The name of the extension.
         :paramtype name: str
@@ -981,12 +930,12 @@ class Extension(msrest.serialization.Model):
         :paramtype properties:
          ~azure.mgmt.compute.v2020_10_01_preview.models.CloudServiceExtensionProperties
         """
-        super(Extension, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = name
         self.properties = properties
 
 
-class InnerError(msrest.serialization.Model):
+class InnerError(_serialization.Model):
     """Inner error details.
 
     :ivar exceptiontype: The exception type.
@@ -996,29 +945,25 @@ class InnerError(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'exceptiontype': {'key': 'exceptiontype', 'type': 'str'},
-        'errordetail': {'key': 'errordetail', 'type': 'str'},
+        "exceptiontype": {"key": "exceptiontype", "type": "str"},
+        "errordetail": {"key": "errordetail", "type": "str"},
     }
 
     def __init__(
-        self,
-        *,
-        exceptiontype: Optional[str] = None,
-        errordetail: Optional[str] = None,
-        **kwargs
-    ):
+        self, *, exceptiontype: Optional[str] = None, errordetail: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
         :keyword exceptiontype: The exception type.
         :paramtype exceptiontype: str
         :keyword errordetail: The internal error message or exception dump.
         :paramtype errordetail: str
         """
-        super(InnerError, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.exceptiontype = exceptiontype
         self.errordetail = errordetail
 
 
-class InstanceSku(msrest.serialization.Model):
+class InstanceSku(_serialization.Model):
     """InstanceSku.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1030,27 +975,23 @@ class InstanceSku(msrest.serialization.Model):
     """
 
     _validation = {
-        'name': {'readonly': True},
-        'tier': {'readonly': True},
+        "name": {"readonly": True},
+        "tier": {"readonly": True},
     }
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'tier': {'key': 'tier', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
+        "tier": {"key": "tier", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(InstanceSku, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.name = None
         self.tier = None
 
 
-class InstanceViewStatusesSummary(msrest.serialization.Model):
+class InstanceViewStatusesSummary(_serialization.Model):
     """Instance view statuses.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1060,24 +1001,20 @@ class InstanceViewStatusesSummary(msrest.serialization.Model):
     """
 
     _validation = {
-        'statuses_summary': {'readonly': True},
+        "statuses_summary": {"readonly": True},
     }
 
     _attribute_map = {
-        'statuses_summary': {'key': 'statusesSummary', 'type': '[StatusCodeCount]'},
+        "statuses_summary": {"key": "statusesSummary", "type": "[StatusCodeCount]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(InstanceViewStatusesSummary, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.statuses_summary = None
 
 
-class LoadBalancerConfiguration(msrest.serialization.Model):
+class LoadBalancerConfiguration(_serialization.Model):
     """Describes the load balancer configuration.
 
     :ivar name: Resource Name.
@@ -1088,17 +1025,17 @@ class LoadBalancerConfiguration(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'properties': {'key': 'properties', 'type': 'LoadBalancerConfigurationProperties'},
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "LoadBalancerConfigurationProperties"},
     }
 
     def __init__(
         self,
         *,
         name: Optional[str] = None,
-        properties: Optional["LoadBalancerConfigurationProperties"] = None,
-        **kwargs
-    ):
+        properties: Optional["_models.LoadBalancerConfigurationProperties"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword name: Resource Name.
         :paramtype name: str
@@ -1106,12 +1043,12 @@ class LoadBalancerConfiguration(msrest.serialization.Model):
         :paramtype properties:
          ~azure.mgmt.compute.v2020_10_01_preview.models.LoadBalancerConfigurationProperties
         """
-        super(LoadBalancerConfiguration, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = name
         self.properties = properties
 
 
-class LoadBalancerConfigurationProperties(msrest.serialization.Model):
+class LoadBalancerConfigurationProperties(_serialization.Model):
     """LoadBalancerConfigurationProperties.
 
     :ivar frontend_ip_configurations: List of IP.
@@ -1120,25 +1057,28 @@ class LoadBalancerConfigurationProperties(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'frontend_ip_configurations': {'key': 'frontendIPConfigurations', 'type': '[LoadBalancerFrontendIPConfiguration]'},
+        "frontend_ip_configurations": {
+            "key": "frontendIPConfigurations",
+            "type": "[LoadBalancerFrontendIPConfiguration]",
+        },
     }
 
     def __init__(
         self,
         *,
-        frontend_ip_configurations: Optional[List["LoadBalancerFrontendIPConfiguration"]] = None,
-        **kwargs
-    ):
+        frontend_ip_configurations: Optional[List["_models.LoadBalancerFrontendIPConfiguration"]] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword frontend_ip_configurations: List of IP.
         :paramtype frontend_ip_configurations:
          list[~azure.mgmt.compute.v2020_10_01_preview.models.LoadBalancerFrontendIPConfiguration]
         """
-        super(LoadBalancerConfigurationProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.frontend_ip_configurations = frontend_ip_configurations
 
 
-class LoadBalancerFrontendIPConfiguration(msrest.serialization.Model):
+class LoadBalancerFrontendIPConfiguration(_serialization.Model):
     """LoadBalancerFrontendIPConfiguration.
 
     :ivar name:
@@ -1149,17 +1089,17 @@ class LoadBalancerFrontendIPConfiguration(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'properties': {'key': 'properties', 'type': 'LoadBalancerFrontendIPConfigurationProperties'},
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "LoadBalancerFrontendIPConfigurationProperties"},
     }
 
     def __init__(
         self,
         *,
         name: Optional[str] = None,
-        properties: Optional["LoadBalancerFrontendIPConfigurationProperties"] = None,
-        **kwargs
-    ):
+        properties: Optional["_models.LoadBalancerFrontendIPConfigurationProperties"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword name:
         :paramtype name: str
@@ -1167,12 +1107,12 @@ class LoadBalancerFrontendIPConfiguration(msrest.serialization.Model):
         :paramtype properties:
          ~azure.mgmt.compute.v2020_10_01_preview.models.LoadBalancerFrontendIPConfigurationProperties
         """
-        super(LoadBalancerFrontendIPConfiguration, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = name
         self.properties = properties
 
 
-class LoadBalancerFrontendIPConfigurationProperties(msrest.serialization.Model):
+class LoadBalancerFrontendIPConfigurationProperties(_serialization.Model):  # pylint: disable=name-too-long
     """Describes a cloud service IP Configuration.
 
     :ivar public_ip_address:
@@ -1184,19 +1124,19 @@ class LoadBalancerFrontendIPConfigurationProperties(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'public_ip_address': {'key': 'publicIPAddress', 'type': 'SubResource'},
-        'subnet': {'key': 'subnet', 'type': 'SubResource'},
-        'private_ip_address': {'key': 'privateIPAddress', 'type': 'str'},
+        "public_ip_address": {"key": "publicIPAddress", "type": "SubResource"},
+        "subnet": {"key": "subnet", "type": "SubResource"},
+        "private_ip_address": {"key": "privateIPAddress", "type": "str"},
     }
 
     def __init__(
         self,
         *,
-        public_ip_address: Optional["SubResource"] = None,
-        subnet: Optional["SubResource"] = None,
+        public_ip_address: Optional["_models.SubResource"] = None,
+        subnet: Optional["_models.SubResource"] = None,
         private_ip_address: Optional[str] = None,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         """
         :keyword public_ip_address:
         :paramtype public_ip_address: ~azure.mgmt.compute.v2020_10_01_preview.models.SubResource
@@ -1205,13 +1145,13 @@ class LoadBalancerFrontendIPConfigurationProperties(msrest.serialization.Model):
         :keyword private_ip_address: The private IP address referenced by the cloud service.
         :paramtype private_ip_address: str
         """
-        super(LoadBalancerFrontendIPConfigurationProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.public_ip_address = public_ip_address
         self.subnet = subnet
         self.private_ip_address = private_ip_address
 
 
-class ResourceInstanceViewStatus(msrest.serialization.Model):
+class ResourceInstanceViewStatus(_serialization.Model):
     """Instance view status.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1224,36 +1164,31 @@ class ResourceInstanceViewStatus(msrest.serialization.Model):
     :vartype message: str
     :ivar time: The time of the status.
     :vartype time: ~datetime.datetime
-    :ivar level: The level code. Possible values include: "Info", "Warning", "Error".
+    :ivar level: The level code. Known values are: "Info", "Warning", and "Error".
     :vartype level: str or ~azure.mgmt.compute.v2020_10_01_preview.models.StatusLevelTypes
     """
 
     _validation = {
-        'code': {'readonly': True},
-        'display_status': {'readonly': True},
-        'message': {'readonly': True},
-        'time': {'readonly': True},
+        "code": {"readonly": True},
+        "display_status": {"readonly": True},
+        "message": {"readonly": True},
+        "time": {"readonly": True},
     }
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'display_status': {'key': 'displayStatus', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'time': {'key': 'time', 'type': 'iso-8601'},
-        'level': {'key': 'level', 'type': 'str'},
+        "code": {"key": "code", "type": "str"},
+        "display_status": {"key": "displayStatus", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "time": {"key": "time", "type": "iso-8601"},
+        "level": {"key": "level", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        level: Optional[Union[str, "StatusLevelTypes"]] = None,
-        **kwargs
-    ):
+    def __init__(self, *, level: Optional[Union[str, "_models.StatusLevelTypes"]] = None, **kwargs: Any) -> None:
         """
-        :keyword level: The level code. Possible values include: "Info", "Warning", "Error".
+        :keyword level: The level code. Known values are: "Info", "Warning", and "Error".
         :paramtype level: str or ~azure.mgmt.compute.v2020_10_01_preview.models.StatusLevelTypes
         """
-        super(ResourceInstanceViewStatus, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.code = None
         self.display_status = None
         self.message = None
@@ -1261,7 +1196,7 @@ class ResourceInstanceViewStatus(msrest.serialization.Model):
         self.level = level
 
 
-class RoleInstance(msrest.serialization.Model):
+class RoleInstance(_serialization.Model):
     """RoleInstance.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1274,7 +1209,7 @@ class RoleInstance(msrest.serialization.Model):
     :vartype type: str
     :ivar location: Resource Location.
     :vartype location: str
-    :ivar tags: A set of tags. Resource tags.
+    :ivar tags: Resource tags.
     :vartype tags: dict[str, str]
     :ivar sku:
     :vartype sku: ~azure.mgmt.compute.v2020_10_01_preview.models.InstanceSku
@@ -1283,37 +1218,37 @@ class RoleInstance(msrest.serialization.Model):
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'location': {'readonly': True},
-        'tags': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "location": {"readonly": True},
+        "tags": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'sku': {'key': 'sku', 'type': 'InstanceSku'},
-        'properties': {'key': 'properties', 'type': 'RoleInstanceProperties'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "sku": {"key": "sku", "type": "InstanceSku"},
+        "properties": {"key": "properties", "type": "RoleInstanceProperties"},
     }
 
     def __init__(
         self,
         *,
-        sku: Optional["InstanceSku"] = None,
-        properties: Optional["RoleInstanceProperties"] = None,
-        **kwargs
-    ):
+        sku: Optional["_models.InstanceSku"] = None,
+        properties: Optional["_models.RoleInstanceProperties"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword sku:
         :paramtype sku: ~azure.mgmt.compute.v2020_10_01_preview.models.InstanceSku
         :keyword properties:
         :paramtype properties: ~azure.mgmt.compute.v2020_10_01_preview.models.RoleInstanceProperties
         """
-        super(RoleInstance, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.type = None
@@ -1323,10 +1258,10 @@ class RoleInstance(msrest.serialization.Model):
         self.properties = properties
 
 
-class RoleInstanceListResult(msrest.serialization.Model):
+class RoleInstanceListResult(_serialization.Model):
     """RoleInstanceListResult.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar value: Required.
     :vartype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.RoleInstance]
@@ -1335,33 +1270,27 @@ class RoleInstanceListResult(msrest.serialization.Model):
     """
 
     _validation = {
-        'value': {'required': True},
+        "value": {"required": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[RoleInstance]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[RoleInstance]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: List["RoleInstance"],
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *, value: List["_models.RoleInstance"], next_link: Optional[str] = None, **kwargs: Any) -> None:
         """
         :keyword value: Required.
         :paramtype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.RoleInstance]
         :keyword next_link:
         :paramtype next_link: str
         """
-        super(RoleInstanceListResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = next_link
 
 
-class RoleInstanceNetworkProfile(msrest.serialization.Model):
+class RoleInstanceNetworkProfile(_serialization.Model):
     """Describes the network profile for the role instance.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1372,24 +1301,20 @@ class RoleInstanceNetworkProfile(msrest.serialization.Model):
     """
 
     _validation = {
-        'network_interfaces': {'readonly': True},
+        "network_interfaces": {"readonly": True},
     }
 
     _attribute_map = {
-        'network_interfaces': {'key': 'networkInterfaces', 'type': '[SubResource]'},
+        "network_interfaces": {"key": "networkInterfaces", "type": "[SubResource]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(RoleInstanceNetworkProfile, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.network_interfaces = None
 
 
-class RoleInstanceProperties(msrest.serialization.Model):
+class RoleInstanceProperties(_serialization.Model):
     """RoleInstanceProperties.
 
     :ivar network_profile: Describes the network profile for the role instance.
@@ -1400,17 +1325,17 @@ class RoleInstanceProperties(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'network_profile': {'key': 'networkProfile', 'type': 'RoleInstanceNetworkProfile'},
-        'instance_view': {'key': 'instanceView', 'type': 'RoleInstanceView'},
+        "network_profile": {"key": "networkProfile", "type": "RoleInstanceNetworkProfile"},
+        "instance_view": {"key": "instanceView", "type": "RoleInstanceView"},
     }
 
     def __init__(
         self,
         *,
-        network_profile: Optional["RoleInstanceNetworkProfile"] = None,
-        instance_view: Optional["RoleInstanceView"] = None,
-        **kwargs
-    ):
+        network_profile: Optional["_models.RoleInstanceNetworkProfile"] = None,
+        instance_view: Optional["_models.RoleInstanceView"] = None,
+        **kwargs: Any
+    ) -> None:
         """
         :keyword network_profile: Describes the network profile for the role instance.
         :paramtype network_profile:
@@ -1418,45 +1343,40 @@ class RoleInstanceProperties(msrest.serialization.Model):
         :keyword instance_view: The instance view of the role instance.
         :paramtype instance_view: ~azure.mgmt.compute.v2020_10_01_preview.models.RoleInstanceView
         """
-        super(RoleInstanceProperties, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.network_profile = network_profile
         self.instance_view = instance_view
 
 
-class RoleInstances(msrest.serialization.Model):
+class RoleInstances(_serialization.Model):
     """Specifies a list of role instances from the cloud service.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar role_instances: Required. List of cloud service role instance names. Value of '*' will
-     signify all role instances of the cloud service.
+    :ivar role_instances: List of cloud service role instance names. Value of '*' will signify all
+     role instances of the cloud service. Required.
     :vartype role_instances: list[str]
     """
 
     _validation = {
-        'role_instances': {'required': True},
+        "role_instances": {"required": True},
     }
 
     _attribute_map = {
-        'role_instances': {'key': 'roleInstances', 'type': '[str]'},
+        "role_instances": {"key": "roleInstances", "type": "[str]"},
     }
 
-    def __init__(
-        self,
-        *,
-        role_instances: List[str],
-        **kwargs
-    ):
+    def __init__(self, *, role_instances: List[str], **kwargs: Any) -> None:
         """
-        :keyword role_instances: Required. List of cloud service role instance names. Value of '*' will
-         signify all role instances of the cloud service.
+        :keyword role_instances: List of cloud service role instance names. Value of '*' will signify
+         all role instances of the cloud service. Required.
         :paramtype role_instances: list[str]
         """
-        super(RoleInstances, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.role_instances = role_instances
 
 
-class RoleInstanceView(msrest.serialization.Model):
+class RoleInstanceView(_serialization.Model):
     """The instance view of the role instance.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1475,33 +1395,29 @@ class RoleInstanceView(msrest.serialization.Model):
     """
 
     _validation = {
-        'platform_update_domain': {'readonly': True},
-        'platform_fault_domain': {'readonly': True},
-        'private_id': {'readonly': True},
-        'statuses': {'readonly': True},
+        "platform_update_domain": {"readonly": True},
+        "platform_fault_domain": {"readonly": True},
+        "private_id": {"readonly": True},
+        "statuses": {"readonly": True},
     }
 
     _attribute_map = {
-        'platform_update_domain': {'key': 'platformUpdateDomain', 'type': 'int'},
-        'platform_fault_domain': {'key': 'platformFaultDomain', 'type': 'int'},
-        'private_id': {'key': 'privateId', 'type': 'str'},
-        'statuses': {'key': 'statuses', 'type': '[ResourceInstanceViewStatus]'},
+        "platform_update_domain": {"key": "platformUpdateDomain", "type": "int"},
+        "platform_fault_domain": {"key": "platformFaultDomain", "type": "int"},
+        "private_id": {"key": "privateId", "type": "str"},
+        "statuses": {"key": "statuses", "type": "[ResourceInstanceViewStatus]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(RoleInstanceView, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.platform_update_domain = None
         self.platform_fault_domain = None
         self.private_id = None
         self.statuses = None
 
 
-class StatusCodeCount(msrest.serialization.Model):
+class StatusCodeCount(_serialization.Model):
     """StatusCodeCount.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1513,27 +1429,23 @@ class StatusCodeCount(msrest.serialization.Model):
     """
 
     _validation = {
-        'code': {'readonly': True},
-        'count': {'readonly': True},
+        "code": {"readonly": True},
+        "count": {"readonly": True},
     }
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'count': {'key': 'count', 'type': 'int'},
+        "code": {"key": "code", "type": "str"},
+        "count": {"key": "count", "type": "int"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(StatusCodeCount, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.code = None
         self.count = None
 
 
-class SubResource(msrest.serialization.Model):
+class SubResource(_serialization.Model):
     """SubResource.
 
     :ivar id: Resource Id.
@@ -1541,24 +1453,19 @@ class SubResource(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        id: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *, id: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
         """
         :keyword id: Resource Id.
         :paramtype id: str
         """
-        super(SubResource, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.id = id
 
 
-class UpdateDomain(msrest.serialization.Model):
+class UpdateDomain(_serialization.Model):
     """Defines an update domain for the cloud service.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1570,30 +1477,26 @@ class UpdateDomain(msrest.serialization.Model):
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        """
-        """
-        super(UpdateDomain, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
 
 
-class UpdateDomainListResult(msrest.serialization.Model):
+class UpdateDomainListResult(_serialization.Model):
     """UpdateDomainListResult.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
     :ivar value: Required.
     :vartype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.UpdateDomain]
@@ -1602,27 +1505,21 @@ class UpdateDomainListResult(msrest.serialization.Model):
     """
 
     _validation = {
-        'value': {'required': True},
+        "value": {"required": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[UpdateDomain]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[UpdateDomain]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: List["UpdateDomain"],
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *, value: List["_models.UpdateDomain"], next_link: Optional[str] = None, **kwargs: Any) -> None:
         """
         :keyword value: Required.
         :paramtype value: list[~azure.mgmt.compute.v2020_10_01_preview.models.UpdateDomain]
         :keyword next_link:
         :paramtype next_link: str
         """
-        super(UpdateDomainListResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = next_link

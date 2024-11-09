@@ -6,170 +6,130 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-try:
-    from ._models_py3 import AccessPolicyEntry
-    from ._models_py3 import Attributes
-    from ._models_py3 import CheckNameAvailabilityResult
-    from ._models_py3 import CloudErrorBody
-    from ._models_py3 import DeletedVault
-    from ._models_py3 import DeletedVaultListResult
-    from ._models_py3 import DeletedVaultProperties
-    from ._models_py3 import DimensionProperties
-    from ._models_py3 import IPRule
-    from ._models_py3 import Key
-    from ._models_py3 import KeyAttributes
-    from ._models_py3 import KeyCreateParameters
-    from ._models_py3 import KeyListResult
-    from ._models_py3 import KeyProperties
-    from ._models_py3 import LogSpecification
-    from ._models_py3 import MetricSpecification
-    from ._models_py3 import NetworkRuleSet
-    from ._models_py3 import Operation
-    from ._models_py3 import OperationDisplay
-    from ._models_py3 import OperationListResult
-    from ._models_py3 import Permissions
-    from ._models_py3 import PrivateEndpoint
-    from ._models_py3 import PrivateEndpointConnection
-    from ._models_py3 import PrivateEndpointConnectionItem
-    from ._models_py3 import PrivateLinkResource
-    from ._models_py3 import PrivateLinkResourceListResult
-    from ._models_py3 import PrivateLinkServiceConnectionState
-    from ._models_py3 import Resource
-    from ._models_py3 import ResourceListResult
-    from ._models_py3 import ServiceSpecification
-    from ._models_py3 import Sku
-    from ._models_py3 import Vault
-    from ._models_py3 import VaultAccessPolicyParameters
-    from ._models_py3 import VaultAccessPolicyProperties
-    from ._models_py3 import VaultCheckNameAvailabilityParameters
-    from ._models_py3 import VaultCreateOrUpdateParameters
-    from ._models_py3 import VaultListResult
-    from ._models_py3 import VaultPatchParameters
-    from ._models_py3 import VaultPatchProperties
-    from ._models_py3 import VaultProperties
-    from ._models_py3 import VirtualNetworkRule
-except (SyntaxError, ImportError):
-    from ._models import AccessPolicyEntry  # type: ignore
-    from ._models import Attributes  # type: ignore
-    from ._models import CheckNameAvailabilityResult  # type: ignore
-    from ._models import CloudErrorBody  # type: ignore
-    from ._models import DeletedVault  # type: ignore
-    from ._models import DeletedVaultListResult  # type: ignore
-    from ._models import DeletedVaultProperties  # type: ignore
-    from ._models import DimensionProperties  # type: ignore
-    from ._models import IPRule  # type: ignore
-    from ._models import Key  # type: ignore
-    from ._models import KeyAttributes  # type: ignore
-    from ._models import KeyCreateParameters  # type: ignore
-    from ._models import KeyListResult  # type: ignore
-    from ._models import KeyProperties  # type: ignore
-    from ._models import LogSpecification  # type: ignore
-    from ._models import MetricSpecification  # type: ignore
-    from ._models import NetworkRuleSet  # type: ignore
-    from ._models import Operation  # type: ignore
-    from ._models import OperationDisplay  # type: ignore
-    from ._models import OperationListResult  # type: ignore
-    from ._models import Permissions  # type: ignore
-    from ._models import PrivateEndpoint  # type: ignore
-    from ._models import PrivateEndpointConnection  # type: ignore
-    from ._models import PrivateEndpointConnectionItem  # type: ignore
-    from ._models import PrivateLinkResource  # type: ignore
-    from ._models import PrivateLinkResourceListResult  # type: ignore
-    from ._models import PrivateLinkServiceConnectionState  # type: ignore
-    from ._models import Resource  # type: ignore
-    from ._models import ResourceListResult  # type: ignore
-    from ._models import ServiceSpecification  # type: ignore
-    from ._models import Sku  # type: ignore
-    from ._models import Vault  # type: ignore
-    from ._models import VaultAccessPolicyParameters  # type: ignore
-    from ._models import VaultAccessPolicyProperties  # type: ignore
-    from ._models import VaultCheckNameAvailabilityParameters  # type: ignore
-    from ._models import VaultCreateOrUpdateParameters  # type: ignore
-    from ._models import VaultListResult  # type: ignore
-    from ._models import VaultPatchParameters  # type: ignore
-    from ._models import VaultPatchProperties  # type: ignore
-    from ._models import VaultProperties  # type: ignore
-    from ._models import VirtualNetworkRule  # type: ignore
+from ._models_py3 import AccessPolicyEntry
+from ._models_py3 import Attributes
+from ._models_py3 import CheckNameAvailabilityResult
+from ._models_py3 import CloudErrorBody
+from ._models_py3 import DeletedVault
+from ._models_py3 import DeletedVaultListResult
+from ._models_py3 import DeletedVaultProperties
+from ._models_py3 import DimensionProperties
+from ._models_py3 import IPRule
+from ._models_py3 import Key
+from ._models_py3 import KeyAttributes
+from ._models_py3 import KeyCreateParameters
+from ._models_py3 import KeyListResult
+from ._models_py3 import KeyProperties
+from ._models_py3 import LogSpecification
+from ._models_py3 import MetricSpecification
+from ._models_py3 import NetworkRuleSet
+from ._models_py3 import Operation
+from ._models_py3 import OperationDisplay
+from ._models_py3 import OperationListResult
+from ._models_py3 import Permissions
+from ._models_py3 import PrivateEndpoint
+from ._models_py3 import PrivateEndpointConnection
+from ._models_py3 import PrivateEndpointConnectionItem
+from ._models_py3 import PrivateLinkResource
+from ._models_py3 import PrivateLinkResourceListResult
+from ._models_py3 import PrivateLinkServiceConnectionState
+from ._models_py3 import Resource
+from ._models_py3 import ResourceListResult
+from ._models_py3 import ServiceSpecification
+from ._models_py3 import Sku
+from ._models_py3 import Vault
+from ._models_py3 import VaultAccessPolicyParameters
+from ._models_py3 import VaultAccessPolicyProperties
+from ._models_py3 import VaultCheckNameAvailabilityParameters
+from ._models_py3 import VaultCreateOrUpdateParameters
+from ._models_py3 import VaultListResult
+from ._models_py3 import VaultPatchParameters
+from ._models_py3 import VaultPatchProperties
+from ._models_py3 import VaultProperties
+from ._models_py3 import VirtualNetworkRule
 
-from ._key_vault_management_client_enums import (
-    AccessPolicyUpdateKind,
-    CertificatePermissions,
-    CreateMode,
-    DeletionRecoveryLevel,
-    JsonWebKeyCurveName,
-    JsonWebKeyOperation,
-    JsonWebKeyType,
-    KeyPermissions,
-    NetworkRuleAction,
-    NetworkRuleBypassOptions,
-    PrivateEndpointConnectionProvisioningState,
-    PrivateEndpointServiceConnectionStatus,
-    Reason,
-    SecretPermissions,
-    SkuFamily,
-    SkuName,
-    StoragePermissions,
-    VaultProvisioningState,
-)
+from ._key_vault_management_client_enums import AccessPolicyUpdateKind
+from ._key_vault_management_client_enums import CertificatePermissions
+from ._key_vault_management_client_enums import CreateMode
+from ._key_vault_management_client_enums import DeletionRecoveryLevel
+from ._key_vault_management_client_enums import JsonWebKeyCurveName
+from ._key_vault_management_client_enums import JsonWebKeyOperation
+from ._key_vault_management_client_enums import JsonWebKeyType
+from ._key_vault_management_client_enums import KeyPermissions
+from ._key_vault_management_client_enums import NetworkRuleAction
+from ._key_vault_management_client_enums import NetworkRuleBypassOptions
+from ._key_vault_management_client_enums import PrivateEndpointConnectionProvisioningState
+from ._key_vault_management_client_enums import PrivateEndpointServiceConnectionStatus
+from ._key_vault_management_client_enums import Reason
+from ._key_vault_management_client_enums import SecretPermissions
+from ._key_vault_management_client_enums import SkuFamily
+from ._key_vault_management_client_enums import SkuName
+from ._key_vault_management_client_enums import StoragePermissions
+from ._key_vault_management_client_enums import VaultProvisioningState
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'AccessPolicyEntry',
-    'Attributes',
-    'CheckNameAvailabilityResult',
-    'CloudErrorBody',
-    'DeletedVault',
-    'DeletedVaultListResult',
-    'DeletedVaultProperties',
-    'DimensionProperties',
-    'IPRule',
-    'Key',
-    'KeyAttributes',
-    'KeyCreateParameters',
-    'KeyListResult',
-    'KeyProperties',
-    'LogSpecification',
-    'MetricSpecification',
-    'NetworkRuleSet',
-    'Operation',
-    'OperationDisplay',
-    'OperationListResult',
-    'Permissions',
-    'PrivateEndpoint',
-    'PrivateEndpointConnection',
-    'PrivateEndpointConnectionItem',
-    'PrivateLinkResource',
-    'PrivateLinkResourceListResult',
-    'PrivateLinkServiceConnectionState',
-    'Resource',
-    'ResourceListResult',
-    'ServiceSpecification',
-    'Sku',
-    'Vault',
-    'VaultAccessPolicyParameters',
-    'VaultAccessPolicyProperties',
-    'VaultCheckNameAvailabilityParameters',
-    'VaultCreateOrUpdateParameters',
-    'VaultListResult',
-    'VaultPatchParameters',
-    'VaultPatchProperties',
-    'VaultProperties',
-    'VirtualNetworkRule',
-    'AccessPolicyUpdateKind',
-    'CertificatePermissions',
-    'CreateMode',
-    'DeletionRecoveryLevel',
-    'JsonWebKeyCurveName',
-    'JsonWebKeyOperation',
-    'JsonWebKeyType',
-    'KeyPermissions',
-    'NetworkRuleAction',
-    'NetworkRuleBypassOptions',
-    'PrivateEndpointConnectionProvisioningState',
-    'PrivateEndpointServiceConnectionStatus',
-    'Reason',
-    'SecretPermissions',
-    'SkuFamily',
-    'SkuName',
-    'StoragePermissions',
-    'VaultProvisioningState',
+    "AccessPolicyEntry",
+    "Attributes",
+    "CheckNameAvailabilityResult",
+    "CloudErrorBody",
+    "DeletedVault",
+    "DeletedVaultListResult",
+    "DeletedVaultProperties",
+    "DimensionProperties",
+    "IPRule",
+    "Key",
+    "KeyAttributes",
+    "KeyCreateParameters",
+    "KeyListResult",
+    "KeyProperties",
+    "LogSpecification",
+    "MetricSpecification",
+    "NetworkRuleSet",
+    "Operation",
+    "OperationDisplay",
+    "OperationListResult",
+    "Permissions",
+    "PrivateEndpoint",
+    "PrivateEndpointConnection",
+    "PrivateEndpointConnectionItem",
+    "PrivateLinkResource",
+    "PrivateLinkResourceListResult",
+    "PrivateLinkServiceConnectionState",
+    "Resource",
+    "ResourceListResult",
+    "ServiceSpecification",
+    "Sku",
+    "Vault",
+    "VaultAccessPolicyParameters",
+    "VaultAccessPolicyProperties",
+    "VaultCheckNameAvailabilityParameters",
+    "VaultCreateOrUpdateParameters",
+    "VaultListResult",
+    "VaultPatchParameters",
+    "VaultPatchProperties",
+    "VaultProperties",
+    "VirtualNetworkRule",
+    "AccessPolicyUpdateKind",
+    "CertificatePermissions",
+    "CreateMode",
+    "DeletionRecoveryLevel",
+    "JsonWebKeyCurveName",
+    "JsonWebKeyOperation",
+    "JsonWebKeyType",
+    "KeyPermissions",
+    "NetworkRuleAction",
+    "NetworkRuleBypassOptions",
+    "PrivateEndpointConnectionProvisioningState",
+    "PrivateEndpointServiceConnectionStatus",
+    "Reason",
+    "SecretPermissions",
+    "SkuFamily",
+    "SkuName",
+    "StoragePermissions",
+    "VaultProvisioningState",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

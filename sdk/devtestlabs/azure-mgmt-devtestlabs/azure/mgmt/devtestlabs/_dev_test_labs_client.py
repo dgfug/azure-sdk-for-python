@@ -6,47 +6,52 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import TYPE_CHECKING
+from copy import deepcopy
+from typing import Any, TYPE_CHECKING
+from typing_extensions import Self
 
+from azure.core.pipeline import policies
+from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
+
+from . import models as _models
+from ._configuration import DevTestLabsClientConfiguration
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    ArmTemplatesOperations,
+    ArtifactSourcesOperations,
+    ArtifactsOperations,
+    CostsOperations,
+    CustomImagesOperations,
+    DisksOperations,
+    EnvironmentsOperations,
+    FormulasOperations,
+    GalleryImagesOperations,
+    GlobalSchedulesOperations,
+    LabsOperations,
+    NotificationChannelsOperations,
+    Operations,
+    PoliciesOperations,
+    PolicySetsOperations,
+    ProviderOperationsOperations,
+    SchedulesOperations,
+    SecretsOperations,
+    ServiceFabricSchedulesOperations,
+    ServiceFabricsOperations,
+    ServiceRunnersOperations,
+    UsersOperations,
+    VirtualMachineSchedulesOperations,
+    VirtualMachinesOperations,
+    VirtualNetworksOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
-    from typing import Any, Optional
-
     from azure.core.credentials import TokenCredential
 
-from ._configuration import DevTestLabsClientConfiguration
-from .operations import ProviderOperationsOperations
-from .operations import LabsOperations
-from .operations import Operations
-from .operations import GlobalSchedulesOperations
-from .operations import ArtifactSourcesOperations
-from .operations import ArmTemplatesOperations
-from .operations import ArtifactsOperations
-from .operations import CostsOperations
-from .operations import CustomImagesOperations
-from .operations import FormulasOperations
-from .operations import GalleryImagesOperations
-from .operations import NotificationChannelsOperations
-from .operations import PolicySetsOperations
-from .operations import PoliciesOperations
-from .operations import SchedulesOperations
-from .operations import ServiceRunnersOperations
-from .operations import UsersOperations
-from .operations import DisksOperations
-from .operations import EnvironmentsOperations
-from .operations import SecretsOperations
-from .operations import ServiceFabricsOperations
-from .operations import ServiceFabricSchedulesOperations
-from .operations import VirtualMachinesOperations
-from .operations import VirtualMachineSchedulesOperations
-from .operations import VirtualNetworksOperations
-from . import models
 
-
-class DevTestLabsClient(object):
+class DevTestLabsClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """The DevTest Labs Client.
 
     :ivar provider_operations: ProviderOperationsOperations operations
@@ -72,7 +77,8 @@ class DevTestLabsClient(object):
     :ivar gallery_images: GalleryImagesOperations operations
     :vartype gallery_images: azure.mgmt.devtestlabs.operations.GalleryImagesOperations
     :ivar notification_channels: NotificationChannelsOperations operations
-    :vartype notification_channels: azure.mgmt.devtestlabs.operations.NotificationChannelsOperations
+    :vartype notification_channels:
+     azure.mgmt.devtestlabs.operations.NotificationChannelsOperations
     :ivar policy_sets: PolicySetsOperations operations
     :vartype policy_sets: azure.mgmt.devtestlabs.operations.PolicySetsOperations
     :ivar policies: PoliciesOperations operations
@@ -92,99 +98,130 @@ class DevTestLabsClient(object):
     :ivar service_fabrics: ServiceFabricsOperations operations
     :vartype service_fabrics: azure.mgmt.devtestlabs.operations.ServiceFabricsOperations
     :ivar service_fabric_schedules: ServiceFabricSchedulesOperations operations
-    :vartype service_fabric_schedules: azure.mgmt.devtestlabs.operations.ServiceFabricSchedulesOperations
+    :vartype service_fabric_schedules:
+     azure.mgmt.devtestlabs.operations.ServiceFabricSchedulesOperations
     :ivar virtual_machines: VirtualMachinesOperations operations
     :vartype virtual_machines: azure.mgmt.devtestlabs.operations.VirtualMachinesOperations
     :ivar virtual_machine_schedules: VirtualMachineSchedulesOperations operations
-    :vartype virtual_machine_schedules: azure.mgmt.devtestlabs.operations.VirtualMachineSchedulesOperations
+    :vartype virtual_machine_schedules:
+     azure.mgmt.devtestlabs.operations.VirtualMachineSchedulesOperations
     :ivar virtual_networks: VirtualNetworksOperations operations
     :vartype virtual_networks: azure.mgmt.devtestlabs.operations.VirtualNetworksOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: The subscription ID.
+    :param subscription_id: The subscription ID. Required.
     :type subscription_id: str
-    :param str base_url: Service URL
-    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no Retry-After header is present.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
+    :keyword api_version: Api Version. Default value is "2018-09-15". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
+    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
+     Retry-After header is present.
     """
 
     def __init__(
         self,
-        credential,  # type: "TokenCredential"
-        subscription_id,  # type: str
-        base_url=None,  # type: Optional[str]
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> None
-        if not base_url:
-            base_url = 'https://management.azure.com'
-        self._config = DevTestLabsClientConfiguration(credential, subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        credential: "TokenCredential",
+        subscription_id: str,
+        base_url: str = "https://management.azure.com",
+        **kwargs: Any
+    ) -> None:
+        self._config = DevTestLabsClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
-        self._serialize.client_side_validation = False
         self._deserialize = Deserializer(client_models)
-
+        self._serialize.client_side_validation = False
         self.provider_operations = ProviderOperationsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.labs = LabsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.operations = Operations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.labs = LabsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
         self.global_schedules = GlobalSchedulesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.artifact_sources = ArtifactSourcesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.arm_templates = ArmTemplatesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.artifacts = ArtifactsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.costs = CostsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.custom_images = CustomImagesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.formulas = FormulasOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.gallery_images = GalleryImagesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.arm_templates = ArmTemplatesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.artifacts = ArtifactsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.costs = CostsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.custom_images = CustomImagesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.formulas = FormulasOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.gallery_images = GalleryImagesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.notification_channels = NotificationChannelsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.policy_sets = PolicySetsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.policies = PoliciesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.schedules = SchedulesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.service_runners = ServiceRunnersOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.users = UsersOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.disks = DisksOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.environments = EnvironmentsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.secrets = SecretsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.service_fabrics = ServiceFabricsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.policy_sets = PolicySetsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.policies = PoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.schedules = SchedulesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.service_runners = ServiceRunnersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.users = UsersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.disks = DisksOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.environments = EnvironmentsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.secrets = SecretsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.service_fabrics = ServiceFabricsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.service_fabric_schedules = ServiceFabricSchedulesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.virtual_machines = VirtualMachinesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.virtual_machine_schedules = VirtualMachineSchedulesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.virtual_networks = VirtualNetworksOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
 
-    def close(self):
-        # type: () -> None
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
+        """Runs the network request through the client's chained policies.
+
+        >>> from azure.core.rest import HttpRequest
+        >>> request = HttpRequest("GET", "https://www.example.org/")
+        <HttpRequest [GET], url: 'https://www.example.org/'>
+        >>> response = client._send_request(request)
+        <HttpResponse: 200 OK>
+
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
+
+        :param request: The network request you want to make. Required.
+        :type request: ~azure.core.rest.HttpRequest
+        :keyword bool stream: Whether the response payload will be streamed. Defaults to False.
+        :return: The response of your network call. Does not do error handling on your response.
+        :rtype: ~azure.core.rest.HttpResponse
+        """
+
+        request_copy = deepcopy(request)
+        request_copy.url = self._client.format_url(request_copy.url)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
+
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> DevTestLabsClient
+    def __enter__(self) -> Self:
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

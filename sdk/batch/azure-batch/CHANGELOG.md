@@ -1,5 +1,81 @@
 # Release History
 
+## 15.0.0b2 (Unreleased)
+
+### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 15.0.0b1 (2024-09-01)
+
+- Version (15.0.0b1) is the first preview of our efforts to create a user-friendly and Pythonic client library for Azure Batch. For more information about this, and preview releases of other Azure SDK libraries, please visit https://azure.github.io/azure-sdk/releases/latest/python.html.
+
+### Breaking Changes
+
+- Remove certificates
+- Remove render licenses
+- Remove `CloudServiceConfiguration` for pool models and operations. `VirtualMachineConfiguration` is supported for pool configurations moving forward.
+
+## 14.2.0 (2024-02-01)
+
+### Features Added
+
+- Added `UpgradePolicy` to `CloudPool` definition for pool creation
+  - Added `AutomaticOSUpgradePolicy` to include configuration parameters for automatic OS upgrades
+  - Added `RollingUpgradePolicy` to include configuration parameters for rolling upgrades
+
+## 14.1.0 (2023-11-01)
+
+### Features Added
+
+- Added ResourceTags support to Pool Creation so users are able to specify resource tags for a pool. This feature is currently only supported for pool creation but will be updatable in the future.
+  - Added `resourceTags` property to `PoolSpecification` definition
+  - Added `resourceTags` property to `CloudPool` definition
+
+- Added `SecurityProfile` support to Pool Creation. Trusted Launch provides advanced security to Guest OS preventing boot-kits/rootkits (like un-signed driver or kernel modification) to be introduced into boot-chain.
+  - Added `serviceArtifactReference` and `securityProfile` property to `VirtualMachineConfiguration` definition
+  
+- Added `ServiceArtifactReference` and `OSDisk` support to Pool Creation
+  - Added `standardssd_lrs` value to `StorageAccountType` enum
+  - Added `caching`, `managedDisk`, `diskSizeGB`, and `writeAcceleratorEnabled` property to `NodePlacementPolicyType` definition
+  - Added `scaleSetVmResourceID` property to `VirtualMachineInfo` definition
+
+## 14.0.0 (2023-05-01)
+
+### Features Added
+
+- Added boolean property `enableAcceleratedNetworking` to `NetworkConfiguration`.
+  - This property determines whether this pool should enable accelerated networking, with default value as False.
+  - Whether this feature can be enabled is also related to whether an operating system/VM instance is supported, which should align with AcceleratedNetworking Policy ([AcceleratedNetworking Limitations and constraints](https://learn.microsoft.com/azure/virtual-network/accelerated-networking-overview?tabs=redhat#limitations-and-constraints)).
+- Added boolean property `enableAutomaticUpgrade` to `VMExtension`.
+  - This property determines whether the extension should be automatically upgraded by the platform if there is a newer version of the extension available.
+- Added a new property `type` to `ContainerConfiguration`. Possible values include: `dockerCompatible` and `criCompatible`.
+
+### Breaking Changes
+
+- Removed lifetime statistics API. This API is no longer supported.
+  - Removed `job.get_all_lifetime_statistics` API.
+  - Removed `pool.get_all_lifetime_statistics` API.
+
+### Other Changes
+
+- Deprecating `CertificateOperations` related methods.
+  - This operation is deprecating and will be removed after February 2024. Please use [Azure KeyVault Extension](https://learn.microsoft.com/azure/batch/batch-certificate-migration-guide) instead.
+  
+## 13.0.0 (2022-11-08)
+
+### Features Added
+
+- Added new custom enum type `NodeCommunicationMode`.
+  - This property determines how a pool communicates with the Batch service.
+  - Possible values: Default, Classic, Simplified.
+- Added properties `current_node_communication_mode` and `target_node_communication_mode` of type `NodeCommunicationMode` to `CloudPool`.
+- Added property `target_node_communication_mode` of type `NodeCommunicationMode` to `PoolSpecification`, `PoolAddParameter`, `PoolPatchParameter`, and `PoolUpdatePropertiesParameter`.
+
 ## 12.0.0 (2022-02-01)
 
 ### Features
@@ -14,7 +90,7 @@
   - Low-Priority Compute Nodes (VMs) will continue to be used for User Subscription pools (and only User Subscription pools), as before.
   - Spot Compute Nodes (VMs) will now be used for Batch Managed (and only Batch Managed pools) pools.
   - Relevant docs:
-      https://docs.microsoft.com/azure/batch/nodes-and-pools
+    - https://docs.microsoft.com/azure/batch/nodes-and-pools
     - https://docs.microsoft.com/azure/batch/batch-spot-vms
 
 ## 11.0.0 (2021-07-30)

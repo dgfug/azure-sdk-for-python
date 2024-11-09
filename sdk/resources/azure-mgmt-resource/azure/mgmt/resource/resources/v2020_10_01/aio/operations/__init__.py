@@ -7,21 +7,27 @@
 # --------------------------------------------------------------------------
 
 from ._operations import Operations
-from ._deployments_operations import DeploymentsOperations
-from ._providers_operations import ProvidersOperations
-from ._provider_resource_types_operations import ProviderResourceTypesOperations
-from ._resources_operations import ResourcesOperations
-from ._resource_groups_operations import ResourceGroupsOperations
-from ._tags_operations import TagsOperations
-from ._deployment_operations_operations import DeploymentOperationsOperations
+from ._operations import DeploymentsOperations
+from ._operations import ProvidersOperations
+from ._operations import ProviderResourceTypesOperations
+from ._operations import ResourcesOperations
+from ._operations import ResourceGroupsOperations
+from ._operations import TagsOperations
+from ._operations import DeploymentOperationsOperations
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'Operations',
-    'DeploymentsOperations',
-    'ProvidersOperations',
-    'ProviderResourceTypesOperations',
-    'ResourcesOperations',
-    'ResourceGroupsOperations',
-    'TagsOperations',
-    'DeploymentOperationsOperations',
+    "Operations",
+    "DeploymentsOperations",
+    "ProvidersOperations",
+    "ProviderResourceTypesOperations",
+    "ResourcesOperations",
+    "ResourceGroupsOperations",
+    "TagsOperations",
+    "DeploymentOperationsOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

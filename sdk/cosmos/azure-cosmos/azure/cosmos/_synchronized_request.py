@@ -21,7 +21,7 @@
 
 """Synchronized request in the Azure Cosmos database service.
 """
-
+import copy
 import json
 import time
 
@@ -36,6 +36,8 @@ from . import _retry_utility
 def _is_readable_stream(obj):
     """Checks whether obj is a file-like readable stream.
 
+    :param Union[str, unicode, file-like stream object, dict, list, None] obj: the object to be checked.
+    :returns: whether the object is a file-like readable stream.
     :rtype: boolean
     """
     if hasattr(obj, "read") and callable(getattr(obj, "read")):
@@ -49,16 +51,14 @@ def _request_body_from_data(data):
     When `data` is dict and list into unicode string; otherwise return `data`
     without making any change.
 
-    :param (str, unicode, file-like stream object, dict, list or None) data:
-
-    :rtype:
-        str, unicode, file-like stream object, or None
+    :param Union[str, unicode, file-like stream object, dict, list, None] data:
+    :returns: the json dump data.
+    :rtype: Union[str, unicode, file-like stream object, None]
 
     """
     if data is None or isinstance(data, str) or _is_readable_stream(data):
         return data
     if isinstance(data, (dict, list, tuple)):
-
         json_dumped = json.dumps(data, separators=(",", ":"))
 
         return json_dumped
@@ -69,13 +69,12 @@ def _Request(global_endpoint_manager, request_params, connection_policy, pipelin
     """Makes one http request using the requests module.
 
     :param _GlobalEndpointManager global_endpoint_manager:
-    :param dict request_params:
-        contains the resourceType, operationType, endpointOverride,
-        useWriteEndpoint, useAlternateWriteEndpoint information
+    :param ~azure.cosmos._request_object.RequestObject request_params:
+        contains information for the request, like the resource_type, operation_type, and endpoint_override
     :param documents.ConnectionPolicy connection_policy:
     :param azure.core.PipelineClient pipeline_client:
         Pipeline client to process the request
-    :param azure.core.HttpRequest request:
+    :param azure.core.pipeline.transport.HttpRequest request:
         The request object to send through the pipeline
     :return: tuple of (result, headers)
     :rtype: tuple of (dict, dict)
@@ -84,12 +83,13 @@ def _Request(global_endpoint_manager, request_params, connection_policy, pipelin
     # pylint: disable=protected-access
 
     connection_timeout = connection_policy.RequestTimeout
-    connection_timeout = kwargs.pop("connection_timeout", connection_timeout / 1000.0)
+    connection_timeout = kwargs.pop("connection_timeout", connection_timeout)
 
     # Every request tries to perform a refresh
     client_timeout = kwargs.get('timeout')
     start_time = time.time()
-    global_endpoint_manager.refresh_endpoint_list(None, **kwargs)
+    if request_params.resource_type != http_constants.ResourceType.DatabaseAccount:
+        global_endpoint_manager.refresh_endpoint_list(None, **kwargs)
     if client_timeout is not None:
         kwargs['timeout'] = client_timeout - (time.time() - start_time)
         if kwargs['timeout'] <= 0:
@@ -99,8 +99,8 @@ def _Request(global_endpoint_manager, request_params, connection_policy, pipelin
         base_url = request_params.endpoint_override
     else:
         base_url = global_endpoint_manager.resolve_service_endpoint(request_params)
-    if base_url != pipeline_client._base_url:
-        request.url = request.url.replace(pipeline_client._base_url, base_url)
+    if not request.url.startswith(base_url):
+        request.url = _replace_url_prefix(request.url, base_url)
 
     parse_result = urlparse(request.url)
 
@@ -138,7 +138,7 @@ def _Request(global_endpoint_manager, request_params, connection_policy, pipelin
         )
 
     response = response.http_response
-    headers = dict(response.headers)
+    headers = copy.copy(response.headers)
 
     data = response.body()
     if data:
@@ -161,9 +161,20 @@ def _Request(global_endpoint_manager, request_params, connection_policy, pipelin
             raise DecodeError(
                 message="Failed to decode JSON data: {}".format(e),
                 response=response,
-                error=e)
+                error=e) from e
 
     return result, headers
+
+
+def _replace_url_prefix(original_url, new_prefix):
+    parts = original_url.split('/', 3)
+
+    if not new_prefix.endswith('/'):
+        new_prefix += '/'
+
+    new_url = new_prefix + parts[3] if len(parts) > 3 else new_prefix
+
+    return new_url
 
 
 def _PipelineRunFunction(pipeline_client, request, **kwargs):
@@ -172,14 +183,14 @@ def _PipelineRunFunction(pipeline_client, request, **kwargs):
     return pipeline_client._pipeline.run(request, **kwargs)
 
 def SynchronizedRequest(
-    client,
-    request_params,
-    global_endpoint_manager,
-    connection_policy,
-    pipeline_client,
-    request,
-    request_data,
-    **kwargs
+        client,
+        request_params,
+        global_endpoint_manager,
+        connection_policy,
+        pipeline_client,
+        request,
+        request_data,
+        **kwargs
 ):
     """Performs one synchronized http request according to the parameters.
 
@@ -188,11 +199,8 @@ def SynchronizedRequest(
     :param _GlobalEndpointManager global_endpoint_manager:
     :param documents.ConnectionPolicy connection_policy:
     :param azure.core.PipelineClient pipeline_client: PipelineClient to process the request.
-    :param str method:
-    :param str path:
-    :param (str, unicode, file-like stream object, dict, list or None) request_data:
-    :param dict query_params:
-    :param dict headers:
+    :param HttpRequest request: the HTTP request to be sent
+    :param (str, unicode, file-like stream object, dict, list or None) request_data: the data to be sent in the request
     :return: tuple of (result, headers)
     :rtype: tuple of (dict dict)
     """
@@ -202,7 +210,7 @@ def SynchronizedRequest(
     elif request.data is None:
         request.headers[http_constants.HttpHeaders.ContentLength] = 0
 
-    # Pass _Request function with it's parameters to retry_utility's Execute method that wraps the call with retries
+    # Pass _Request function with its parameters to retry_utility's Execute method that wraps the call with retries
     return _retry_utility.Execute(
         client,
         global_endpoint_manager,

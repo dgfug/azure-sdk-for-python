@@ -14,11 +14,18 @@ from .locks import ManagementLockClient
 from .policy import PolicyClient
 from .resources import ResourceManagementClient
 from .subscriptions import SubscriptionClient
-__all__ = ['ApplicationClient',
-           'DeploymentScriptsClient',
-           'FeatureClient',
-           'PolicyClient',
-           'ManagementLinkClient',
-           'ManagementLockClient',
-           'ResourceManagementClient',
-           'SubscriptionClient']
+from .deploymentstacks import DeploymentStacksClient
+from .databoundaries import DataBoundaryMgmtClient
+
+__all__ = [
+    "ApplicationClient",
+    "DeploymentScriptsClient",
+    "FeatureClient",
+    "PolicyClient",
+    "ManagementLinkClient",
+    "ManagementLockClient",
+    "ResourceManagementClient",
+    "SubscriptionClient",
+    "DeploymentStacksClient",
+    "DataBoundaryMgmtClient",
+]

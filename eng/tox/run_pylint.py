@@ -14,17 +14,13 @@ import os
 import logging
 import sys
 
-from allowed_pylint_failures import PYLINT_ACCEPTABLE_FAILURES
-
-from tox_helper_tasks import (
-    get_package_details
-)
+from ci_tools.environment_exclusions import is_check_enabled
+from ci_tools.parsing import ParsedSetup
+from ci_tools.variables import in_ci
 
 logging.getLogger().setLevel(logging.INFO)
 
 root_dir = os.path.abspath(os.path.join(os.path.abspath(__file__), "..", "..", ".."))
-rcFileLocation = os.path.join(root_dir, "pylintrc")
-lint_plugin_path = os.path.join(root_dir, "scripts/pylint_custom_plugin")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -39,28 +35,49 @@ if __name__ == "__main__":
         required=True,
     )
 
+    parser.add_argument(
+        "--next",
+        default=False,
+        help="Next version of pylint is being tested.",
+        required=False,      
+    )
+
     args = parser.parse_args()
 
-
     pkg_dir = os.path.abspath(args.target_package)
-    package_name, namespace, ver = get_package_details(os.path.join(pkg_dir, "setup.py"))
+    pkg_details = ParsedSetup.from_path(pkg_dir)
+    rcFileLocation = os.path.join(root_dir, "eng/pylintrc") if args.next else os.path.join(root_dir, "pylintrc")
 
-    top_level_module = namespace.split('.')[0]
+    top_level_module = pkg_details.namespace.split('.')[0]
 
-    if package_name not in PYLINT_ACCEPTABLE_FAILURES:
-        try:
-            check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pylint",
-                    "--rcfile={}".format(rcFileLocation),
-                    "--output-format=parseable",
-                    os.path.join(args.target_package, top_level_module),
-                ]
+    if in_ci():
+        if not is_check_enabled(args.target_package, "pylint"):
+            logging.info(
+                f"Package {pkg_details.name} opts-out of pylint check."
             )
-        except CalledProcessError as e:
-            logging.error(
-                "{} exited with linting error {}".format(package_name, e.returncode)
-            )
-            exit(1)
+            exit(0)
+
+    try:
+        check_call(
+            [
+                sys.executable,
+                "-m",
+                "pylint",
+                "--rcfile={}".format(rcFileLocation),
+                "--output-format=parseable",
+                os.path.join(args.target_package, top_level_module),
+            ]
+        )
+    except CalledProcessError as e:
+        logging.error(
+            "{} exited with linting error {}. Please see this link for more information https://aka.ms/azsdk/python/pylint-guide".format(pkg_details.name, e.returncode)
+        )
+        if args.next and in_ci():
+            from gh_tools.vnext_issue_creator import create_vnext_issue
+            create_vnext_issue(pkg_details.name, "pylint")
+
+        exit(1)
+
+    if args.next and in_ci():
+        from gh_tools.vnext_issue_creator import close_vnext_issue
+        close_vnext_issue(pkg_details.name, "pylint")

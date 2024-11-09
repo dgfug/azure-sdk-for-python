@@ -1,5 +1,68 @@
 # Release History
 
+## 3.0.0 (2024-04-22)
+
+### Features Added
+
+  - Model AzureMonitorAlertSettings has a new parameter alerts_for_all_failover_issues
+  - Model AzureMonitorAlertSettings has a new parameter alerts_for_all_replication_issues
+  - Model ClassicAlertSettings has a new parameter email_notifications_for_site_recovery
+  - Model SoftDeleteSettings has a new parameter enhanced_security_state
+  - Model VaultProperties has a new parameter bcdr_security_level
+  - Model VaultProperties has a new parameter resource_guard_operation_requests
+  - Operation VaultsOperations.begin_create_or_update has a new optional parameter x_ms_authorization_auxiliary
+  - Operation VaultsOperations.begin_update has a new optional parameter x_ms_authorization_auxiliary
+
+### Breaking Changes
+
+  - Renamed operation VaultsOperations.delete to VaultsOperations.begin_delete
+
+## 2.5.0 (2023-09-05)
+
+### Features Added
+
+  - Model SecuritySettings has a new parameter multi_user_authorization
+  - Model SecuritySettings has a new parameter soft_delete_settings
+  - Model VaultProperties has a new parameter secure_score
+
+## 2.4.0 (2023-05-20)
+
+### Features Added
+
+  - Model VaultProperties has a new parameter restore_settings
+
+## 2.3.0 (2023-02-15)
+
+### Other Changes
+
+  - Upgraded api-version to `2023-01-01`
+
+## 2.2.0 (2022-11-30)
+
+### Features Added
+
+  - Added operation RecoveryServicesOperations.capabilities
+  - Model PrivateEndpointConnection has a new parameter group_ids
+  - Model VaultProperties has a new parameter public_network_access
+  - Model VaultProperties has a new parameter security_settings
+
+## 2.1.0 (2022-07-28)
+
+**Features**
+
+  - Model PrivateEndpointConnectionVaultProperties has a new parameter location
+  - Model PrivateEndpointConnectionVaultProperties has a new parameter name
+  - Model PrivateEndpointConnectionVaultProperties has a new parameter type
+  - Model ResourceCertificateAndAadDetails has a new parameter aad_audience
+  - Model Sku has a new parameter capacity
+  - Model Sku has a new parameter family
+  - Model Sku has a new parameter size
+  - Model VaultProperties has a new parameter backup_storage_version
+  - Model VaultProperties has a new parameter monitoring_settings
+  - Model VaultProperties has a new parameter move_details
+  - Model VaultProperties has a new parameter move_state
+  - Model VaultProperties has a new parameter redundancy_settings
+
 ## 2.0.0 (2021-07-12)
 
 **Features**

@@ -7,192 +7,324 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
+from azure.core.pipeline import policies
 from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
 
-from . import models
+from . import models as _models
 from ._configuration import ApiManagementClientConfiguration
-from .operations import ApiDiagnosticOperations, ApiExportOperations, ApiIssueAttachmentOperations, ApiIssueCommentOperations, ApiIssueOperations, ApiManagementClientOperationsMixin, ApiManagementOperationsOperations, ApiManagementServiceOperations, ApiManagementServiceSkusOperations, ApiManagementSkusOperations, ApiOperationOperations, ApiOperationPolicyOperations, ApiOperations, ApiPolicyOperations, ApiProductOperations, ApiReleaseOperations, ApiRevisionOperations, ApiSchemaOperations, ApiTagDescriptionOperations, ApiVersionSetOperations, AuthorizationServerOperations, BackendOperations, CacheOperations, CertificateOperations, ContentItemOperations, ContentTypeOperations, DelegationSettingsOperations, DeletedServicesOperations, DiagnosticOperations, EmailTemplateOperations, GatewayApiOperations, GatewayCertificateAuthorityOperations, GatewayHostnameConfigurationOperations, GatewayOperations, GlobalSchemaOperations, GroupOperations, GroupUserOperations, IdentityProviderOperations, IssueOperations, LoggerOperations, NamedValueOperations, NetworkStatusOperations, NotificationOperations, NotificationRecipientEmailOperations, NotificationRecipientUserOperations, OpenIdConnectProviderOperations, OperationOperations, OutboundNetworkDependenciesEndpointsOperations, PolicyDescriptionOperations, PolicyOperations, PortalRevisionOperations, PortalSettingsOperations, PrivateEndpointConnectionOperations, ProductApiOperations, ProductGroupOperations, ProductOperations, ProductPolicyOperations, ProductSubscriptionsOperations, QuotaByCounterKeysOperations, QuotaByPeriodKeysOperations, RegionOperations, ReportsOperations, SignInSettingsOperations, SignUpSettingsOperations, SubscriptionOperations, TagOperations, TagResourceOperations, TenantAccessGitOperations, TenantAccessOperations, TenantConfigurationOperations, TenantSettingsOperations, UserConfirmationPasswordOperations, UserGroupOperations, UserIdentitiesOperations, UserOperations, UserSubscriptionOperations
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    ApiDiagnosticOperations,
+    ApiExportOperations,
+    ApiIssueAttachmentOperations,
+    ApiIssueCommentOperations,
+    ApiIssueOperations,
+    ApiManagementClientOperationsMixin,
+    ApiManagementOperationsOperations,
+    ApiManagementServiceOperations,
+    ApiManagementServiceSkusOperations,
+    ApiManagementSkusOperations,
+    ApiOperationOperations,
+    ApiOperationPolicyOperations,
+    ApiOperations,
+    ApiPolicyOperations,
+    ApiProductOperations,
+    ApiReleaseOperations,
+    ApiRevisionOperations,
+    ApiSchemaOperations,
+    ApiTagDescriptionOperations,
+    ApiVersionSetOperations,
+    ApiWikiOperations,
+    ApiWikisOperations,
+    AuthorizationAccessPolicyOperations,
+    AuthorizationLoginLinksOperations,
+    AuthorizationOperations,
+    AuthorizationProviderOperations,
+    AuthorizationServerOperations,
+    BackendOperations,
+    CacheOperations,
+    CertificateOperations,
+    ContentItemOperations,
+    ContentTypeOperations,
+    DelegationSettingsOperations,
+    DeletedServicesOperations,
+    DiagnosticOperations,
+    DocumentationOperations,
+    EmailTemplateOperations,
+    GatewayApiOperations,
+    GatewayCertificateAuthorityOperations,
+    GatewayHostnameConfigurationOperations,
+    GatewayOperations,
+    GlobalSchemaOperations,
+    GraphQLApiResolverOperations,
+    GraphQLApiResolverPolicyOperations,
+    GroupOperations,
+    GroupUserOperations,
+    IdentityProviderOperations,
+    IssueOperations,
+    LoggerOperations,
+    NamedValueOperations,
+    NetworkStatusOperations,
+    NotificationOperations,
+    NotificationRecipientEmailOperations,
+    NotificationRecipientUserOperations,
+    OpenIdConnectProviderOperations,
+    OperationOperations,
+    OutboundNetworkDependenciesEndpointsOperations,
+    PolicyDescriptionOperations,
+    PolicyFragmentOperations,
+    PolicyOperations,
+    PortalConfigOperations,
+    PortalRevisionOperations,
+    PortalSettingsOperations,
+    PrivateEndpointConnectionOperations,
+    ProductApiOperations,
+    ProductGroupOperations,
+    ProductOperations,
+    ProductPolicyOperations,
+    ProductSubscriptionsOperations,
+    ProductWikiOperations,
+    ProductWikisOperations,
+    QuotaByCounterKeysOperations,
+    QuotaByPeriodKeysOperations,
+    RegionOperations,
+    ReportsOperations,
+    SignInSettingsOperations,
+    SignUpSettingsOperations,
+    SubscriptionOperations,
+    TagOperations,
+    TagResourceOperations,
+    TenantAccessGitOperations,
+    TenantAccessOperations,
+    TenantConfigurationOperations,
+    TenantSettingsOperations,
+    UserConfirmationPasswordOperations,
+    UserGroupOperations,
+    UserIdentitiesOperations,
+    UserOperations,
+    UserSubscriptionOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials import TokenCredential
 
-class ApiManagementClient(ApiManagementClientOperationsMixin):
+
+class ApiManagementClient(
+    ApiManagementClientOperationsMixin
+):  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """ApiManagement Client.
 
     :ivar api: ApiOperations operations
-    :vartype api: api_management_client.operations.ApiOperations
+    :vartype api: azure.mgmt.apimanagement.operations.ApiOperations
     :ivar api_revision: ApiRevisionOperations operations
-    :vartype api_revision: api_management_client.operations.ApiRevisionOperations
+    :vartype api_revision: azure.mgmt.apimanagement.operations.ApiRevisionOperations
     :ivar api_release: ApiReleaseOperations operations
-    :vartype api_release: api_management_client.operations.ApiReleaseOperations
+    :vartype api_release: azure.mgmt.apimanagement.operations.ApiReleaseOperations
     :ivar api_operation: ApiOperationOperations operations
-    :vartype api_operation: api_management_client.operations.ApiOperationOperations
+    :vartype api_operation: azure.mgmt.apimanagement.operations.ApiOperationOperations
     :ivar api_operation_policy: ApiOperationPolicyOperations operations
-    :vartype api_operation_policy: api_management_client.operations.ApiOperationPolicyOperations
+    :vartype api_operation_policy: azure.mgmt.apimanagement.operations.ApiOperationPolicyOperations
     :ivar tag: TagOperations operations
-    :vartype tag: api_management_client.operations.TagOperations
+    :vartype tag: azure.mgmt.apimanagement.operations.TagOperations
+    :ivar graph_ql_api_resolver: GraphQLApiResolverOperations operations
+    :vartype graph_ql_api_resolver:
+     azure.mgmt.apimanagement.operations.GraphQLApiResolverOperations
+    :ivar graph_ql_api_resolver_policy: GraphQLApiResolverPolicyOperations operations
+    :vartype graph_ql_api_resolver_policy:
+     azure.mgmt.apimanagement.operations.GraphQLApiResolverPolicyOperations
     :ivar api_product: ApiProductOperations operations
-    :vartype api_product: api_management_client.operations.ApiProductOperations
+    :vartype api_product: azure.mgmt.apimanagement.operations.ApiProductOperations
     :ivar api_policy: ApiPolicyOperations operations
-    :vartype api_policy: api_management_client.operations.ApiPolicyOperations
+    :vartype api_policy: azure.mgmt.apimanagement.operations.ApiPolicyOperations
     :ivar api_schema: ApiSchemaOperations operations
-    :vartype api_schema: api_management_client.operations.ApiSchemaOperations
+    :vartype api_schema: azure.mgmt.apimanagement.operations.ApiSchemaOperations
     :ivar api_diagnostic: ApiDiagnosticOperations operations
-    :vartype api_diagnostic: api_management_client.operations.ApiDiagnosticOperations
+    :vartype api_diagnostic: azure.mgmt.apimanagement.operations.ApiDiagnosticOperations
     :ivar api_issue: ApiIssueOperations operations
-    :vartype api_issue: api_management_client.operations.ApiIssueOperations
+    :vartype api_issue: azure.mgmt.apimanagement.operations.ApiIssueOperations
     :ivar api_issue_comment: ApiIssueCommentOperations operations
-    :vartype api_issue_comment: api_management_client.operations.ApiIssueCommentOperations
+    :vartype api_issue_comment: azure.mgmt.apimanagement.operations.ApiIssueCommentOperations
     :ivar api_issue_attachment: ApiIssueAttachmentOperations operations
-    :vartype api_issue_attachment: api_management_client.operations.ApiIssueAttachmentOperations
+    :vartype api_issue_attachment: azure.mgmt.apimanagement.operations.ApiIssueAttachmentOperations
     :ivar api_tag_description: ApiTagDescriptionOperations operations
-    :vartype api_tag_description: api_management_client.operations.ApiTagDescriptionOperations
+    :vartype api_tag_description: azure.mgmt.apimanagement.operations.ApiTagDescriptionOperations
     :ivar operation: OperationOperations operations
-    :vartype operation: api_management_client.operations.OperationOperations
+    :vartype operation: azure.mgmt.apimanagement.operations.OperationOperations
+    :ivar api_wiki: ApiWikiOperations operations
+    :vartype api_wiki: azure.mgmt.apimanagement.operations.ApiWikiOperations
+    :ivar api_wikis: ApiWikisOperations operations
+    :vartype api_wikis: azure.mgmt.apimanagement.operations.ApiWikisOperations
     :ivar api_export: ApiExportOperations operations
-    :vartype api_export: api_management_client.operations.ApiExportOperations
+    :vartype api_export: azure.mgmt.apimanagement.operations.ApiExportOperations
     :ivar api_version_set: ApiVersionSetOperations operations
-    :vartype api_version_set: api_management_client.operations.ApiVersionSetOperations
+    :vartype api_version_set: azure.mgmt.apimanagement.operations.ApiVersionSetOperations
     :ivar authorization_server: AuthorizationServerOperations operations
-    :vartype authorization_server: api_management_client.operations.AuthorizationServerOperations
+    :vartype authorization_server:
+     azure.mgmt.apimanagement.operations.AuthorizationServerOperations
+    :ivar authorization_provider: AuthorizationProviderOperations operations
+    :vartype authorization_provider:
+     azure.mgmt.apimanagement.operations.AuthorizationProviderOperations
+    :ivar authorization: AuthorizationOperations operations
+    :vartype authorization: azure.mgmt.apimanagement.operations.AuthorizationOperations
+    :ivar authorization_login_links: AuthorizationLoginLinksOperations operations
+    :vartype authorization_login_links:
+     azure.mgmt.apimanagement.operations.AuthorizationLoginLinksOperations
+    :ivar authorization_access_policy: AuthorizationAccessPolicyOperations operations
+    :vartype authorization_access_policy:
+     azure.mgmt.apimanagement.operations.AuthorizationAccessPolicyOperations
     :ivar backend: BackendOperations operations
-    :vartype backend: api_management_client.operations.BackendOperations
+    :vartype backend: azure.mgmt.apimanagement.operations.BackendOperations
     :ivar cache: CacheOperations operations
-    :vartype cache: api_management_client.operations.CacheOperations
+    :vartype cache: azure.mgmt.apimanagement.operations.CacheOperations
     :ivar certificate: CertificateOperations operations
-    :vartype certificate: api_management_client.operations.CertificateOperations
+    :vartype certificate: azure.mgmt.apimanagement.operations.CertificateOperations
     :ivar content_type: ContentTypeOperations operations
-    :vartype content_type: api_management_client.operations.ContentTypeOperations
+    :vartype content_type: azure.mgmt.apimanagement.operations.ContentTypeOperations
     :ivar content_item: ContentItemOperations operations
-    :vartype content_item: api_management_client.operations.ContentItemOperations
+    :vartype content_item: azure.mgmt.apimanagement.operations.ContentItemOperations
     :ivar deleted_services: DeletedServicesOperations operations
-    :vartype deleted_services: api_management_client.operations.DeletedServicesOperations
+    :vartype deleted_services: azure.mgmt.apimanagement.operations.DeletedServicesOperations
     :ivar api_management_operations: ApiManagementOperationsOperations operations
     :vartype api_management_operations:
-     api_management_client.operations.ApiManagementOperationsOperations
+     azure.mgmt.apimanagement.operations.ApiManagementOperationsOperations
     :ivar api_management_service_skus: ApiManagementServiceSkusOperations operations
     :vartype api_management_service_skus:
-     api_management_client.operations.ApiManagementServiceSkusOperations
+     azure.mgmt.apimanagement.operations.ApiManagementServiceSkusOperations
     :ivar api_management_service: ApiManagementServiceOperations operations
     :vartype api_management_service:
-     api_management_client.operations.ApiManagementServiceOperations
+     azure.mgmt.apimanagement.operations.ApiManagementServiceOperations
     :ivar diagnostic: DiagnosticOperations operations
-    :vartype diagnostic: api_management_client.operations.DiagnosticOperations
+    :vartype diagnostic: azure.mgmt.apimanagement.operations.DiagnosticOperations
     :ivar email_template: EmailTemplateOperations operations
-    :vartype email_template: api_management_client.operations.EmailTemplateOperations
+    :vartype email_template: azure.mgmt.apimanagement.operations.EmailTemplateOperations
     :ivar gateway: GatewayOperations operations
-    :vartype gateway: api_management_client.operations.GatewayOperations
+    :vartype gateway: azure.mgmt.apimanagement.operations.GatewayOperations
     :ivar gateway_hostname_configuration: GatewayHostnameConfigurationOperations operations
     :vartype gateway_hostname_configuration:
-     api_management_client.operations.GatewayHostnameConfigurationOperations
+     azure.mgmt.apimanagement.operations.GatewayHostnameConfigurationOperations
     :ivar gateway_api: GatewayApiOperations operations
-    :vartype gateway_api: api_management_client.operations.GatewayApiOperations
+    :vartype gateway_api: azure.mgmt.apimanagement.operations.GatewayApiOperations
     :ivar gateway_certificate_authority: GatewayCertificateAuthorityOperations operations
     :vartype gateway_certificate_authority:
-     api_management_client.operations.GatewayCertificateAuthorityOperations
+     azure.mgmt.apimanagement.operations.GatewayCertificateAuthorityOperations
     :ivar group: GroupOperations operations
-    :vartype group: api_management_client.operations.GroupOperations
+    :vartype group: azure.mgmt.apimanagement.operations.GroupOperations
     :ivar group_user: GroupUserOperations operations
-    :vartype group_user: api_management_client.operations.GroupUserOperations
+    :vartype group_user: azure.mgmt.apimanagement.operations.GroupUserOperations
     :ivar identity_provider: IdentityProviderOperations operations
-    :vartype identity_provider: api_management_client.operations.IdentityProviderOperations
+    :vartype identity_provider: azure.mgmt.apimanagement.operations.IdentityProviderOperations
     :ivar issue: IssueOperations operations
-    :vartype issue: api_management_client.operations.IssueOperations
+    :vartype issue: azure.mgmt.apimanagement.operations.IssueOperations
     :ivar logger: LoggerOperations operations
-    :vartype logger: api_management_client.operations.LoggerOperations
+    :vartype logger: azure.mgmt.apimanagement.operations.LoggerOperations
     :ivar named_value: NamedValueOperations operations
-    :vartype named_value: api_management_client.operations.NamedValueOperations
+    :vartype named_value: azure.mgmt.apimanagement.operations.NamedValueOperations
     :ivar network_status: NetworkStatusOperations operations
-    :vartype network_status: api_management_client.operations.NetworkStatusOperations
+    :vartype network_status: azure.mgmt.apimanagement.operations.NetworkStatusOperations
     :ivar notification: NotificationOperations operations
-    :vartype notification: api_management_client.operations.NotificationOperations
+    :vartype notification: azure.mgmt.apimanagement.operations.NotificationOperations
     :ivar notification_recipient_user: NotificationRecipientUserOperations operations
     :vartype notification_recipient_user:
-     api_management_client.operations.NotificationRecipientUserOperations
+     azure.mgmt.apimanagement.operations.NotificationRecipientUserOperations
     :ivar notification_recipient_email: NotificationRecipientEmailOperations operations
     :vartype notification_recipient_email:
-     api_management_client.operations.NotificationRecipientEmailOperations
+     azure.mgmt.apimanagement.operations.NotificationRecipientEmailOperations
     :ivar open_id_connect_provider: OpenIdConnectProviderOperations operations
     :vartype open_id_connect_provider:
-     api_management_client.operations.OpenIdConnectProviderOperations
+     azure.mgmt.apimanagement.operations.OpenIdConnectProviderOperations
     :ivar outbound_network_dependencies_endpoints: OutboundNetworkDependenciesEndpointsOperations
      operations
     :vartype outbound_network_dependencies_endpoints:
-     api_management_client.operations.OutboundNetworkDependenciesEndpointsOperations
+     azure.mgmt.apimanagement.operations.OutboundNetworkDependenciesEndpointsOperations
     :ivar policy: PolicyOperations operations
-    :vartype policy: api_management_client.operations.PolicyOperations
+    :vartype policy: azure.mgmt.apimanagement.operations.PolicyOperations
     :ivar policy_description: PolicyDescriptionOperations operations
-    :vartype policy_description: api_management_client.operations.PolicyDescriptionOperations
+    :vartype policy_description: azure.mgmt.apimanagement.operations.PolicyDescriptionOperations
+    :ivar policy_fragment: PolicyFragmentOperations operations
+    :vartype policy_fragment: azure.mgmt.apimanagement.operations.PolicyFragmentOperations
+    :ivar portal_config: PortalConfigOperations operations
+    :vartype portal_config: azure.mgmt.apimanagement.operations.PortalConfigOperations
     :ivar portal_revision: PortalRevisionOperations operations
-    :vartype portal_revision: api_management_client.operations.PortalRevisionOperations
+    :vartype portal_revision: azure.mgmt.apimanagement.operations.PortalRevisionOperations
     :ivar portal_settings: PortalSettingsOperations operations
-    :vartype portal_settings: api_management_client.operations.PortalSettingsOperations
+    :vartype portal_settings: azure.mgmt.apimanagement.operations.PortalSettingsOperations
     :ivar sign_in_settings: SignInSettingsOperations operations
-    :vartype sign_in_settings: api_management_client.operations.SignInSettingsOperations
+    :vartype sign_in_settings: azure.mgmt.apimanagement.operations.SignInSettingsOperations
     :ivar sign_up_settings: SignUpSettingsOperations operations
-    :vartype sign_up_settings: api_management_client.operations.SignUpSettingsOperations
+    :vartype sign_up_settings: azure.mgmt.apimanagement.operations.SignUpSettingsOperations
     :ivar delegation_settings: DelegationSettingsOperations operations
-    :vartype delegation_settings: api_management_client.operations.DelegationSettingsOperations
+    :vartype delegation_settings: azure.mgmt.apimanagement.operations.DelegationSettingsOperations
     :ivar private_endpoint_connection: PrivateEndpointConnectionOperations operations
     :vartype private_endpoint_connection:
-     api_management_client.operations.PrivateEndpointConnectionOperations
+     azure.mgmt.apimanagement.operations.PrivateEndpointConnectionOperations
     :ivar product: ProductOperations operations
-    :vartype product: api_management_client.operations.ProductOperations
+    :vartype product: azure.mgmt.apimanagement.operations.ProductOperations
     :ivar product_api: ProductApiOperations operations
-    :vartype product_api: api_management_client.operations.ProductApiOperations
+    :vartype product_api: azure.mgmt.apimanagement.operations.ProductApiOperations
     :ivar product_group: ProductGroupOperations operations
-    :vartype product_group: api_management_client.operations.ProductGroupOperations
+    :vartype product_group: azure.mgmt.apimanagement.operations.ProductGroupOperations
     :ivar product_subscriptions: ProductSubscriptionsOperations operations
-    :vartype product_subscriptions: api_management_client.operations.ProductSubscriptionsOperations
+    :vartype product_subscriptions:
+     azure.mgmt.apimanagement.operations.ProductSubscriptionsOperations
     :ivar product_policy: ProductPolicyOperations operations
-    :vartype product_policy: api_management_client.operations.ProductPolicyOperations
+    :vartype product_policy: azure.mgmt.apimanagement.operations.ProductPolicyOperations
+    :ivar product_wiki: ProductWikiOperations operations
+    :vartype product_wiki: azure.mgmt.apimanagement.operations.ProductWikiOperations
+    :ivar product_wikis: ProductWikisOperations operations
+    :vartype product_wikis: azure.mgmt.apimanagement.operations.ProductWikisOperations
     :ivar quota_by_counter_keys: QuotaByCounterKeysOperations operations
-    :vartype quota_by_counter_keys: api_management_client.operations.QuotaByCounterKeysOperations
+    :vartype quota_by_counter_keys:
+     azure.mgmt.apimanagement.operations.QuotaByCounterKeysOperations
     :ivar quota_by_period_keys: QuotaByPeriodKeysOperations operations
-    :vartype quota_by_period_keys: api_management_client.operations.QuotaByPeriodKeysOperations
+    :vartype quota_by_period_keys: azure.mgmt.apimanagement.operations.QuotaByPeriodKeysOperations
     :ivar region: RegionOperations operations
-    :vartype region: api_management_client.operations.RegionOperations
+    :vartype region: azure.mgmt.apimanagement.operations.RegionOperations
     :ivar reports: ReportsOperations operations
-    :vartype reports: api_management_client.operations.ReportsOperations
+    :vartype reports: azure.mgmt.apimanagement.operations.ReportsOperations
     :ivar global_schema: GlobalSchemaOperations operations
-    :vartype global_schema: api_management_client.operations.GlobalSchemaOperations
+    :vartype global_schema: azure.mgmt.apimanagement.operations.GlobalSchemaOperations
     :ivar tenant_settings: TenantSettingsOperations operations
-    :vartype tenant_settings: api_management_client.operations.TenantSettingsOperations
+    :vartype tenant_settings: azure.mgmt.apimanagement.operations.TenantSettingsOperations
     :ivar api_management_skus: ApiManagementSkusOperations operations
-    :vartype api_management_skus: api_management_client.operations.ApiManagementSkusOperations
+    :vartype api_management_skus: azure.mgmt.apimanagement.operations.ApiManagementSkusOperations
     :ivar subscription: SubscriptionOperations operations
-    :vartype subscription: api_management_client.operations.SubscriptionOperations
+    :vartype subscription: azure.mgmt.apimanagement.operations.SubscriptionOperations
     :ivar tag_resource: TagResourceOperations operations
-    :vartype tag_resource: api_management_client.operations.TagResourceOperations
+    :vartype tag_resource: azure.mgmt.apimanagement.operations.TagResourceOperations
     :ivar tenant_access: TenantAccessOperations operations
-    :vartype tenant_access: api_management_client.operations.TenantAccessOperations
+    :vartype tenant_access: azure.mgmt.apimanagement.operations.TenantAccessOperations
     :ivar tenant_access_git: TenantAccessGitOperations operations
-    :vartype tenant_access_git: api_management_client.operations.TenantAccessGitOperations
+    :vartype tenant_access_git: azure.mgmt.apimanagement.operations.TenantAccessGitOperations
     :ivar tenant_configuration: TenantConfigurationOperations operations
-    :vartype tenant_configuration: api_management_client.operations.TenantConfigurationOperations
+    :vartype tenant_configuration:
+     azure.mgmt.apimanagement.operations.TenantConfigurationOperations
     :ivar user: UserOperations operations
-    :vartype user: api_management_client.operations.UserOperations
+    :vartype user: azure.mgmt.apimanagement.operations.UserOperations
     :ivar user_group: UserGroupOperations operations
-    :vartype user_group: api_management_client.operations.UserGroupOperations
+    :vartype user_group: azure.mgmt.apimanagement.operations.UserGroupOperations
     :ivar user_subscription: UserSubscriptionOperations operations
-    :vartype user_subscription: api_management_client.operations.UserSubscriptionOperations
+    :vartype user_subscription: azure.mgmt.apimanagement.operations.UserSubscriptionOperations
     :ivar user_identities: UserIdentitiesOperations operations
-    :vartype user_identities: api_management_client.operations.UserIdentitiesOperations
+    :vartype user_identities: azure.mgmt.apimanagement.operations.UserIdentitiesOperations
     :ivar user_confirmation_password: UserConfirmationPasswordOperations operations
     :vartype user_confirmation_password:
-     api_management_client.operations.UserConfirmationPasswordOperations
-    :param credential: Credential needed for the client to connect to Azure.
+     azure.mgmt.apimanagement.operations.UserConfirmationPasswordOperations
+    :ivar documentation: DocumentationOperations operations
+    :vartype documentation: azure.mgmt.apimanagement.operations.DocumentationOperations
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: Subscription credentials which uniquely identify Microsoft Azure
-     subscription. The subscription ID forms part of the URI for every service call.
+    :param subscription_id: The ID of the target subscription. Required.
     :type subscription_id: str
-    :param base_url: Service URL. Default value is 'https://management.azure.com'.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
+    :keyword api_version: Api Version. Default value is "2022-08-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
     :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
      Retry-After header is present.
     """
@@ -204,10 +336,30 @@ class ApiManagementClient(ApiManagementClientOperationsMixin):
         base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        self._config = ApiManagementClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = ApiManagementClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
@@ -215,84 +367,156 @@ class ApiManagementClient(ApiManagementClientOperationsMixin):
         self.api_revision = ApiRevisionOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_release = ApiReleaseOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_operation = ApiOperationOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_operation_policy = ApiOperationPolicyOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.api_operation_policy = ApiOperationPolicyOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.tag = TagOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.graph_ql_api_resolver = GraphQLApiResolverOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.graph_ql_api_resolver_policy = GraphQLApiResolverPolicyOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.api_product = ApiProductOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_policy = ApiPolicyOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_schema = ApiSchemaOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_diagnostic = ApiDiagnosticOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_issue = ApiIssueOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_issue_comment = ApiIssueCommentOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_issue_attachment = ApiIssueAttachmentOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_tag_description = ApiTagDescriptionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.api_issue_comment = ApiIssueCommentOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.api_issue_attachment = ApiIssueAttachmentOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.api_tag_description = ApiTagDescriptionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.operation = OperationOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.api_wiki = ApiWikiOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.api_wikis = ApiWikisOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_export = ApiExportOperations(self._client, self._config, self._serialize, self._deserialize)
         self.api_version_set = ApiVersionSetOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.authorization_server = AuthorizationServerOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.authorization_server = AuthorizationServerOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.authorization_provider = AuthorizationProviderOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.authorization = AuthorizationOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.authorization_login_links = AuthorizationLoginLinksOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.authorization_access_policy = AuthorizationAccessPolicyOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.backend = BackendOperations(self._client, self._config, self._serialize, self._deserialize)
         self.cache = CacheOperations(self._client, self._config, self._serialize, self._deserialize)
         self.certificate = CertificateOperations(self._client, self._config, self._serialize, self._deserialize)
         self.content_type = ContentTypeOperations(self._client, self._config, self._serialize, self._deserialize)
         self.content_item = ContentItemOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.deleted_services = DeletedServicesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_management_operations = ApiManagementOperationsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_management_service_skus = ApiManagementServiceSkusOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_management_service = ApiManagementServiceOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.deleted_services = DeletedServicesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.api_management_operations = ApiManagementOperationsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.api_management_service_skus = ApiManagementServiceSkusOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.api_management_service = ApiManagementServiceOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.diagnostic = DiagnosticOperations(self._client, self._config, self._serialize, self._deserialize)
         self.email_template = EmailTemplateOperations(self._client, self._config, self._serialize, self._deserialize)
         self.gateway = GatewayOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.gateway_hostname_configuration = GatewayHostnameConfigurationOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.gateway_hostname_configuration = GatewayHostnameConfigurationOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.gateway_api = GatewayApiOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.gateway_certificate_authority = GatewayCertificateAuthorityOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.gateway_certificate_authority = GatewayCertificateAuthorityOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.group = GroupOperations(self._client, self._config, self._serialize, self._deserialize)
         self.group_user = GroupUserOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.identity_provider = IdentityProviderOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.identity_provider = IdentityProviderOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.issue = IssueOperations(self._client, self._config, self._serialize, self._deserialize)
         self.logger = LoggerOperations(self._client, self._config, self._serialize, self._deserialize)
         self.named_value = NamedValueOperations(self._client, self._config, self._serialize, self._deserialize)
         self.network_status = NetworkStatusOperations(self._client, self._config, self._serialize, self._deserialize)
         self.notification = NotificationOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.notification_recipient_user = NotificationRecipientUserOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.notification_recipient_email = NotificationRecipientEmailOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.open_id_connect_provider = OpenIdConnectProviderOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.outbound_network_dependencies_endpoints = OutboundNetworkDependenciesEndpointsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.notification_recipient_user = NotificationRecipientUserOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.notification_recipient_email = NotificationRecipientEmailOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.open_id_connect_provider = OpenIdConnectProviderOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.outbound_network_dependencies_endpoints = OutboundNetworkDependenciesEndpointsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.policy = PolicyOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.policy_description = PolicyDescriptionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.policy_description = PolicyDescriptionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.policy_fragment = PolicyFragmentOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.portal_config = PortalConfigOperations(self._client, self._config, self._serialize, self._deserialize)
         self.portal_revision = PortalRevisionOperations(self._client, self._config, self._serialize, self._deserialize)
         self.portal_settings = PortalSettingsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.sign_in_settings = SignInSettingsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.sign_up_settings = SignUpSettingsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.delegation_settings = DelegationSettingsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.private_endpoint_connection = PrivateEndpointConnectionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.delegation_settings = DelegationSettingsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.private_endpoint_connection = PrivateEndpointConnectionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.product = ProductOperations(self._client, self._config, self._serialize, self._deserialize)
         self.product_api = ProductApiOperations(self._client, self._config, self._serialize, self._deserialize)
         self.product_group = ProductGroupOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.product_subscriptions = ProductSubscriptionsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.product_subscriptions = ProductSubscriptionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.product_policy = ProductPolicyOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.quota_by_counter_keys = QuotaByCounterKeysOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.quota_by_period_keys = QuotaByPeriodKeysOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.product_wiki = ProductWikiOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.product_wikis = ProductWikisOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.quota_by_counter_keys = QuotaByCounterKeysOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.quota_by_period_keys = QuotaByPeriodKeysOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.region = RegionOperations(self._client, self._config, self._serialize, self._deserialize)
         self.reports = ReportsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.global_schema = GlobalSchemaOperations(self._client, self._config, self._serialize, self._deserialize)
         self.tenant_settings = TenantSettingsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.api_management_skus = ApiManagementSkusOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.api_management_skus = ApiManagementSkusOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.subscription = SubscriptionOperations(self._client, self._config, self._serialize, self._deserialize)
         self.tag_resource = TagResourceOperations(self._client, self._config, self._serialize, self._deserialize)
         self.tenant_access = TenantAccessOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.tenant_access_git = TenantAccessGitOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.tenant_configuration = TenantConfigurationOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.tenant_access_git = TenantAccessGitOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.tenant_configuration = TenantConfigurationOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.user = UserOperations(self._client, self._config, self._serialize, self._deserialize)
         self.user_group = UserGroupOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.user_subscription = UserSubscriptionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.user_subscription = UserSubscriptionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.user_identities = UserIdentitiesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.user_confirmation_password = UserConfirmationPasswordOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.user_confirmation_password = UserConfirmationPasswordOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.documentation = DocumentationOperations(self._client, self._config, self._serialize, self._deserialize)
 
-
-    def _send_request(
-        self,
-        request,  # type: HttpRequest
-        **kwargs: Any
-    ) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
@@ -301,7 +525,7 @@ class ApiManagementClient(ApiManagementClientOperationsMixin):
         >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -312,17 +536,14 @@ class ApiManagementClient(ApiManagementClientOperationsMixin):
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> ApiManagementClient
+    def __enter__(self) -> "ApiManagementClient":
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

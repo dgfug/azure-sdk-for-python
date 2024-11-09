@@ -16,7 +16,7 @@ if sys.version_info[0] < 3:
 
 setup(
     name="azure-search-nspkg",
-    version="1.0.0",
+    version="1.1.0b1",
     description="Microsoft Azure Search Namespace Package [Internal]",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
@@ -24,6 +24,7 @@ setup(
     author="Microsoft Corporation",
     author_email="azpysdkhelp@microsoft.com",
     url="https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/search",
+    keywords="azure, azure sdk",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python",

@@ -7,13 +7,16 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
+from typing_extensions import Self
 
+from azure.core.pipeline import policies
 from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
 
-from . import models
+from . import models as _models
+from .._serialization import Deserializer, Serializer
 from ._configuration import FeatureClientConfiguration
 from .operations import FeatureClientOperationsMixin, FeaturesOperations, SubscriptionFeatureRegistrationsOperations
 
@@ -21,20 +24,27 @@ if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials import TokenCredential
 
-class FeatureClient(FeatureClientOperationsMixin):
-    """Azure Feature Exposure Control (AFEC) provides a mechanism for the resource providers to control feature exposure to users. Resource providers typically use this mechanism to provide public/private preview for new features prior to making them generally available. Users need to explicitly register for AFEC features to get access to such functionality.
+
+class FeatureClient(FeatureClientOperationsMixin):  # pylint: disable=client-accepts-api-version-keyword
+    """Azure Feature Exposure Control (AFEC) provides a mechanism for the resource providers to
+    control feature exposure to users. Resource providers typically use this mechanism to provide
+    public/private preview for new features prior to making them generally available. Users need to
+    explicitly register for AFEC features to get access to such functionality.
 
     :ivar features: FeaturesOperations operations
     :vartype features: azure.mgmt.resource.features.v2021_07_01.operations.FeaturesOperations
     :ivar subscription_feature_registrations: SubscriptionFeatureRegistrationsOperations operations
     :vartype subscription_feature_registrations:
      azure.mgmt.resource.features.v2021_07_01.operations.SubscriptionFeatureRegistrationsOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: The Azure subscription ID.
+    :param subscription_id: The Azure subscription ID. Required.
     :type subscription_id: str
-    :param base_url: Service URL. Default value is 'https://management.azure.com'.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
+    :keyword api_version: Api Version. Default value is "2021-07-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
     """
 
     def __init__(
@@ -45,21 +55,36 @@ class FeatureClient(FeatureClientOperationsMixin):
         **kwargs: Any
     ) -> None:
         self._config = FeatureClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
-        self.features = FeaturesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.subscription_feature_registrations = SubscriptionFeatureRegistrationsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.features = FeaturesOperations(self._client, self._config, self._serialize, self._deserialize, "2021-07-01")
+        self.subscription_feature_registrations = SubscriptionFeatureRegistrationsOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-07-01"
+        )
 
-
-    def _send_request(
-        self,
-        request,  # type: HttpRequest
-        **kwargs: Any
-    ) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
@@ -68,7 +93,7 @@ class FeatureClient(FeatureClientOperationsMixin):
         >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -79,17 +104,14 @@ class FeatureClient(FeatureClientOperationsMixin):
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> FeatureClient
+    def __enter__(self) -> Self:
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

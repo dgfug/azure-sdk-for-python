@@ -3,13 +3,6 @@ import os
 from io import open
 import re
 
-# example setup.py Feel free to copy the entire "azure-template" folder into a package folder named
-# with "azure-<yourpackagename>". Ensure that the below arguments to setup() are updated to reflect
-# your package.
-
-# this setup.py is set up in a specific way to keep the azure* and azure-mgmt-* namespaces WORKING all the way
-# up from python 2.7. Reference here: https://github.com/Azure/azure-sdk-for-python/wiki/Azure-packaging
-
 PACKAGE_NAME = "azure-ai-language-questionanswering"
 PACKAGE_PPRINT_NAME = "Question Answering"
 
@@ -37,6 +30,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/Azure/azure-sdk-for-python',
+    keywords="azure, azure sdk",
     author='Microsoft Corporation',
     author_email='azuresdkengsysadmins@microsoft.com',
 
@@ -44,18 +38,18 @@ setup(
     # ensure that the development status reflects the status of your package
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'License :: OSI Approved :: MIT License',
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "License :: OSI Approved :: MIT License",
     ],
+    python_requires=">=3.8",
+    zip_safe=False,
     packages=find_packages(exclude=[
         'tests',
         # Exclude packages that will be covered by PEP420 or nspkg
@@ -66,16 +60,17 @@ setup(
         'azure.ai',
         'azure.ai.language',
     ]),
-    install_requires=[
-        'azure-core<2.0.0,>=1.19.1',
-        'msrest>=0.6.21',
-    ],
-    extras_require={
-        ":python_version<'3.0'": ['futures', 'azure-ai-language-nspkg'],
-        ":python_version<'3.5'": ["typing"],
+    include_package_data=True,
+    package_data={
+        'azure.ai.language.questionanswering': ['py.typed'],
     },
+    install_requires=[
+        "azure-core>=1.28.0",
+        "isodate>=0.6.1",
+        "typing-extensions>=4.0.1",
+    ],
     project_urls={
         'Bug Reports': 'https://github.com/Azure/azure-sdk-for-python/issues',
-        'Source': 'https://github.com/Azure/azure-sdk-python',
+        'Source': 'https://github.com/Azure/azure-sdk-for-python',
     }
 )

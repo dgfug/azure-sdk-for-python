@@ -6,108 +6,145 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class ActionType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Enum. Indicates the action type. "Internal" refers to actions that are for internal only APIs.
-    """
+class ActionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enum. Indicates the action type. "Internal" refers to actions that are for internal only APIs."""
 
     INTERNAL = "Internal"
 
-class AuthorizationStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Authorization status of spacecraft.
-    """
 
-    ALLOWED = "Allowed"
-    PENDING = "Pending"
-    DENIED = "Denied"
-
-class AutoTrackingConfiguration(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Auto track configuration.
-    """
+class AutoTrackingConfiguration(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Auto-tracking configuration."""
 
     DISABLED = "disabled"
     X_BAND = "xBand"
     S_BAND = "sBand"
 
-class Capability(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Capability of the Ground Station.
-    """
+
+class Capability(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Capability of the Ground Station."""
 
     EARTH_OBSERVATION = "EarthObservation"
     COMMUNICATION = "Communication"
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
 
-    USER = "User"
-    APPLICATION = "Application"
-    MANAGED_IDENTITY = "ManagedIdentity"
-    KEY = "Key"
-
-class Direction(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Direction (uplink or downlink)
-    """
-
-    UPLINK = "uplink"
-    DOWNLINK = "downlink"
-
-class Enum6(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+class CapabilityParameter(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """CapabilityParameter."""
 
     EARTH_OBSERVATION = "EarthObservation"
     COMMUNICATION = "Communication"
 
-class Origin(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The intended executor of the operation; as in Resource Based Access Control (RBAC) and audit
-    logs UX. Default value is "user,system"
-    """
 
-    USER = "user"
-    SYSTEM = "system"
-    USER_SYSTEM = "user,system"
+class ContactProfilesPropertiesProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current state of the resource's creation, deletion, or modification."""
 
-class Polarization(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """polarization. eg (RHCP, LHCP)
-    """
+    CREATING = "creating"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"
+    UPDATING = "updating"
+    DELETING = "deleting"
 
-    RHCP = "RHCP"
-    LHCP = "LHCP"
-    DUAL_RHCP_LHCP = "dualRhcpLhcp"
-    LINEAR_VERTICAL = "linearVertical"
-    LINEAR_HORIZONTAL = "linearHorizontal"
 
-class Protocol(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Protocol either UDP or TCP.
-    """
+class ContactsPropertiesProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current state of the resource's creation, deletion, or modification."""
 
-    TCP = "TCP"
-    UDP = "UDP"
+    CREATING = "creating"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"
+    UPDATING = "updating"
+    DELETING = "deleting"
 
-class Status(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Status of a contact.
-    """
+
+class ContactsStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of a contact."""
 
     SCHEDULED = "scheduled"
     CANCELLED = "cancelled"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     PROVIDER_CANCELLED = "providerCancelled"
+
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
+
+    USER = "User"
+    APPLICATION = "Application"
+    MANAGED_IDENTITY = "ManagedIdentity"
+    KEY = "Key"
+
+
+class Direction(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Direction (Uplink or Downlink)."""
+
+    UPLINK = "Uplink"
+    DOWNLINK = "Downlink"
+
+
+class Origin(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The intended executor of the operation; as in Resource Based Access Control (RBAC) and audit
+    logs UX. Default value is "user,system".
+    """
+
+    USER = "user"
+    SYSTEM = "system"
+    USER_SYSTEM = "user,system"
+
+
+class Polarization(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Polarization. e.g. (RHCP, LHCP)."""
+
+    RHCP = "RHCP"
+    LHCP = "LHCP"
+    LINEAR_VERTICAL = "linearVertical"
+    LINEAR_HORIZONTAL = "linearHorizontal"
+
+
+class Protocol(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Protocol either UDP or TCP."""
+
+    TCP = "TCP"
+    UDP = "UDP"
+
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current state of the resource's creation, deletion, or modification."""
+
+    CREATING = "creating"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"
+    UPDATING = "updating"
+    DELETING = "deleting"
+
+
+class ReleaseMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Release Status of a ground station."""
+
+    PREVIEW = "Preview"
+    GA = "GA"
+
+
+class SpacecraftsPropertiesProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current state of the resource's creation, deletion, or modification."""
+
+    CREATING = "creating"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"
+    UPDATING = "updating"
+    DELETING = "deleting"
+
+
+class Status(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The status of operation."""
+
+    SUCCEEDED = "Succeeded"
+    CANCELED = "Canceled"
+    FAILED = "Failed"
+    RUNNING = "Running"

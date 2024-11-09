@@ -4,40 +4,33 @@
 # ------------------------------------
 import platform
 import socket
+from typing import Dict, Any
 import subprocess
 import webbrowser
-
-from six.moves.urllib_parse import urlparse
+from urllib.parse import urlparse
 
 from azure.core.exceptions import ClientAuthenticationError
 
 from .. import CredentialUnavailableError
 from .._constants import DEVELOPER_SIGN_ON_CLIENT_ID
-from .._internal import AuthCodeRedirectServer, InteractiveCredential, wrap_exceptions
-
-try:
-    from typing import TYPE_CHECKING
-except ImportError:
-    TYPE_CHECKING = False
-
-if TYPE_CHECKING:
-    # pylint:disable=unused-import
-    from typing import Any
+from .._internal import AuthCodeRedirectServer, InteractiveCredential, wrap_exceptions, within_dac
 
 
 class InteractiveBrowserCredential(InteractiveCredential):
     """Opens a browser to interactively authenticate a user.
 
-    :func:`~get_token` opens a browser to a login URL provided by Azure Active Directory and authenticates a user
+    :func:`~get_token` opens a browser to a login URL provided by Microsoft Entra ID and authenticates a user
     there with the authorization code flow, using PKCE (Proof Key for Code Exchange) internally to protect the code.
 
-    :keyword str authority: Authority of an Azure Active Directory endpoint, for example "login.microsoftonline.com",
+    :keyword str authority: Authority of a Microsoft Entra endpoint, for example "login.microsoftonline.com",
         the authority for Azure Public Cloud (which is the default). :class:`~azure.identity.AzureAuthorityHosts`
         defines authorities for other clouds.
-    :keyword str tenant_id: an Azure Active Directory tenant ID. Defaults to the "organizations" tenant, which can
+    :keyword str tenant_id: a Microsoft Entra tenant ID. Defaults to the "organizations" tenant, which can
         authenticate work or school accounts.
-    :keyword str client_id: Client ID of the Azure Active Directory application users will sign in to. If
-        unspecified, users will authenticate to an Azure development application.
+    :keyword str client_id: Client ID of the Microsoft Entra application that users will sign into. It is recommended
+        that developers register their applications and assign appropriate roles. For more information,
+        visit https://aka.ms/azsdk/identity/AppRegistrationAndRoleAssignment. If not specified, users will
+        authenticate to an Azure development application, which is not recommended for production scenarios.
     :keyword str login_hint: a username suggestion to pre-fill the login page's username/email address field. A user
         may still log in with a different username.
     :keyword str redirect_uri: a redirect URI for the application identified by `client_id` as configured in Azure
@@ -51,11 +44,29 @@ class InteractiveBrowserCredential(InteractiveCredential):
         will cache tokens in memory.
     :paramtype cache_persistence_options: ~azure.identity.TokenCachePersistenceOptions
     :keyword int timeout: seconds to wait for the user to complete authentication. Defaults to 300 (5 minutes).
+    :keyword bool disable_instance_discovery: Determines whether or not instance discovery is performed when attempting
+        to authenticate. Setting this to true will completely disable both instance discovery and authority validation.
+        This functionality is intended for use in scenarios where the metadata endpoint cannot be reached, such as in
+        private clouds or Azure Stack. The process of instance discovery entails retrieving authority metadata from
+        https://login.microsoft.com/ to validate the authority. By setting this to **True**, the validation of the
+        authority is disabled. As a result, it is crucial to ensure that the configured authority host is valid and
+        trustworthy.
+    :keyword bool enable_support_logging: Enables additional support logging in the underlying MSAL library.
+        This logging potentially contains personally identifiable information and is intended to be used only for
+        troubleshooting purposes.
     :raises ValueError: invalid **redirect_uri**
+
+    .. admonition:: Example:
+
+        .. literalinclude:: ../samples/credential_creation_code_snippets.py
+            :start-after: [START create_interactive_browser_credential]
+            :end-before: [END create_interactive_browser_credential]
+            :language: python
+            :dedent: 4
+            :caption: Create an InteractiveBrowserCredential.
     """
 
-    def __init__(self, **kwargs):
-        # type: (**Any) -> None
+    def __init__(self, **kwargs: Any) -> None:
         redirect_uri = kwargs.pop("redirect_uri", None)
         if redirect_uri:
             self._parsed_url = urlparse(redirect_uri)
@@ -71,17 +82,17 @@ class InteractiveBrowserCredential(InteractiveCredential):
         super(InteractiveBrowserCredential, self).__init__(client_id=client_id, **kwargs)
 
     @wrap_exceptions
-    def _request_token(self, *scopes, **kwargs):
-        # type: (*str, **Any) -> dict
+    def _request_token(self, *scopes: str, **kwargs) -> Dict:
 
         # start an HTTP server to receive the redirect
         server = None
+        redirect_uri: str = ""
         if self._parsed_url:
             try:
                 redirect_uri = "http://{}:{}".format(self._parsed_url.hostname, self._parsed_url.port)
                 server = self._server_class(self._parsed_url.hostname, self._parsed_url.port, timeout=self._timeout)
-            except socket.error:
-                raise CredentialUnavailableError(message="Couldn't start an HTTP server on " + redirect_uri)
+            except socket.error as ex:
+                raise CredentialUnavailableError(message="Couldn't start an HTTP server on " + redirect_uri) from ex
         else:
             for port in range(8400, 9000):
                 try:
@@ -114,6 +125,10 @@ class InteractiveBrowserCredential(InteractiveCredential):
         # block until the server times out or receives the post-authentication redirect
         response = server.wait_for_redirect()
         if not response:
+            if within_dac.get():
+                raise CredentialUnavailableError(
+                    message="Timed out after waiting {} seconds for the user to authenticate".format(self._timeout)
+                )
             raise ClientAuthenticationError(
                 message="Timed out after waiting {} seconds for the user to authenticate".format(self._timeout)
             )
@@ -129,9 +144,7 @@ def _open_browser(url):
         system = uname[0].lower()
         release = uname[2].lower()
         if "microsoft" in release and system == "linux":
-            kwargs = {}
-            if platform.python_version() >= "3.3":
-                kwargs["timeout"] = 5
+            kwargs = {"timeout": 5}
 
             try:
                 exit_code = subprocess.call(

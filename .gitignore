@@ -1,6 +1,9 @@
+# Default Assets restore directory
+.assets
+
 # Python cache
 __pycache__/
-*.pyc
+*.py[cod]
 .pytest_cache
 .mypy_cache
 .cache
@@ -34,6 +37,7 @@ build/
 # Test results
 TestResults/
 ENV_DIR/
+.assets/
 
 # Perf test profiling
 cProfile-*.pstats
@@ -45,6 +49,17 @@ coverage-*.xml
 stderr.txt
 stdout.txt
 _proxy_log_*.log
+_azci_*.log
+.artifacts
+.tmp_whl_dir
+.logs
+.proxy
+conda/output/
+conda/assembly/
+conda/assembled/
+conda/downloaded/
+conda/conda-env/
+scenario_*.txt
 
 # tox environment folders
 .tox/
@@ -93,6 +108,7 @@ src/build
 # [begoldsm] ignore virtual env if it exists.
 adlEnv/
 venv/
+.venv/
 code_reports
 
 # Azure Storage test credentials
@@ -100,6 +116,15 @@ sdk/storage/azure-storage-blob/tests/settings/settings_real.py
 sdk/storage/azure-storage-queue/tests/settings/settings_real.py
 sdk/storage/azure-storage-file-share/tests/settings/settings_real.py
 sdk/storage/azure-storage-file-datalake/tests/settings/settings_real.py
+sdk/storage/azure-storage-blob-changefeed/tests/settings/settings_real.py
+
+# azure-ai-ml test configs
+!sdk/ml/azure-ai-ml/tests/test_configs/environment/*
+!sdk/ml/azure-ai-ml/tests/test_configs/*/*/environment*
+!sdk/ml/azure-ai-ml/tests/environment*
+
+# azure-ai-evaluation connections file
+sdk/evaluation/azure-ai-evaluation/connections.json
 
 
 # The locations below are deprecated - keep to prevent any accidental secrets leakage ==========
@@ -123,3 +148,13 @@ sdk/cosmos/azure-cosmos/test/test_config.py
 
 # local SSL certificate folder
 .certificate
+
+# ignore pre-commit config to avoid adding hooks in this repo as
+# package specific hooks will bring delay and in some cases errors to all developers
+.pre-commit-config.yaml
+
+# api stub files
+*_python.json
+
+# temporary folder to refresh SDK with cadl
+TempTypeSpecFiles/

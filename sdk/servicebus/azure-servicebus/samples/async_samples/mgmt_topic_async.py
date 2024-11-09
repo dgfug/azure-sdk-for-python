@@ -19,8 +19,9 @@ import asyncio
 import uuid
 import datetime
 from azure.servicebus.aio.management import ServiceBusAdministrationClient
+from azure.identity.aio import DefaultAzureCredential
 
-CONNECTION_STR = os.environ['SERVICE_BUS_CONNECTION_STR']
+FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
 TOPIC_NAME = "sb_mgmt_topic" + str(uuid.uuid4())
 
 
@@ -58,8 +59,7 @@ async def get_and_update_topic(servicebus_mgmt_client):
     # update by passing keyword arguments
     topic_properties = await servicebus_mgmt_client.get_topic(TOPIC_NAME)
     await servicebus_mgmt_client.update_topic(
-        topic_properties,
-        default_message_time_to_live=datetime.timedelta(minutes=15)
+        topic_properties, default_message_time_to_live=datetime.timedelta(minutes=15)
     )
 
 
@@ -72,7 +72,8 @@ async def get_topic_runtime_properties(servicebus_mgmt_client):
 
 
 async def main():
-    async with ServiceBusAdministrationClient.from_connection_string(CONNECTION_STR) as servicebus_mgmt_client:
+    credential = DefaultAzureCredential()
+    async with ServiceBusAdministrationClient(FULLY_QUALIFIED_NAMESPACE, credential) as servicebus_mgmt_client:
         await create_topic(servicebus_mgmt_client)
         await list_topics(servicebus_mgmt_client)
         await get_and_update_topic(servicebus_mgmt_client)

@@ -23,7 +23,7 @@
 """
 
 
-class HttpMethods(object):
+class HttpMethods:
     """Constants of http methods.
     """
 
@@ -34,8 +34,7 @@ class HttpMethods(object):
     Head = "HEAD"
     Options = "OPTIONS"
 
-
-class HttpHeaders(object):
+class HttpHeaders:
     """Constants of http headers.
     """
 
@@ -85,6 +84,12 @@ class HttpHeaders(object):
     Prefer = "Prefer"
     Location = "Location"
     Referer = "referer"
+    Pragma = "Pragma"
+
+    # Bulk/Batch
+    IsBatchRequest = "x-ms-cosmos-is-batch-request"
+    IsBatchAtomic = "x-ms-cosmos-batch-atomic"
+    ShouldBatchContinueOnError = "x-ms-cosmos-batch-continue-on-error"
 
     # Query
     Query = "x-ms-documentdb-query"
@@ -92,13 +97,19 @@ class HttpHeaders(object):
     IsQueryPlanRequest = "x-ms-cosmos-is-query-plan-request"
     SupportedQueryFeatures = "x-ms-cosmos-supported-query-features"
     QueryVersion = "x-ms-cosmos-query-version"
+    QueryMetrics = "x-ms-documentdb-query-metrics"
+    QueryExecutionInfo = "x-ms-cosmos-query-execution-info"
+    IndexUtilization = "x-ms-cosmos-index-utilization"
 
     # Our custom DocDB headers
     Continuation = "x-ms-continuation"
     PageSize = "x-ms-max-item-count"
+    ResponseContinuationTokenLimitInKb = "x-ms-documentdb-responsecontinuationtokenlimitinkb"  # cspell:disable-line
+    PriorityLevel = "x-ms-cosmos-priority-level"
 
     # Request sender generated. Simply echoed by backend.
     ActivityId = "x-ms-activity-id"
+    CorrelatedActivityId = "x-ms-cosmos-correlated-activityid"  # cspell:disable-line
     PreTriggerInclude = "x-ms-documentdb-pre-trigger-include"
     PreTriggerExclude = "x-ms-documentdb-pre-trigger-exclude"
     PostTriggerInclude = "x-ms-documentdb-post-trigger-include"
@@ -116,8 +127,14 @@ class HttpHeaders(object):
     EmitVerboseTracesInQuery = "x-ms-documentdb-query-emit-traces"
     SubStatus = "x-ms-substatus"
     AlternateContentPath = "x-ms-alt-content-path"
+    ContentPath = "x-ms-content-path"
     IsContinuationExpected = "x-ms-documentdb-query-iscontinuationexpected"
     PopulateQueryMetrics = "x-ms-documentdb-populatequerymetrics"
+    PopulateIndexMetrics = "x-ms-cosmos-populateindexmetrics"
+    ResourceQuota = "x-ms-resource-quota"
+    ResourceUsage = "x-ms-resource-usage"
+    IntendedCollectionRID = "x-ms-cosmos-intended-collection-rid"
+    Prefer = "Prefer"
 
     # Quota Info
     MaxEntityCount = "x-ms-root-entity-max-count"
@@ -156,7 +173,7 @@ class HttpHeaders(object):
     OcpResourceProviderRegisteredUri = "ocp-resourceprovider-registered-uri"
 
     # For Document service management operations only. This is in
-    # essence a 'handle' to (long running) operations.
+    # essence a 'handle' to (long-running) operations.
     RequestId = "x-ms-request-id"
 
     # Object returning this determines what constitutes state and what
@@ -166,6 +183,7 @@ class HttpHeaders(object):
     # Offer type.
     OfferType = "x-ms-offer-type"
     OfferThroughput = "x-ms-offer-throughput"
+    AutoscaleSettings = "x-ms-cosmos-offer-autopilot-settings"
 
     # Custom RUs/minute headers
     DisableRUPerMinuteUsage = "x-ms-documentdb-disable-ru-per-minute-usage"
@@ -176,6 +194,12 @@ class HttpHeaders(object):
     PartitionKey = "x-ms-documentdb-partitionkey"
     EnableCrossPartitionQuery = "x-ms-documentdb-query-enablecrosspartition"
     PartitionKeyRangeID = "x-ms-documentdb-partitionkeyrangeid"
+    PhysicalPartitionId = "x-ms-cosmos-physical-partition-id"
+    PartitionKeyDeletePending = "x-ms-cosmos-is-partition-key-delete-pending"
+    StartEpkString = "x-ms-start-epk"
+    EndEpkString = "x-ms-end-epk"
+    ReadFeedKeyType = "x-ms-read-key-type"
+    SDKSupportedCapabilities = "x-ms-cosmos-sdk-supportedcapabilities"
 
     # Upsert header
     IsUpsert = "x-ms-documentdb-is-upsert"
@@ -203,18 +227,35 @@ class HttpHeaders(object):
     DedicatedGatewayCacheStaleness = "x-ms-dedicatedgateway-max-age"
     IntegratedCacheHit = "x-ms-cosmos-cachehit"
 
+    # Backend headers
+    Server = "Server"
+    StrictTransportSecurity = "Strict-Transport-Security"
+    LSN = "lsn"
+    GatewayVersion = "x-ms-gatewayversion"
+    ServiceVersion = "x-ms-serviceversion"
+    SchemaVersion = "x-ms-schemaversion"
+    QuorumAckedLsn = "x-ms-quorum-acked-lsn"  # cspell:disable-line
+    CurrentWriteQuorum = "x-ms-current-write-quorum"
+    CurrentReplicaSetSize = "x-ms-current-replica-set-size"
+    XpRole = "x-ms-xp-role"
+    GlobalCommittedLsn = "x-ms-global-committed-lsn"
+    NumberOfReadRegions = "x-ms-number-of-read-regions"
+    TransportRequestId = "x-ms-transport-request-id"
+    ItemLsn = "x-ms-item-lsn"
+    CosmosItemLsn = "x-ms-cosmos-item-llsn"  # cspell:disable-line
+    CosmosLsn = "x-ms-cosmos-llsn"  # cspell:disable-line
+    CosmosQuorumAckedLsn = "x-ms-cosmos-quorum-acked-llsn"  # cspell:disable-line
+    RequestDurationMs = "x-ms-request-duration-ms"
 
-class HttpHeaderPreferenceTokens(object):
+class HttpHeaderPreferenceTokens:
     """Constants of http header preference tokens.
     """
-
     PreferUnfilteredQueryResponse = "PreferUnfilteredQueryResponse"
 
 
-class HttpStatusDescriptions(object):
+class HttpStatusDescriptions:
     """Constants of http status descriptions.
     """
-
     Accepted = "Accepted"
     Conflict = "Conflict"
     OK = "Ok"
@@ -241,10 +282,9 @@ class HttpStatusDescriptions(object):
     RetryWith = "Retry the request"
 
 
-class QueryStrings(object):
+class QueryStrings:
     """Constants of query strings.
     """
-
     Filter = "$filter"
     GenerateId = "$generateFor"
     GenerateIdBatchSize = "$batchSize"
@@ -259,22 +299,21 @@ class QueryStrings(object):
     Generic = "generic"
 
 
-class CookieHeaders(object):
+class CookieHeaders:
     """Constants of cookie headers.
     """
-
     SessionToken = "x-ms-session-token"
 
 
-class Versions(object):
+class Versions:
     """Constants of versions.
     """
-    CurrentVersion = "2018-12-31"
+    CurrentVersion = "2020-07-15"
     SDKName = "azure-cosmos"
     QueryVersion = "1.0"
 
 
-class Delimiters(object):
+class Delimiters:
     """Constants of delimiters.
     """
 
@@ -282,7 +321,7 @@ class Delimiters(object):
     ClientContinuationFormat = "{0}!!{1}"
 
 
-class HttpListenerErrorCodes(object):
+class HttpListenerErrorCodes:
     """Constants of http listener error codes.
     """
 
@@ -290,14 +329,14 @@ class HttpListenerErrorCodes(object):
     ERROR_CONNECTION_INVALID = 1229
 
 
-class HttpContextProperties(object):
+class HttpContextProperties:
     """Constants of http context properties.
     """
 
     SubscriptionId = "SubscriptionId"
 
 
-class _ErrorCodes(object):
+class _ErrorCodes:
     """Constants of error codes.
     """
 
@@ -322,10 +361,9 @@ class _ErrorCodes(object):
     LinuxConnectionReset = 131
 
 
-class StatusCodes(object):
+class StatusCodes:
     """HTTP status codes returned by the REST operations
     """
-
     # Success
     OK = 200
     CREATED = 201
@@ -345,6 +383,7 @@ class StatusCodes(object):
     GONE = 410
     PRECONDITION_FAILED = 412
     REQUEST_ENTITY_TOO_LARGE = 413
+    FAILED_DEPENDENCY = 424
     TOO_MANY_REQUESTS = 429
     RETRY_WITH = 449
 
@@ -356,15 +395,15 @@ class StatusCodes(object):
     OPERATION_CANCELLED = 1201
 
 
-class SubStatusCodes(object):
+class SubStatusCodes:
     """Sub status codes returned by the REST operations specifying the details of the operation
     """
-
     UNKNOWN = 0
 
     # 400: Bad Request Substatus
     PARTITION_KEY_MISMATCH = 1001
     CROSS_PARTITION_QUERY_NOT_SERVABLE = 1004
+    COLLECTION_RID_MISMATCH = 1024
 
     # 410: StatusCodeType_Gone: substatus
     NAME_CACHE_IS_STALE = 1000
@@ -379,6 +418,7 @@ class SubStatusCodes(object):
     REDUNDANT_COLLECTION_PUT = 1009
     SHARED_THROUGHPUT_DATABASE_QUOTA_EXCEEDED = 1010
     SHARED_THROUGHPUT_OFFER_GROW_NOT_NEEDED = 1011
+    AAD_REQUEST_NOT_AUTHORIZED = 5300
 
     # 404: LSN in session token is higher
     READ_SESSION_NOTAVAILABLE = 1002
@@ -390,8 +430,11 @@ class SubStatusCodes(object):
     # 503: Service Unavailable due to region being out of capacity for bindable partitions
     INSUFFICIENT_BINDABLE_PARTITIONS = 1007
 
+    # Client Side substatus codes
+    THROUGHPUT_OFFER_NOT_FOUND = 10004
 
-class ResourceType(object):
+
+class ResourceType:
     """Types of resources in Azure Cosmos
     """
 
@@ -410,9 +453,10 @@ class ResourceType(object):
     Offer = "offers"
     Topology = "topology"
     DatabaseAccount = "databaseaccount"
+    PartitionKey = "partitionkey"
 
     @staticmethod
-    def IsCollectionChild(resourceType):
+    def IsCollectionChild(resourceType: str) -> bool:
         return resourceType in (
             ResourceType.Document,
             ResourceType.Attachment,
@@ -421,4 +465,5 @@ class ResourceType(object):
             ResourceType.UserDefinedFunction,
             ResourceType.Trigger,
             ResourceType.StoredProcedure,
+            ResourceType.PartitionKey,
         )

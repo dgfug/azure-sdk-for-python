@@ -1,6 +1,100 @@
 # Release History
 
-## 1.0.2 (Unreleased)
+## 1.4.1 (Unreleased)
+
+### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 1.4.0 (2024-06-11)
+
+### Features Added
+
+- An `audience` keyword argument can now be passed to the `MetricsClient` constructor to specify the audience for the authentication token. This is useful when querying metrics in sovereign clouds. ([#35502](https://github.com/Azure/azure-sdk-for-python/pull/35502))
+
+## 1.3.0 (2024-03-28)
+
+### Features Added
+
+- Added `roll_up_by` keyword argument to `MetricsClient.query_resources` to support rolling up metrics by dimension. ([#33752](https://github.com/Azure/azure-sdk-for-python/pull/33752))
+
+### Breaking Changes
+
+- The following changes are breaking against the previous preview release (i.e. `1.3.0b2`/`1.3.0b1`):
+  - `MetricsBatchQueryClient` has been renamed to `MetricsClient`. ([#33958](https://github.com/Azure/azure-sdk-for-python/pull/33958))
+  - Reordered the arguments for the async `MetricsClient` constructor so that `endpoint` is now the first positional argument. ([#33752](https://github.com/Azure/azure-sdk-for-python/pull/33752))
+  - Positional arguments in `MetricsClient.query_resources` are now required keyword-only arguments. ([#33958](https://github.com/Azure/azure-sdk-for-python/pull/33958))
+  - The `resource_uris` argument in `MetricsClient.query_resources` has been renamed to `resource_ids`. ([#34760](https://github.com/Azure/azure-sdk-for-python/pull/34760))
+
+## 1.2.1 (2024-01-31)
+
+### Bugs Fixed
+
+- Fixed certain keyword arguments from not being propagated when using `MetricsQueryClient`.
+
+### Other Changes
+
+- Internal updates to generated code.
+- Bumped minimum dependency on `azure-core` to `>=1.28.0`.
+
+## 1.3.0b2 (2023-11-20)
+
+### Other Changes
+
+* Internal updates to generated code.
+* Bumped minimum dependency on `azure-core` to `>=1.28.0`.
+
+## 1.3.0b1 (2023-08-16)
+
+### Features Added
+
+- Added `MetricsBatchQueryClient` to support batch querying metrics from Azure resources. ([#31049](https://github.com/Azure/azure-sdk-for-python/pull/31049))
+
+## 1.2.0 (2023-05-09)
+
+### Features Added
+
+- Add the `query_resource` method to `LogsQueryClient` to allow users to query Azure resources directly without the context of a workspace. ([#29365](https://github.com/Azure/azure-sdk-for-python/pull/29365))
+
+### Bugs Fixed
+
+- Fixed an inconsistent keyword argument name in the `LogsTable` constructor, changing `column_types` to `columns_types`. Note that this is a class that is typically only instantiated internally, and not by users. ([#29076](https://github.com/Azure/azure-sdk-for-python/pull/29076))
+
+### Other Changes
+
+- Improved client configuration logic for non-public Azure clouds where credential scope will be determined based on the configured endpoint. ([#29602](https://github.com/Azure/azure-sdk-for-python/pull/29602))
+
+## 1.1.1 (2023-02-13)
+
+### Bugs Fixed
+
+- Fixed a bug where the incorrect key `time_stamp` (should be `timeStamp`) was used in the creation of `MetricValue` objects (thanks @jamespic).  ([#28777](https://github.com/Azure/azure-sdk-for-python/pull/28777))
+
+## 1.1.0 (2023-02-07)
+
+### Bugs Fixed
+
+* Error details are now propagated inside the `LogsQueryError` object. ([#25137](https://github.com/Azure/azure-sdk-for-python/issues/25137))
+
+### Other Changes
+
+* Python 3.6 is no longer supported. Please use Python version 3.7 or later. For more details, see [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
+* Removed `msrest` dependency.
+* Bumped minimum dependency on `azure-core` to `>=1.24.0`.
+* Added requirement for `isodate>=0.6.0` (`isodate` was required by `msrest`).
+* Added requirement for `typing-extensions>=4.0.1`.
+
+## 1.0.3 (2022-07-07)
+
+### Bugs Fixed
+
+- Fixed a bug where `query_resource` in metrics client is throwing an error with unexpected `metric_namespace` argument.
+
+## 1.0.2 (2022-05-06)
 
 - This version and all future versions will require Python 3.6+. Python 2.7 is no longer supported.
 
@@ -26,7 +120,7 @@
 
 ### Breaking Changes
 
-- `LogsQueryResult` now iterates over the tables directly as a convinience.
+- `LogsQueryResult` now iterates over the tables directly as a convenience.
 - `query` API in logs is renamed to `query_workspace`
 - `query` API in metrics is renamed to `query_resource`
 - `query_workspace` API now returns a union of `LogsQueryPartialResult` and `LogsQueryResult`.

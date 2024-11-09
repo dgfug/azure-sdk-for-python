@@ -6,21 +6,20 @@
 # --------------------------------------------------------------------------
 import base64
 from json import JSONEncoder
-from typing import Union, cast
+from typing import Union, cast, Any
 from datetime import datetime, date, time, timedelta
-from .utils._utils import _FixedOffset
+from datetime import timezone
 
 
 __all__ = ["NULL", "AzureJSONEncoder"]
+TZ_UTC = timezone.utc
 
 
-class _Null(object):
+class _Null:
     """To create a Falsy object"""
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
-
-    __nonzero__ = __bool__  # Python2 compatibility
 
 
 NULL = _Null()
@@ -30,11 +29,15 @@ with no data. This gets serialized to `null` on the wire.
 """
 
 
-def _timedelta_as_isostr(td):
-    # type: (timedelta) -> str
+def _timedelta_as_isostr(td: timedelta) -> str:
     """Converts a datetime.timedelta object into an ISO 8601 formatted string, e.g. 'P4DT12H30M05S'
 
     Function adapted from the Tin Can Python project: https://github.com/RusticiSoftware/TinCanPython
+
+    :param td: The timedelta object to convert
+    :type td: datetime.timedelta
+    :return: An ISO 8601 formatted string representing the timedelta object
+    :rtype: str
     """
 
     # Split seconds to larger units
@@ -81,9 +84,14 @@ def _timedelta_as_isostr(td):
     return "P" + date_str + time_str
 
 
-def _datetime_as_isostr(dt):
-    # type: (Union[datetime, date, time, timedelta]) -> str
-    """Converts a datetime.(datetime|date|time|timedelta) object into an ISO 8601 formatted string"""
+def _datetime_as_isostr(dt: Union[datetime, date, time, timedelta]) -> str:
+    """Converts a datetime.(datetime|date|time|timedelta) object into an ISO 8601 formatted string.
+
+    :param dt: The datetime object to convert
+    :type dt: datetime.datetime or datetime.date or datetime.time or datetime.timedelta
+    :return: An ISO 8601 formatted string representing the datetime object
+    :rtype: str
+    """
     # First try datetime.datetime
     if hasattr(dt, "year") and hasattr(dt, "hour"):
         dt = cast(datetime, dt)
@@ -104,18 +112,10 @@ def _datetime_as_isostr(dt):
         return _timedelta_as_isostr(dt)
 
 
-try:
-    from datetime import timezone
-
-    TZ_UTC = timezone.utc  # type: ignore
-except ImportError:
-    TZ_UTC = _FixedOffset(0)  # type: ignore
-
-
 class AzureJSONEncoder(JSONEncoder):
     """A JSON encoder that's capable of serializing datetime objects and bytes."""
 
-    def default(self, o):  # pylint: disable=too-many-return-statements
+    def default(self, o: Any) -> Any:
         if isinstance(o, (bytes, bytearray)):
             return base64.b64encode(o).decode()
         try:

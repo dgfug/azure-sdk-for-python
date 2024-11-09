@@ -4,22 +4,17 @@
 # license information.
 # --------------------------------------------------------------------------
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Optional
+from typing import Optional, Dict, Any, MutableMapping
 
 
-class HeadersMixin(object):
+class HeadersMixin:
     @property
-    def _headers(self):
-        # type() -> dict
-        return {"api-key": self._credential.key, "Accept": self._ODATA_ACCEPT}
+    def _headers(self) -> Dict[str, Any]:
+        if self._aad:  # type: ignore
+            return {"Accept": self._ODATA_ACCEPT}  # type: ignore
+        return {"api-key": self._credential.key, "Accept": self._ODATA_ACCEPT}  # type: ignore
 
-    def _merge_client_headers(self, headers):
-        # type(Optional[dict]) -> dict
-        if self._aad:
-            return headers
+    def _merge_client_headers(self, headers: Optional[MutableMapping[str, str]]) -> MutableMapping[str, str]:
         headers = headers or {}
         combined = self._headers
         combined.update(headers)

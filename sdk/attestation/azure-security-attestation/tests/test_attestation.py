@@ -9,7 +9,7 @@
 
 from typing import Any
 from cryptography.hazmat.backends import default_backend
-from devtools_testutils import AzureTestCase
+from devtools_testutils import AzureRecordedTestCase, recorded_by_proxy
 import cryptography
 import cryptography.x509
 import pytest
@@ -24,6 +24,7 @@ from azure.security.attestation import (
     AttestationType,
 )
 
+''' cspell:disable '''
 _open_enclave_report = (
     "AQAAAAIAAADkEQAAAAAAAAMAAg"
     + "AAAAAABQAKAJOacjP3nEyplAoNs5V_Bgc42MPzGo7hPWS_h-3tExJrAAAAABERAwX_g"
@@ -120,7 +121,6 @@ _open_enclave_report = (
     + "tLQoA"
 )
 
-
 _runtime_data = (
     "CiAgICAgICAgewogI"
     + "CAgICAgICAgICAiandrIiA6IHsKICAgICAgICAgICAgICAgICJrdHkiOiJFQyIsCiAg"
@@ -131,14 +131,17 @@ _runtime_data = (
     + "ICB9CiAgICAgICAgfQogICAgICAgIA"
 )
 
+_attest_tpm_payload = "eyJwYXlsb2FkIjogeyJ0eXBlIjogImFpa2NlcnQifX0"
+''' cspell:enable '''
 
-class AttestationTest(AzureTestCase):
+class TestAttestation(AzureRecordedTestCase):
 
     # The caching infrastructure won't cache .well-known/openid_metadata responses so
     # mark the metadata related tests as live-only.
     @pytest.mark.live_test_only
     @AttestationPreparer()
-    def test_shared_getopenidmetadata(self, attestation_location_short_name):
+    def test_shared_getopenidmetadata(self, **kwargs):
+        attestation_location_short_name = kwargs.pop("attestation_location_short_name")
         attest_client = self.shared_client(attestation_location_short_name)
         open_id_metadata = attest_client.get_open_id_metadata()
         assert open_id_metadata["response_types_supported"] is not None
@@ -153,7 +156,8 @@ class AttestationTest(AzureTestCase):
 
     @pytest.mark.live_test_only
     @AttestationPreparer()
-    def test_aad_getopenidmetadata(self, attestation_aad_url):
+    def test_aad_getopenidmetadata(self, **kwargs):
+        attestation_aad_url = kwargs.pop("attestation_aad_url")
         attest_client = self.create_client(attestation_aad_url)
         open_id_metadata = attest_client.get_open_id_metadata()
         assert open_id_metadata["response_types_supported"] is not None
@@ -162,7 +166,8 @@ class AttestationTest(AzureTestCase):
 
     @pytest.mark.live_test_only
     @AttestationPreparer()
-    def test_isolated_getopenidmetadata(self, attestation_isolated_url):
+    def test_isolated_getopenidmetadata(self, **kwargs):
+        attestation_isolated_url = kwargs.pop("attestation_isolated_url")
         attest_client = self.create_client(attestation_isolated_url)
         open_id_metadata = attest_client.get_open_id_metadata()
         assert open_id_metadata["response_types_supported"] is not None
@@ -170,6 +175,7 @@ class AttestationTest(AzureTestCase):
         assert open_id_metadata["issuer"] == attestation_isolated_url
 
     @AttestationPreparer()
+    @recorded_by_proxy
     def test_shared_getsigningcertificates(self, attestation_location_short_name):
         attest_client = self.shared_client(attestation_location_short_name)
         signers = attest_client.get_signing_certificates()
@@ -179,6 +185,7 @@ class AttestationTest(AzureTestCase):
             )
 
     @AttestationPreparer()
+    @recorded_by_proxy
     def test_aad_getsigningcertificates(self, attestation_aad_url):
         # type: (str) -> None
         attest_client = self.create_client(attestation_aad_url)
@@ -189,6 +196,7 @@ class AttestationTest(AzureTestCase):
             )
 
     @AttestationPreparer()
+    @recorded_by_proxy
     def test_isolated_getsigningcertificates(self, attestation_isolated_url):
         # type: (str) -> None
         attest_client = self.create_client(attestation_isolated_url)
@@ -235,6 +243,7 @@ class AttestationTest(AzureTestCase):
 
     @AttestationPreparer()
     @AllInstanceTypes
+    @recorded_by_proxy
     def test_attest_open_enclave(self, **kwargs):
         # type: (str, **Any) -> None
         self._test_attest_open_enclave(kwargs.pop("instance_url"))
@@ -265,28 +274,10 @@ class AttestationTest(AzureTestCase):
 
     @AttestationPreparer()
     @AllInstanceTypes
+    @recorded_by_proxy
     def test_attest_sgx_enclave(self, **kwargs):
         # type: (str, **Any) -> None
         self._test_attest_sgx_enclave(kwargs.pop("instance_url"))
-
-    @AttestationPreparer()
-    def test_tpm_attestation(self, attestation_aad_url):
-        # type: (str) -> None
-        client = self.create_client(attestation_aad_url)
-        admin_client = self.create_adminclient(attestation_aad_url)
-
-        # TPM attestation requires that there be a policy present, so set one.
-        basic_policy = "version=1.0; authorizationrules{=> permit();}; issuancerules{};"
-        admin_client.set_policy(AttestationType.TPM, basic_policy)
-
-        encoded_payload = json.dumps({"payload": {"type": "aikcert"}})
-        tpm_response = client.attest_tpm(encoded_payload)
-
-        decoded_response = json.loads(tpm_response)
-        assert decoded_response["payload"] is not None
-        payload = decoded_response["payload"]
-        assert payload["challenge"] is not None
-        assert payload["service_context"] is not None
 
     """
         # Commented out call showing the modifications needed to convert this to a call
@@ -307,6 +298,26 @@ class AttestationTest(AzureTestCase):
             headers={"tenantName": "tenant1"})
             print(response)
     """
+
+    @AttestationPreparer()
+    @recorded_by_proxy
+    def test_tpm_attestation(self, attestation_aad_url):
+        # type: (str) -> None
+        client = self.create_client(attestation_aad_url)
+        admin_client = self.create_adminclient(attestation_aad_url)
+
+        # TPM attestation requires that there be a policy present, so set one.
+        basic_policy = "version=1.0; authorizationrules{=> permit();}; issuancerules{};"
+        admin_client.set_policy(AttestationType.TPM, basic_policy)
+
+        payload = base64url_decode(_attest_tpm_payload)
+        tpm_response = client.attest_tpm(payload)
+
+        decoded_response = json.loads(tpm_response.data)
+        assert decoded_response["payload"] is not None
+        payload = decoded_response["payload"]
+        assert payload["challenge"] is not None
+        assert payload["service_context"] is not None
 
     def shared_client(self, location_name, **kwargs):
         # type: (str, Any) -> AttestationClient

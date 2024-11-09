@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,32 +8,75 @@
 # --------------------------------------------------------------------------
 
 import datetime
-from typing import Dict, List, Optional, Union
+import sys
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
-import msrest.serialization
+from .. import _serialization
 
-from ._azure_orbital_enums import *
+if sys.version_info >= (3, 9):
+    from collections.abc import MutableMapping
+else:
+    from typing import MutableMapping  # type: ignore  # pylint: disable=ungrouped-imports
+
+if TYPE_CHECKING:
+    # pylint: disable=unused-import,ungrouped-imports
+    from .. import models as _models
+JSON = MutableMapping[str, Any]  # pylint: disable=unsubscriptable-object
 
 
-class AvailableContacts(msrest.serialization.Model):
-    """Customer retrieves list of Available Contacts for a spacecraft resource. Later, one of the available contact can be selected to create a contact.
+class AuthorizedGroundstation(_serialization.Model):
+    """Authorized groundstation.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar ground_station: Groundstation name. Required.
+    :vartype ground_station: str
+    :ivar expiration_date: Date of authorization expiration. Required.
+    :vartype expiration_date: ~datetime.date
+    """
+
+    _validation = {
+        "ground_station": {"required": True},
+        "expiration_date": {"required": True},
+    }
+
+    _attribute_map = {
+        "ground_station": {"key": "groundStation", "type": "str"},
+        "expiration_date": {"key": "expirationDate", "type": "date"},
+    }
+
+    def __init__(self, *, ground_station: str, expiration_date: datetime.date, **kwargs: Any) -> None:
+        """
+        :keyword ground_station: Groundstation name. Required.
+        :paramtype ground_station: str
+        :keyword expiration_date: Date of authorization expiration. Required.
+        :paramtype expiration_date: ~datetime.date
+        """
+        super().__init__(**kwargs)
+        self.ground_station = ground_station
+        self.expiration_date = expiration_date
+
+
+class AvailableContacts(_serialization.Model):  # pylint: disable=too-many-instance-attributes
+    """Customer retrieves list of Available Contacts for a spacecraft resource. Later, one of the
+    available contact can be selected to create a contact.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param spacecraft: The reference to the spacecraft resource.
-    :type spacecraft: ~azure_orbital.models.ResourceReference
+    :ivar spacecraft: The reference to the spacecraft resource.
+    :vartype spacecraft: ~azure.mgmt.orbital.models.AvailableContactsSpacecraft
     :ivar ground_station_name: Name of Azure Ground Station.
     :vartype ground_station_name: str
     :ivar maximum_elevation_degrees: Maximum elevation of the antenna during the contact in decimal
      degrees.
     :vartype maximum_elevation_degrees: float
-    :ivar tx_start_time: Time at which antenna transmit will be enabled.
+    :ivar tx_start_time: Time at which antenna transmit will be enabled (ISO 8601 UTC standard).
     :vartype tx_start_time: ~datetime.datetime
-    :ivar tx_end_time: Time at which antenna transmit will be disabled.
+    :ivar tx_end_time: Time at which antenna transmit will be disabled (ISO 8601 UTC standard).
     :vartype tx_end_time: ~datetime.datetime
-    :ivar rx_start_time: Earliest time to receive a signal.
+    :ivar rx_start_time: Earliest time to receive a signal (ISO 8601 UTC standard).
     :vartype rx_start_time: ~datetime.datetime
-    :ivar rx_end_time: Time to lost receiving a signal.
+    :ivar rx_end_time: Time to lost receiving a signal (ISO 8601 UTC standard).
     :vartype rx_end_time: ~datetime.datetime
     :ivar start_azimuth_degrees: Azimuth of the antenna at the start of the contact in decimal
      degrees.
@@ -46,39 +90,38 @@ class AvailableContacts(msrest.serialization.Model):
     """
 
     _validation = {
-        'ground_station_name': {'readonly': True},
-        'maximum_elevation_degrees': {'readonly': True},
-        'tx_start_time': {'readonly': True},
-        'tx_end_time': {'readonly': True},
-        'rx_start_time': {'readonly': True},
-        'rx_end_time': {'readonly': True},
-        'start_azimuth_degrees': {'readonly': True},
-        'end_azimuth_degrees': {'readonly': True},
-        'start_elevation_degrees': {'readonly': True},
-        'end_elevation_degrees': {'readonly': True},
+        "ground_station_name": {"readonly": True},
+        "maximum_elevation_degrees": {"readonly": True},
+        "tx_start_time": {"readonly": True},
+        "tx_end_time": {"readonly": True},
+        "rx_start_time": {"readonly": True},
+        "rx_end_time": {"readonly": True},
+        "start_azimuth_degrees": {"readonly": True},
+        "end_azimuth_degrees": {"readonly": True},
+        "start_elevation_degrees": {"readonly": True},
+        "end_elevation_degrees": {"readonly": True},
     }
 
     _attribute_map = {
-        'spacecraft': {'key': 'spacecraft', 'type': 'ResourceReference'},
-        'ground_station_name': {'key': 'groundStationName', 'type': 'str'},
-        'maximum_elevation_degrees': {'key': 'properties.maximumElevationDegrees', 'type': 'float'},
-        'tx_start_time': {'key': 'properties.txStartTime', 'type': 'iso-8601'},
-        'tx_end_time': {'key': 'properties.txEndTime', 'type': 'iso-8601'},
-        'rx_start_time': {'key': 'properties.rxStartTime', 'type': 'iso-8601'},
-        'rx_end_time': {'key': 'properties.rxEndTime', 'type': 'iso-8601'},
-        'start_azimuth_degrees': {'key': 'properties.startAzimuthDegrees', 'type': 'float'},
-        'end_azimuth_degrees': {'key': 'properties.endAzimuthDegrees', 'type': 'float'},
-        'start_elevation_degrees': {'key': 'properties.startElevationDegrees', 'type': 'float'},
-        'end_elevation_degrees': {'key': 'properties.endElevationDegrees', 'type': 'float'},
+        "spacecraft": {"key": "spacecraft", "type": "AvailableContactsSpacecraft"},
+        "ground_station_name": {"key": "groundStationName", "type": "str"},
+        "maximum_elevation_degrees": {"key": "properties.maximumElevationDegrees", "type": "float"},
+        "tx_start_time": {"key": "properties.txStartTime", "type": "iso-8601"},
+        "tx_end_time": {"key": "properties.txEndTime", "type": "iso-8601"},
+        "rx_start_time": {"key": "properties.rxStartTime", "type": "iso-8601"},
+        "rx_end_time": {"key": "properties.rxEndTime", "type": "iso-8601"},
+        "start_azimuth_degrees": {"key": "properties.startAzimuthDegrees", "type": "float"},
+        "end_azimuth_degrees": {"key": "properties.endAzimuthDegrees", "type": "float"},
+        "start_elevation_degrees": {"key": "properties.startElevationDegrees", "type": "float"},
+        "end_elevation_degrees": {"key": "properties.endElevationDegrees", "type": "float"},
     }
 
-    def __init__(
-        self,
-        *,
-        spacecraft: Optional["ResourceReference"] = None,
-        **kwargs
-    ):
-        super(AvailableContacts, self).__init__(**kwargs)
+    def __init__(self, *, spacecraft: Optional["_models.AvailableContactsSpacecraft"] = None, **kwargs: Any) -> None:
+        """
+        :keyword spacecraft: The reference to the spacecraft resource.
+        :paramtype spacecraft: ~azure.mgmt.orbital.models.AvailableContactsSpacecraft
+        """
+        super().__init__(**kwargs)
         self.spacecraft = spacecraft
         self.ground_station_name = None
         self.maximum_elevation_degrees = None
@@ -92,78 +135,252 @@ class AvailableContacts(msrest.serialization.Model):
         self.end_elevation_degrees = None
 
 
-class AvailableContactsListResult(msrest.serialization.Model):
+class AvailableContactsListResult(_serialization.Model):
     """Response for the ListAvailableContacts API service call.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param value: A list of available contacts.
-    :type value: list[~azure_orbital.models.AvailableContacts]
+    :ivar value: A list of available contacts.
+    :vartype value: list[~azure.mgmt.orbital.models.AvailableContacts]
     :ivar next_link: The URL to get the next set of results.
     :vartype next_link: str
     """
 
     _validation = {
-        'next_link': {'readonly': True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[AvailableContacts]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[AvailableContacts]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["AvailableContacts"]] = None,
-        **kwargs
-    ):
-        super(AvailableContactsListResult, self).__init__(**kwargs)
+    def __init__(self, *, value: Optional[List["_models.AvailableContacts"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword value: A list of available contacts.
+        :paramtype value: list[~azure.mgmt.orbital.models.AvailableContacts]
+        """
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = None
 
 
-class AvailableGroundStation(msrest.serialization.Model):
-    """GroundStations available to schedule Contacts.
+class ContactInstanceProperties(_serialization.Model):
+    """Contact Instance Properties.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :ivar id: Id of groundStation.
-    :vartype id: str
-    :ivar name: Name of the ground station.
-    :vartype name: str
-    :param location: Azure region.
-    :type location: str
-    :ivar type: Resource type.
-    :vartype type: str
-    :param city: City of ground station.
-    :type city: str
-    :param provider_name: Ground station provider name.
-    :type provider_name: str
-    :param longitude_degrees: Longitude of the ground station in decimal degrees.
-    :type longitude_degrees: float
-    :param latitude_degrees: Latitude of the ground station in decimal degrees.
-    :type latitude_degrees: float
-    :param altitude_meters: Altitude of the ground station.
-    :type altitude_meters: float
+    :ivar maximum_elevation_degrees: Maximum elevation of the antenna during the contact in decimal
+     degrees.
+    :vartype maximum_elevation_degrees: float
+    :ivar tx_start_time: Time at which antenna transmit will be enabled (ISO 8601 UTC standard).
+    :vartype tx_start_time: ~datetime.datetime
+    :ivar tx_end_time: Time at which antenna transmit will be disabled (ISO 8601 UTC standard).
+    :vartype tx_end_time: ~datetime.datetime
+    :ivar rx_start_time: Earliest time to receive a signal (ISO 8601 UTC standard).
+    :vartype rx_start_time: ~datetime.datetime
+    :ivar rx_end_time: Time to lost receiving a signal (ISO 8601 UTC standard).
+    :vartype rx_end_time: ~datetime.datetime
+    :ivar start_azimuth_degrees: Azimuth of the antenna at the start of the contact in decimal
+     degrees.
+    :vartype start_azimuth_degrees: float
+    :ivar end_azimuth_degrees: Azimuth of the antenna at the end of the contact in decimal degrees.
+    :vartype end_azimuth_degrees: float
+    :ivar start_elevation_degrees: Spacecraft elevation above the horizon at contact start.
+    :vartype start_elevation_degrees: float
+    :ivar end_elevation_degrees: Spacecraft elevation above the horizon at contact end.
+    :vartype end_elevation_degrees: float
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
+        "maximum_elevation_degrees": {"readonly": True},
+        "tx_start_time": {"readonly": True},
+        "tx_end_time": {"readonly": True},
+        "rx_start_time": {"readonly": True},
+        "rx_end_time": {"readonly": True},
+        "start_azimuth_degrees": {"readonly": True},
+        "end_azimuth_degrees": {"readonly": True},
+        "start_elevation_degrees": {"readonly": True},
+        "end_elevation_degrees": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'city': {'key': 'properties.city', 'type': 'str'},
-        'provider_name': {'key': 'properties.providerName', 'type': 'str'},
-        'longitude_degrees': {'key': 'properties.longitudeDegrees', 'type': 'float'},
-        'latitude_degrees': {'key': 'properties.latitudeDegrees', 'type': 'float'},
-        'altitude_meters': {'key': 'properties.altitudeMeters', 'type': 'float'},
+        "maximum_elevation_degrees": {"key": "maximumElevationDegrees", "type": "float"},
+        "tx_start_time": {"key": "txStartTime", "type": "iso-8601"},
+        "tx_end_time": {"key": "txEndTime", "type": "iso-8601"},
+        "rx_start_time": {"key": "rxStartTime", "type": "iso-8601"},
+        "rx_end_time": {"key": "rxEndTime", "type": "iso-8601"},
+        "start_azimuth_degrees": {"key": "startAzimuthDegrees", "type": "float"},
+        "end_azimuth_degrees": {"key": "endAzimuthDegrees", "type": "float"},
+        "start_elevation_degrees": {"key": "startElevationDegrees", "type": "float"},
+        "end_elevation_degrees": {"key": "endElevationDegrees", "type": "float"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.maximum_elevation_degrees = None
+        self.tx_start_time = None
+        self.tx_end_time = None
+        self.rx_start_time = None
+        self.rx_end_time = None
+        self.start_azimuth_degrees = None
+        self.end_azimuth_degrees = None
+        self.start_elevation_degrees = None
+        self.end_elevation_degrees = None
+
+
+class AvailableContactsProperties(ContactInstanceProperties):
+    """Properties of Contact resource.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar maximum_elevation_degrees: Maximum elevation of the antenna during the contact in decimal
+     degrees.
+    :vartype maximum_elevation_degrees: float
+    :ivar tx_start_time: Time at which antenna transmit will be enabled (ISO 8601 UTC standard).
+    :vartype tx_start_time: ~datetime.datetime
+    :ivar tx_end_time: Time at which antenna transmit will be disabled (ISO 8601 UTC standard).
+    :vartype tx_end_time: ~datetime.datetime
+    :ivar rx_start_time: Earliest time to receive a signal (ISO 8601 UTC standard).
+    :vartype rx_start_time: ~datetime.datetime
+    :ivar rx_end_time: Time to lost receiving a signal (ISO 8601 UTC standard).
+    :vartype rx_end_time: ~datetime.datetime
+    :ivar start_azimuth_degrees: Azimuth of the antenna at the start of the contact in decimal
+     degrees.
+    :vartype start_azimuth_degrees: float
+    :ivar end_azimuth_degrees: Azimuth of the antenna at the end of the contact in decimal degrees.
+    :vartype end_azimuth_degrees: float
+    :ivar start_elevation_degrees: Spacecraft elevation above the horizon at contact start.
+    :vartype start_elevation_degrees: float
+    :ivar end_elevation_degrees: Spacecraft elevation above the horizon at contact end.
+    :vartype end_elevation_degrees: float
+    """
+
+    _validation = {
+        "maximum_elevation_degrees": {"readonly": True},
+        "tx_start_time": {"readonly": True},
+        "tx_end_time": {"readonly": True},
+        "rx_start_time": {"readonly": True},
+        "rx_end_time": {"readonly": True},
+        "start_azimuth_degrees": {"readonly": True},
+        "end_azimuth_degrees": {"readonly": True},
+        "start_elevation_degrees": {"readonly": True},
+        "end_elevation_degrees": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "maximum_elevation_degrees": {"key": "maximumElevationDegrees", "type": "float"},
+        "tx_start_time": {"key": "txStartTime", "type": "iso-8601"},
+        "tx_end_time": {"key": "txEndTime", "type": "iso-8601"},
+        "rx_start_time": {"key": "rxStartTime", "type": "iso-8601"},
+        "rx_end_time": {"key": "rxEndTime", "type": "iso-8601"},
+        "start_azimuth_degrees": {"key": "startAzimuthDegrees", "type": "float"},
+        "end_azimuth_degrees": {"key": "endAzimuthDegrees", "type": "float"},
+        "start_elevation_degrees": {"key": "startElevationDegrees", "type": "float"},
+        "end_elevation_degrees": {"key": "endElevationDegrees", "type": "float"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+
+
+class ResourceReference(_serialization.Model):
+    """Resource Reference.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id: Resource ID. Required.
+    :vartype id: str
+    """
+
+    _validation = {
+        "id": {"required": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: str, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Resource ID. Required.
+        :paramtype id: str
+        """
+        super().__init__(**kwargs)
+        self.id = id
+
+
+class AvailableContactsSpacecraft(ResourceReference):
+    """The reference to the spacecraft resource.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id: Resource ID. Required.
+    :vartype id: str
+    """
+
+    _validation = {
+        "id": {"required": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: str, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Resource ID. Required.
+        :paramtype id: str
+        """
+        super().__init__(id=id, **kwargs)
+
+
+class AvailableGroundStation(_serialization.Model):
+    """Ground Stations available to schedule Contacts.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: ID of groundStation.
+    :vartype id: str
+    :ivar name: Name of the ground station.
+    :vartype name: str
+    :ivar location: Azure region.
+    :vartype location: str
+    :ivar type: Resource type.
+    :vartype type: str
+    :ivar city: City of ground station.
+    :vartype city: str
+    :ivar provider_name: Ground station provider name.
+    :vartype provider_name: str
+    :ivar longitude_degrees: Longitude of the ground station in decimal degrees.
+    :vartype longitude_degrees: float
+    :ivar latitude_degrees: Latitude of the ground station in decimal degrees.
+    :vartype latitude_degrees: float
+    :ivar altitude_meters: Altitude of the ground station.
+    :vartype altitude_meters: float
+    :ivar release_mode: Release Status of a ground station. Known values are: "Preview" and "GA".
+    :vartype release_mode: str or ~azure.mgmt.orbital.models.ReleaseMode
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "city": {"key": "properties.city", "type": "str"},
+        "provider_name": {"key": "properties.providerName", "type": "str"},
+        "longitude_degrees": {"key": "properties.longitudeDegrees", "type": "float"},
+        "latitude_degrees": {"key": "properties.latitudeDegrees", "type": "float"},
+        "altitude_meters": {"key": "properties.altitudeMeters", "type": "float"},
+        "release_mode": {"key": "properties.releaseMode", "type": "str"},
     }
 
     def __init__(
@@ -175,9 +392,27 @@ class AvailableGroundStation(msrest.serialization.Model):
         longitude_degrees: Optional[float] = None,
         latitude_degrees: Optional[float] = None,
         altitude_meters: Optional[float] = None,
-        **kwargs
-    ):
-        super(AvailableGroundStation, self).__init__(**kwargs)
+        release_mode: Optional[Union[str, "_models.ReleaseMode"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword location: Azure region.
+        :paramtype location: str
+        :keyword city: City of ground station.
+        :paramtype city: str
+        :keyword provider_name: Ground station provider name.
+        :paramtype provider_name: str
+        :keyword longitude_degrees: Longitude of the ground station in decimal degrees.
+        :paramtype longitude_degrees: float
+        :keyword latitude_degrees: Latitude of the ground station in decimal degrees.
+        :paramtype latitude_degrees: float
+        :keyword altitude_meters: Altitude of the ground station.
+        :paramtype altitude_meters: float
+        :keyword release_mode: Release Status of a ground station. Known values are: "Preview" and
+         "GA".
+        :paramtype release_mode: str or ~azure.mgmt.orbital.models.ReleaseMode
+        """
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.location = location
@@ -187,79 +422,164 @@ class AvailableGroundStation(msrest.serialization.Model):
         self.longitude_degrees = longitude_degrees
         self.latitude_degrees = latitude_degrees
         self.altitude_meters = altitude_meters
+        self.release_mode = release_mode
 
 
-class AvailableGroundStationListResult(msrest.serialization.Model):
+class AvailableGroundStationListResult(_serialization.Model):
     """Response for the AvailableGroundStations API service call.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param value: A list of ground station resources.
-    :type value: list[~azure_orbital.models.AvailableGroundStation]
+    :ivar value: A list of ground station resources.
+    :vartype value: list[~azure.mgmt.orbital.models.AvailableGroundStation]
     :ivar next_link: The URL to get the next set of results.
     :vartype next_link: str
     """
 
     _validation = {
-        'next_link': {'readonly': True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[AvailableGroundStation]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[AvailableGroundStation]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["AvailableGroundStation"]] = None,
-        **kwargs
-    ):
-        super(AvailableGroundStationListResult, self).__init__(**kwargs)
+    def __init__(self, *, value: Optional[List["_models.AvailableGroundStation"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword value: A list of ground station resources.
+        :paramtype value: list[~azure.mgmt.orbital.models.AvailableGroundStation]
+        """
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = None
 
 
-class CloudErrorBody(msrest.serialization.Model):
-    """An error response from the service.
+class AvailableGroundStationPropertiesAutoGenerated(_serialization.Model):
+    """Properties object for Available groundstation.
 
-    :param code: An identifier for the error. Codes are invariant and are intended to be consumed
-     programmatically.
-    :type code: str
-    :param message: A message describing the error, intended to be suitable for display in a user
-     interface.
-    :type message: str
-    :param target: The target of the particular error. For example, the name of the property in
-     error.
-    :type target: str
-    :param details: A list of additional details about the error.
-    :type details: list[~azure_orbital.models.CloudErrorBody]
+    :ivar city: City of ground station.
+    :vartype city: str
+    :ivar provider_name: Ground station provider name.
+    :vartype provider_name: str
+    :ivar longitude_degrees: Longitude of the ground station in decimal degrees.
+    :vartype longitude_degrees: float
+    :ivar latitude_degrees: Latitude of the ground station in decimal degrees.
+    :vartype latitude_degrees: float
+    :ivar altitude_meters: Altitude of the ground station.
+    :vartype altitude_meters: float
+    :ivar release_mode: Release Status of a ground station. Known values are: "Preview" and "GA".
+    :vartype release_mode: str or ~azure.mgmt.orbital.models.ReleaseMode
     """
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
-        'details': {'key': 'details', 'type': '[CloudErrorBody]'},
+        "city": {"key": "city", "type": "str"},
+        "provider_name": {"key": "providerName", "type": "str"},
+        "longitude_degrees": {"key": "longitudeDegrees", "type": "float"},
+        "latitude_degrees": {"key": "latitudeDegrees", "type": "float"},
+        "altitude_meters": {"key": "altitudeMeters", "type": "float"},
+        "release_mode": {"key": "releaseMode", "type": "str"},
     }
 
     def __init__(
         self,
         *,
-        code: Optional[str] = None,
-        message: Optional[str] = None,
-        target: Optional[str] = None,
-        details: Optional[List["CloudErrorBody"]] = None,
-        **kwargs
-    ):
-        super(CloudErrorBody, self).__init__(**kwargs)
-        self.code = code
-        self.message = message
-        self.target = target
-        self.details = details
+        city: Optional[str] = None,
+        provider_name: Optional[str] = None,
+        longitude_degrees: Optional[float] = None,
+        latitude_degrees: Optional[float] = None,
+        altitude_meters: Optional[float] = None,
+        release_mode: Optional[Union[str, "_models.ReleaseMode"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword city: City of ground station.
+        :paramtype city: str
+        :keyword provider_name: Ground station provider name.
+        :paramtype provider_name: str
+        :keyword longitude_degrees: Longitude of the ground station in decimal degrees.
+        :paramtype longitude_degrees: float
+        :keyword latitude_degrees: Latitude of the ground station in decimal degrees.
+        :paramtype latitude_degrees: float
+        :keyword altitude_meters: Altitude of the ground station.
+        :paramtype altitude_meters: float
+        :keyword release_mode: Release Status of a ground station. Known values are: "Preview" and
+         "GA".
+        :paramtype release_mode: str or ~azure.mgmt.orbital.models.ReleaseMode
+        """
+        super().__init__(**kwargs)
+        self.city = city
+        self.provider_name = provider_name
+        self.longitude_degrees = longitude_degrees
+        self.latitude_degrees = latitude_degrees
+        self.altitude_meters = altitude_meters
+        self.release_mode = release_mode
 
 
-class Resource(msrest.serialization.Model):
+class AvailableGroundStationProperties(AvailableGroundStationPropertiesAutoGenerated):
+    """The properties bag for this resource.
+
+    :ivar city: City of ground station.
+    :vartype city: str
+    :ivar provider_name: Ground station provider name.
+    :vartype provider_name: str
+    :ivar longitude_degrees: Longitude of the ground station in decimal degrees.
+    :vartype longitude_degrees: float
+    :ivar latitude_degrees: Latitude of the ground station in decimal degrees.
+    :vartype latitude_degrees: float
+    :ivar altitude_meters: Altitude of the ground station.
+    :vartype altitude_meters: float
+    :ivar release_mode: Release Status of a ground station. Known values are: "Preview" and "GA".
+    :vartype release_mode: str or ~azure.mgmt.orbital.models.ReleaseMode
+    """
+
+    _attribute_map = {
+        "city": {"key": "city", "type": "str"},
+        "provider_name": {"key": "providerName", "type": "str"},
+        "longitude_degrees": {"key": "longitudeDegrees", "type": "float"},
+        "latitude_degrees": {"key": "latitudeDegrees", "type": "float"},
+        "altitude_meters": {"key": "altitudeMeters", "type": "float"},
+        "release_mode": {"key": "releaseMode", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        city: Optional[str] = None,
+        provider_name: Optional[str] = None,
+        longitude_degrees: Optional[float] = None,
+        latitude_degrees: Optional[float] = None,
+        altitude_meters: Optional[float] = None,
+        release_mode: Optional[Union[str, "_models.ReleaseMode"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword city: City of ground station.
+        :paramtype city: str
+        :keyword provider_name: Ground station provider name.
+        :paramtype provider_name: str
+        :keyword longitude_degrees: Longitude of the ground station in decimal degrees.
+        :paramtype longitude_degrees: float
+        :keyword latitude_degrees: Latitude of the ground station in decimal degrees.
+        :paramtype latitude_degrees: float
+        :keyword altitude_meters: Altitude of the ground station.
+        :paramtype altitude_meters: float
+        :keyword release_mode: Release Status of a ground station. Known values are: "Preview" and
+         "GA".
+        :paramtype release_mode: str or ~azure.mgmt.orbital.models.ReleaseMode
+        """
+        super().__init__(
+            city=city,
+            provider_name=provider_name,
+            longitude_degrees=longitude_degrees,
+            latitude_degrees=latitude_degrees,
+            altitude_meters=altitude_meters,
+            release_mode=release_mode,
+            **kwargs
+        )
+
+
+class Resource(_serialization.Model):
     """Common fields that are returned in the response for all Azure Resource Manager resources.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -274,28 +594,26 @@ class Resource(msrest.serialization.Model):
     :vartype type: str
     :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
      information.
-    :vartype system_data: ~azure_orbital.models.SystemData
+    :vartype system_data: ~azure.mgmt.orbital.models.SystemData
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'system_data': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(Resource, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.type = None
@@ -303,7 +621,8 @@ class Resource(msrest.serialization.Model):
 
 
 class ProxyResource(Resource):
-    """The resource model definition for a Azure Resource Manager proxy resource. It will not have tags and a location.
+    """The resource model definition for a Azure Resource Manager proxy resource. It will not have
+    tags and a location.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
@@ -317,35 +636,35 @@ class ProxyResource(Resource):
     :vartype type: str
     :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
      information.
-    :vartype system_data: ~azure_orbital.models.SystemData
+    :vartype system_data: ~azure.mgmt.orbital.models.SystemData
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'system_data': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ProxyResource, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
 
 
-class Contact(ProxyResource):
+class Contact(ProxyResource):  # pylint: disable=too-many-instance-attributes
     """Customer creates a contact resource for a spacecraft resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
+    All required parameters must be populated in order to send to Azure.
+
     :ivar id: Fully qualified resource ID for the resource. Ex -
      /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
     :vartype id: str
@@ -356,23 +675,28 @@ class Contact(ProxyResource):
     :vartype type: str
     :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
      information.
-    :vartype system_data: ~azure_orbital.models.SystemData
-    :ivar etag: A unique read-only string that changes whenever the resource is updated.
-    :vartype etag: str
-    :ivar status: Status of a contact. Possible values include: "scheduled", "cancelled",
-     "succeeded", "failed", "providerCancelled".
-    :vartype status: str or ~azure_orbital.models.Status
-    :param reservation_start_time: Reservation start time of a contact.
-    :type reservation_start_time: ~datetime.datetime
-    :param reservation_end_time: Reservation end time of a contact.
-    :type reservation_end_time: ~datetime.datetime
-    :ivar rx_start_time: Receive start time of a contact.
+    :vartype system_data: ~azure.mgmt.orbital.models.SystemData
+    :ivar provisioning_state: The current state of the resource's creation, deletion, or
+     modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+     "deleting".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.orbital.models.ContactsPropertiesProvisioningState
+    :ivar status: Status of a contact. Known values are: "scheduled", "cancelled", "succeeded",
+     "failed", and "providerCancelled".
+    :vartype status: str or ~azure.mgmt.orbital.models.ContactsStatus
+    :ivar reservation_start_time: Reservation start time of a contact (ISO 8601 UTC standard).
+     Required.
+    :vartype reservation_start_time: ~datetime.datetime
+    :ivar reservation_end_time: Reservation end time of a contact (ISO 8601 UTC standard).
+     Required.
+    :vartype reservation_end_time: ~datetime.datetime
+    :ivar rx_start_time: Receive start time of a contact (ISO 8601 UTC standard).
     :vartype rx_start_time: ~datetime.datetime
-    :ivar rx_end_time: Receive end time of a contact.
+    :ivar rx_end_time: Receive end time of a contact (ISO 8601 UTC standard).
     :vartype rx_end_time: ~datetime.datetime
-    :ivar tx_start_time: Transmit start time of a contact.
+    :ivar tx_start_time: Transmit start time of a contact (ISO 8601 UTC standard).
     :vartype tx_start_time: ~datetime.datetime
-    :ivar tx_end_time: Transmit end time of a contact.
+    :ivar tx_end_time: Transmit end time of a contact (ISO 8601 UTC standard).
     :vartype tx_end_time: ~datetime.datetime
     :ivar error_message: Any error message while scheduling a contact.
     :vartype error_message: str
@@ -384,69 +708,98 @@ class Contact(ProxyResource):
     :vartype start_azimuth_degrees: float
     :ivar end_azimuth_degrees: Azimuth of the antenna at the end of the contact in decimal degrees.
     :vartype end_azimuth_degrees: float
-    :param ground_station_name: Azure Ground Station name.
-    :type ground_station_name: str
+    :ivar ground_station_name: Azure Ground Station name. Required.
+    :vartype ground_station_name: str
     :ivar start_elevation_degrees: Spacecraft elevation above the horizon at contact start.
     :vartype start_elevation_degrees: float
     :ivar end_elevation_degrees: Spacecraft elevation above the horizon at contact end.
     :vartype end_elevation_degrees: float
-    :param contact_profile: The reference to the contact profile resource.
-    :type contact_profile: ~azure_orbital.models.ResourceReference
+    :ivar antenna_configuration: The configuration associated with the allocated antenna.
+    :vartype antenna_configuration:
+     ~azure.mgmt.orbital.models.ContactsPropertiesAntennaConfiguration
+    :ivar contact_profile: The reference to the contact profile resource. Required.
+    :vartype contact_profile: ~azure.mgmt.orbital.models.ContactsPropertiesContactProfile
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'system_data': {'readonly': True},
-        'etag': {'readonly': True},
-        'status': {'readonly': True},
-        'rx_start_time': {'readonly': True},
-        'rx_end_time': {'readonly': True},
-        'tx_start_time': {'readonly': True},
-        'tx_end_time': {'readonly': True},
-        'error_message': {'readonly': True},
-        'maximum_elevation_degrees': {'readonly': True},
-        'start_azimuth_degrees': {'readonly': True},
-        'end_azimuth_degrees': {'readonly': True},
-        'start_elevation_degrees': {'readonly': True},
-        'end_elevation_degrees': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "status": {"readonly": True},
+        "reservation_start_time": {"required": True},
+        "reservation_end_time": {"required": True},
+        "rx_start_time": {"readonly": True},
+        "rx_end_time": {"readonly": True},
+        "tx_start_time": {"readonly": True},
+        "tx_end_time": {"readonly": True},
+        "error_message": {"readonly": True},
+        "maximum_elevation_degrees": {"readonly": True},
+        "start_azimuth_degrees": {"readonly": True},
+        "end_azimuth_degrees": {"readonly": True},
+        "ground_station_name": {"required": True},
+        "start_elevation_degrees": {"readonly": True},
+        "end_elevation_degrees": {"readonly": True},
+        "antenna_configuration": {"readonly": True},
+        "contact_profile": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
-        'etag': {'key': 'etag', 'type': 'str'},
-        'status': {'key': 'properties.status', 'type': 'str'},
-        'reservation_start_time': {'key': 'properties.reservationStartTime', 'type': 'iso-8601'},
-        'reservation_end_time': {'key': 'properties.reservationEndTime', 'type': 'iso-8601'},
-        'rx_start_time': {'key': 'properties.rxStartTime', 'type': 'iso-8601'},
-        'rx_end_time': {'key': 'properties.rxEndTime', 'type': 'iso-8601'},
-        'tx_start_time': {'key': 'properties.txStartTime', 'type': 'iso-8601'},
-        'tx_end_time': {'key': 'properties.txEndTime', 'type': 'iso-8601'},
-        'error_message': {'key': 'properties.errorMessage', 'type': 'str'},
-        'maximum_elevation_degrees': {'key': 'properties.maximumElevationDegrees', 'type': 'float'},
-        'start_azimuth_degrees': {'key': 'properties.startAzimuthDegrees', 'type': 'float'},
-        'end_azimuth_degrees': {'key': 'properties.endAzimuthDegrees', 'type': 'float'},
-        'ground_station_name': {'key': 'properties.groundStationName', 'type': 'str'},
-        'start_elevation_degrees': {'key': 'properties.startElevationDegrees', 'type': 'float'},
-        'end_elevation_degrees': {'key': 'properties.endElevationDegrees', 'type': 'float'},
-        'contact_profile': {'key': 'properties.contactProfile', 'type': 'ResourceReference'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
+        "status": {"key": "properties.status", "type": "str"},
+        "reservation_start_time": {"key": "properties.reservationStartTime", "type": "iso-8601"},
+        "reservation_end_time": {"key": "properties.reservationEndTime", "type": "iso-8601"},
+        "rx_start_time": {"key": "properties.rxStartTime", "type": "iso-8601"},
+        "rx_end_time": {"key": "properties.rxEndTime", "type": "iso-8601"},
+        "tx_start_time": {"key": "properties.txStartTime", "type": "iso-8601"},
+        "tx_end_time": {"key": "properties.txEndTime", "type": "iso-8601"},
+        "error_message": {"key": "properties.errorMessage", "type": "str"},
+        "maximum_elevation_degrees": {"key": "properties.maximumElevationDegrees", "type": "float"},
+        "start_azimuth_degrees": {"key": "properties.startAzimuthDegrees", "type": "float"},
+        "end_azimuth_degrees": {"key": "properties.endAzimuthDegrees", "type": "float"},
+        "ground_station_name": {"key": "properties.groundStationName", "type": "str"},
+        "start_elevation_degrees": {"key": "properties.startElevationDegrees", "type": "float"},
+        "end_elevation_degrees": {"key": "properties.endElevationDegrees", "type": "float"},
+        "antenna_configuration": {
+            "key": "properties.antennaConfiguration",
+            "type": "ContactsPropertiesAntennaConfiguration",
+        },
+        "contact_profile": {"key": "properties.contactProfile", "type": "ContactsPropertiesContactProfile"},
     }
 
     def __init__(
         self,
         *,
-        reservation_start_time: Optional[datetime.datetime] = None,
-        reservation_end_time: Optional[datetime.datetime] = None,
-        ground_station_name: Optional[str] = None,
-        contact_profile: Optional["ResourceReference"] = None,
-        **kwargs
-    ):
-        super(Contact, self).__init__(**kwargs)
-        self.etag = None
+        reservation_start_time: datetime.datetime,
+        reservation_end_time: datetime.datetime,
+        ground_station_name: str,
+        contact_profile: "_models.ContactsPropertiesContactProfile",
+        provisioning_state: Optional[Union[str, "_models.ContactsPropertiesProvisioningState"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword provisioning_state: The current state of the resource's creation, deletion, or
+         modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+         "deleting".
+        :paramtype provisioning_state: str or
+         ~azure.mgmt.orbital.models.ContactsPropertiesProvisioningState
+        :keyword reservation_start_time: Reservation start time of a contact (ISO 8601 UTC standard).
+         Required.
+        :paramtype reservation_start_time: ~datetime.datetime
+        :keyword reservation_end_time: Reservation end time of a contact (ISO 8601 UTC standard).
+         Required.
+        :paramtype reservation_end_time: ~datetime.datetime
+        :keyword ground_station_name: Azure Ground Station name. Required.
+        :paramtype ground_station_name: str
+        :keyword contact_profile: The reference to the contact profile resource. Required.
+        :paramtype contact_profile: ~azure.mgmt.orbital.models.ContactsPropertiesContactProfile
+        """
+        super().__init__(**kwargs)
+        self.provisioning_state = provisioning_state
         self.status = None
         self.reservation_start_time = reservation_start_time
         self.reservation_end_time = reservation_end_time
@@ -461,87 +814,123 @@ class Contact(ProxyResource):
         self.ground_station_name = ground_station_name
         self.start_elevation_degrees = None
         self.end_elevation_degrees = None
+        self.antenna_configuration = None
         self.contact_profile = contact_profile
 
 
-class ContactListResult(msrest.serialization.Model):
+class ContactListResult(_serialization.Model):
     """Response for the ListContacts API service call.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param value: A list of contact resources in a resource group.
-    :type value: list[~azure_orbital.models.Contact]
+    :ivar value: A list of contact resources in a resource group.
+    :vartype value: list[~azure.mgmt.orbital.models.Contact]
     :ivar next_link: The URL to get the next set of results.
     :vartype next_link: str
     """
 
     _validation = {
-        'next_link': {'readonly': True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[Contact]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[Contact]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["Contact"]] = None,
-        **kwargs
-    ):
-        super(ContactListResult, self).__init__(**kwargs)
+    def __init__(self, *, value: Optional[List["_models.Contact"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword value: A list of contact resources in a resource group.
+        :paramtype value: list[~azure.mgmt.orbital.models.Contact]
+        """
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = None
 
 
-class ContactParameters(msrest.serialization.Model):
+class ContactParameters(_serialization.Model):
     """Parameters that define the contact resource.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param contact_profile: Required. The reference to the contact profile resource.
-    :type contact_profile: ~azure_orbital.models.ResourceReference
-    :param ground_station_name: Required. Name of Azure Ground Station.
-    :type ground_station_name: str
-    :param start_time: Required. Start time of a contact.
-    :type start_time: ~datetime.datetime
-    :param end_time: Required. End time of a contact.
-    :type end_time: ~datetime.datetime
+    :ivar contact_profile: The reference to the contact profile resource. Required.
+    :vartype contact_profile: ~azure.mgmt.orbital.models.ContactParametersContactProfile
+    :ivar ground_station_name: Name of Azure Ground Station. Required.
+    :vartype ground_station_name: str
+    :ivar start_time: Start time of a contact (ISO 8601 UTC standard). Required.
+    :vartype start_time: ~datetime.datetime
+    :ivar end_time: End time of a contact (ISO 8601 UTC standard). Required.
+    :vartype end_time: ~datetime.datetime
     """
 
     _validation = {
-        'contact_profile': {'required': True},
-        'ground_station_name': {'required': True},
-        'start_time': {'required': True},
-        'end_time': {'required': True},
+        "contact_profile": {"required": True},
+        "ground_station_name": {"required": True},
+        "start_time": {"required": True},
+        "end_time": {"required": True},
     }
 
     _attribute_map = {
-        'contact_profile': {'key': 'contactProfile', 'type': 'ResourceReference'},
-        'ground_station_name': {'key': 'groundStationName', 'type': 'str'},
-        'start_time': {'key': 'startTime', 'type': 'iso-8601'},
-        'end_time': {'key': 'endTime', 'type': 'iso-8601'},
+        "contact_profile": {"key": "contactProfile", "type": "ContactParametersContactProfile"},
+        "ground_station_name": {"key": "groundStationName", "type": "str"},
+        "start_time": {"key": "startTime", "type": "iso-8601"},
+        "end_time": {"key": "endTime", "type": "iso-8601"},
     }
 
     def __init__(
         self,
         *,
-        contact_profile: "ResourceReference",
+        contact_profile: "_models.ContactParametersContactProfile",
         ground_station_name: str,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
-        **kwargs
-    ):
-        super(ContactParameters, self).__init__(**kwargs)
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword contact_profile: The reference to the contact profile resource. Required.
+        :paramtype contact_profile: ~azure.mgmt.orbital.models.ContactParametersContactProfile
+        :keyword ground_station_name: Name of Azure Ground Station. Required.
+        :paramtype ground_station_name: str
+        :keyword start_time: Start time of a contact (ISO 8601 UTC standard). Required.
+        :paramtype start_time: ~datetime.datetime
+        :keyword end_time: End time of a contact (ISO 8601 UTC standard). Required.
+        :paramtype end_time: ~datetime.datetime
+        """
+        super().__init__(**kwargs)
         self.contact_profile = contact_profile
         self.ground_station_name = ground_station_name
         self.start_time = start_time
         self.end_time = end_time
 
 
+class ContactParametersContactProfile(ResourceReference):
+    """The reference to the contact profile resource.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id: Resource ID. Required.
+    :vartype id: str
+    """
+
+    _validation = {
+        "id": {"required": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: str, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Resource ID. Required.
+        :paramtype id: str
+        """
+        super().__init__(id=id, **kwargs)
+
+
 class TrackedResource(Resource):
-    """The resource model definition for an Azure Resource Manager tracked top level resource which has 'tags' and a 'location'.
+    """The resource model definition for an Azure Resource Manager tracked top level resource which
+    has 'tags' and a 'location'.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
@@ -557,44 +946,45 @@ class TrackedResource(Resource):
     :vartype type: str
     :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
      information.
-    :vartype system_data: ~azure_orbital.models.SystemData
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
-    :param location: Required. The geo-location where the resource lives.
-    :type location: str
+    :vartype system_data: ~azure.mgmt.orbital.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives. Required.
+    :vartype location: str
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'system_data': {'readonly': True},
-        'location': {'required': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "location": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'location': {'key': 'location', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        location: str,
-        tags: Optional[Dict[str, str]] = None,
-        **kwargs
-    ):
-        super(TrackedResource, self).__init__(**kwargs)
+    def __init__(self, *, location: str, tags: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives. Required.
+        :paramtype location: str
+        """
+        super().__init__(**kwargs)
         self.tags = tags
         self.location = location
 
 
-class ContactProfile(TrackedResource):
-    """Customer creates a Contact Profile Resource, which will contain all of the configurations required for scheduling a contact.
+class ContactProfile(TrackedResource):  # pylint: disable=too-many-instance-attributes
+    """Customer creates a Contact Profile Resource, which will contain all of the configurations
+    required for scheduling a contact.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
@@ -610,110 +1000,204 @@ class ContactProfile(TrackedResource):
     :vartype type: str
     :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
      information.
-    :vartype system_data: ~azure_orbital.models.SystemData
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
-    :param location: Required. The geo-location where the resource lives.
-    :type location: str
-    :ivar etag: A unique read-only string that changes whenever the resource is updated.
-    :vartype etag: str
-    :param minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format.
-    :type minimum_viable_contact_duration: str
-    :param minimum_elevation_degrees: Minimum viable elevation for the contact in decimal degrees.
-    :type minimum_elevation_degrees: float
-    :param auto_tracking_configuration: Auto track configuration. Possible values include:
-     "disabled", "xBand", "sBand".
-    :type auto_tracking_configuration: str or ~azure_orbital.models.AutoTrackingConfiguration
-    :param links: Links of the Contact Profile.
-    :type links: list[~azure_orbital.models.ContactProfileLink]
+    :vartype system_data: ~azure.mgmt.orbital.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives. Required.
+    :vartype location: str
+    :ivar provisioning_state: The current state of the resource's creation, deletion, or
+     modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+     "deleting".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.orbital.models.ContactProfilesPropertiesProvisioningState
+    :ivar minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format. Used
+     for listing the available contacts with a spacecraft at a given ground station.
+    :vartype minimum_viable_contact_duration: str
+    :ivar minimum_elevation_degrees: Minimum viable elevation for the contact in decimal degrees.
+     Used for listing the available contacts with a spacecraft at a given ground station.
+    :vartype minimum_elevation_degrees: float
+    :ivar auto_tracking_configuration: Auto-tracking configuration. Known values are: "disabled",
+     "xBand", and "sBand".
+    :vartype auto_tracking_configuration: str or
+     ~azure.mgmt.orbital.models.AutoTrackingConfiguration
+    :ivar event_hub_uri: ARM resource identifier of the Event Hub used for telemetry. Requires
+     granting Orbital Resource Provider the rights to send telemetry into the hub.
+    :vartype event_hub_uri: str
+    :ivar network_configuration: Network configuration of customer virtual network. Required.
+    :vartype network_configuration:
+     ~azure.mgmt.orbital.models.ContactProfilesPropertiesNetworkConfiguration
+    :ivar third_party_configurations: Third-party mission configuration of the Contact Profile.
+     Describes RF links, modem processing, and IP endpoints.
+    :vartype third_party_configurations:
+     list[~azure.mgmt.orbital.models.ContactProfileThirdPartyConfiguration]
+    :ivar links: Links of the Contact Profile. Describes RF links, modem processing, and IP
+     endpoints. Required.
+    :vartype links: list[~azure.mgmt.orbital.models.ContactProfileLink]
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'system_data': {'readonly': True},
-        'location': {'required': True},
-        'etag': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "location": {"required": True},
+        "network_configuration": {"required": True},
+        "links": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'location': {'key': 'location', 'type': 'str'},
-        'etag': {'key': 'etag', 'type': 'str'},
-        'minimum_viable_contact_duration': {'key': 'properties.minimumViableContactDuration', 'type': 'str'},
-        'minimum_elevation_degrees': {'key': 'properties.minimumElevationDegrees', 'type': 'float'},
-        'auto_tracking_configuration': {'key': 'properties.autoTrackingConfiguration', 'type': 'str'},
-        'links': {'key': 'properties.links', 'type': '[ContactProfileLink]'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
+        "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
+        "minimum_viable_contact_duration": {"key": "properties.minimumViableContactDuration", "type": "str"},
+        "minimum_elevation_degrees": {"key": "properties.minimumElevationDegrees", "type": "float"},
+        "auto_tracking_configuration": {"key": "properties.autoTrackingConfiguration", "type": "str"},
+        "event_hub_uri": {"key": "properties.eventHubUri", "type": "str"},
+        "network_configuration": {
+            "key": "properties.networkConfiguration",
+            "type": "ContactProfilesPropertiesNetworkConfiguration",
+        },
+        "third_party_configurations": {
+            "key": "properties.thirdPartyConfigurations",
+            "type": "[ContactProfileThirdPartyConfiguration]",
+        },
+        "links": {"key": "properties.links", "type": "[ContactProfileLink]"},
     }
 
     def __init__(
         self,
         *,
         location: str,
+        network_configuration: "_models.ContactProfilesPropertiesNetworkConfiguration",
+        links: List["_models.ContactProfileLink"],
         tags: Optional[Dict[str, str]] = None,
+        provisioning_state: Optional[Union[str, "_models.ContactProfilesPropertiesProvisioningState"]] = None,
         minimum_viable_contact_duration: Optional[str] = None,
         minimum_elevation_degrees: Optional[float] = None,
-        auto_tracking_configuration: Optional[Union[str, "AutoTrackingConfiguration"]] = None,
-        links: Optional[List["ContactProfileLink"]] = None,
-        **kwargs
-    ):
-        super(ContactProfile, self).__init__(tags=tags, location=location, **kwargs)
-        self.etag = None
+        auto_tracking_configuration: Optional[Union[str, "_models.AutoTrackingConfiguration"]] = None,
+        event_hub_uri: Optional[str] = None,
+        third_party_configurations: Optional[List["_models.ContactProfileThirdPartyConfiguration"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives. Required.
+        :paramtype location: str
+        :keyword provisioning_state: The current state of the resource's creation, deletion, or
+         modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+         "deleting".
+        :paramtype provisioning_state: str or
+         ~azure.mgmt.orbital.models.ContactProfilesPropertiesProvisioningState
+        :keyword minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format.
+         Used for listing the available contacts with a spacecraft at a given ground station.
+        :paramtype minimum_viable_contact_duration: str
+        :keyword minimum_elevation_degrees: Minimum viable elevation for the contact in decimal
+         degrees. Used for listing the available contacts with a spacecraft at a given ground station.
+        :paramtype minimum_elevation_degrees: float
+        :keyword auto_tracking_configuration: Auto-tracking configuration. Known values are:
+         "disabled", "xBand", and "sBand".
+        :paramtype auto_tracking_configuration: str or
+         ~azure.mgmt.orbital.models.AutoTrackingConfiguration
+        :keyword event_hub_uri: ARM resource identifier of the Event Hub used for telemetry. Requires
+         granting Orbital Resource Provider the rights to send telemetry into the hub.
+        :paramtype event_hub_uri: str
+        :keyword network_configuration: Network configuration of customer virtual network. Required.
+        :paramtype network_configuration:
+         ~azure.mgmt.orbital.models.ContactProfilesPropertiesNetworkConfiguration
+        :keyword third_party_configurations: Third-party mission configuration of the Contact Profile.
+         Describes RF links, modem processing, and IP endpoints.
+        :paramtype third_party_configurations:
+         list[~azure.mgmt.orbital.models.ContactProfileThirdPartyConfiguration]
+        :keyword links: Links of the Contact Profile. Describes RF links, modem processing, and IP
+         endpoints. Required.
+        :paramtype links: list[~azure.mgmt.orbital.models.ContactProfileLink]
+        """
+        super().__init__(tags=tags, location=location, **kwargs)
+        self.provisioning_state = provisioning_state
         self.minimum_viable_contact_duration = minimum_viable_contact_duration
         self.minimum_elevation_degrees = minimum_elevation_degrees
         self.auto_tracking_configuration = auto_tracking_configuration
+        self.event_hub_uri = event_hub_uri
+        self.network_configuration = network_configuration
+        self.third_party_configurations = third_party_configurations
         self.links = links
 
 
-class ContactProfileLink(msrest.serialization.Model):
-    """Contact Profile link.
+class ContactProfileLink(_serialization.Model):
+    """Contact Profile Link.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param polarization: Required. polarization. eg (RHCP, LHCP). Possible values include: "RHCP",
-     "LHCP", "dualRhcpLhcp", "linearVertical", "linearHorizontal".
-    :type polarization: str or ~azure_orbital.models.Polarization
-    :param direction: Required. Direction (uplink or downlink). Possible values include: "uplink",
-     "downlink".
-    :type direction: str or ~azure_orbital.models.Direction
-    :param gain_over_temperature: Gain To Noise Temperature in db/K.
-    :type gain_over_temperature: float
-    :param eirpd_bw: Effective Isotropic Radiated Power (EIRP) in dBW.
-    :type eirpd_bw: float
-    :param channels: Required. Contact Profile Link Channel.
-    :type channels: list[~azure_orbital.models.ContactProfileLinkChannel]
+    :ivar name: Link name. Required.
+    :vartype name: str
+    :ivar polarization: Polarization. e.g. (RHCP, LHCP). Required. Known values are: "RHCP",
+     "LHCP", "linearVertical", and "linearHorizontal".
+    :vartype polarization: str or ~azure.mgmt.orbital.models.Polarization
+    :ivar direction: Direction (Uplink or Downlink). Required. Known values are: "Uplink" and
+     "Downlink".
+    :vartype direction: str or ~azure.mgmt.orbital.models.Direction
+    :ivar gain_over_temperature: Gain to noise temperature in db/K. It is the required G/T by the
+     customer. Not used yet.
+    :vartype gain_over_temperature: float
+    :ivar eirpd_bw: Effective Isotropic Radiated Power (EIRP) in dBW. It is the required EIRP by
+     the customer. Not used yet.
+    :vartype eirpd_bw: float
+    :ivar channels: Contact Profile Link Channel. Required.
+    :vartype channels: list[~azure.mgmt.orbital.models.ContactProfileLinkChannel]
     """
 
     _validation = {
-        'polarization': {'required': True},
-        'direction': {'required': True},
-        'channels': {'required': True},
+        "name": {"required": True},
+        "polarization": {"required": True},
+        "direction": {"required": True},
+        "channels": {"required": True},
     }
 
     _attribute_map = {
-        'polarization': {'key': 'polarization', 'type': 'str'},
-        'direction': {'key': 'direction', 'type': 'str'},
-        'gain_over_temperature': {'key': 'gainOverTemperature', 'type': 'float'},
-        'eirpd_bw': {'key': 'eirpdBW', 'type': 'float'},
-        'channels': {'key': 'channels', 'type': '[ContactProfileLinkChannel]'},
+        "name": {"key": "name", "type": "str"},
+        "polarization": {"key": "polarization", "type": "str"},
+        "direction": {"key": "direction", "type": "str"},
+        "gain_over_temperature": {"key": "gainOverTemperature", "type": "float"},
+        "eirpd_bw": {"key": "eirpdBW", "type": "float"},
+        "channels": {"key": "channels", "type": "[ContactProfileLinkChannel]"},
     }
 
     def __init__(
         self,
         *,
-        polarization: Union[str, "Polarization"],
-        direction: Union[str, "Direction"],
-        channels: List["ContactProfileLinkChannel"],
+        name: str,
+        polarization: Union[str, "_models.Polarization"],
+        direction: Union[str, "_models.Direction"],
+        channels: List["_models.ContactProfileLinkChannel"],
         gain_over_temperature: Optional[float] = None,
         eirpd_bw: Optional[float] = None,
-        **kwargs
-    ):
-        super(ContactProfileLink, self).__init__(**kwargs)
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Link name. Required.
+        :paramtype name: str
+        :keyword polarization: Polarization. e.g. (RHCP, LHCP). Required. Known values are: "RHCP",
+         "LHCP", "linearVertical", and "linearHorizontal".
+        :paramtype polarization: str or ~azure.mgmt.orbital.models.Polarization
+        :keyword direction: Direction (Uplink or Downlink). Required. Known values are: "Uplink" and
+         "Downlink".
+        :paramtype direction: str or ~azure.mgmt.orbital.models.Direction
+        :keyword gain_over_temperature: Gain to noise temperature in db/K. It is the required G/T by
+         the customer. Not used yet.
+        :paramtype gain_over_temperature: float
+        :keyword eirpd_bw: Effective Isotropic Radiated Power (EIRP) in dBW. It is the required EIRP by
+         the customer. Not used yet.
+        :paramtype eirpd_bw: float
+        :keyword channels: Contact Profile Link Channel. Required.
+        :paramtype channels: list[~azure.mgmt.orbital.models.ContactProfileLinkChannel]
+        """
+        super().__init__(**kwargs)
+        self.name = name
         self.polarization = polarization
         self.direction = direction
         self.gain_over_temperature = gain_over_temperature
@@ -721,56 +1205,90 @@ class ContactProfileLink(msrest.serialization.Model):
         self.channels = channels
 
 
-class ContactProfileLinkChannel(msrest.serialization.Model):
+class ContactProfileLinkChannel(_serialization.Model):
     """Contact Profile Link Channel.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param center_frequency_m_hz: Required. Center Frequency in MHz.
-    :type center_frequency_m_hz: float
-    :param bandwidth_m_hz: Required. Bandwidth in MHz.
-    :type bandwidth_m_hz: float
-    :param end_point: Required. Customer End point to store/retrieve data during a contact.
-    :type end_point: ~azure_orbital.models.EndPoint
-    :param modulation_configuration: Configuration for modulation.
-    :type modulation_configuration: str
-    :param demodulation_configuration: Configuration for demodulation.
-    :type demodulation_configuration: str
-    :param encoding_configuration: Configuration for encoding.
-    :type encoding_configuration: str
-    :param decoding_configuration: Configuration for decoding.
-    :type decoding_configuration: str
+    :ivar name: Channel name. Required.
+    :vartype name: str
+    :ivar center_frequency_m_hz: Center Frequency in MHz. Required.
+    :vartype center_frequency_m_hz: float
+    :ivar bandwidth_m_hz: Bandwidth in MHz. Required.
+    :vartype bandwidth_m_hz: float
+    :ivar end_point: Customer end point to store and retrieve data during a contact with the
+     spacecraft. Required.
+    :vartype end_point: ~azure.mgmt.orbital.models.EndPoint
+    :ivar modulation_configuration: Copy of the modem configuration file such as Kratos QRadio.
+     Only valid for uplink directions. If provided, the modem connects to the customer endpoint and
+     accepts commands from the customer instead of a VITA.49 stream.
+    :vartype modulation_configuration: str
+    :ivar demodulation_configuration: Copy of the modem configuration file such as Kratos QRadio or
+     Kratos QuantumRx. Only valid for downlink directions. If provided, the modem connects to the
+     customer endpoint and sends demodulated data instead of a VITA.49 stream.
+    :vartype demodulation_configuration: str
+    :ivar encoding_configuration: Currently unused.
+    :vartype encoding_configuration: str
+    :ivar decoding_configuration: Currently unused.
+    :vartype decoding_configuration: str
     """
 
     _validation = {
-        'center_frequency_m_hz': {'required': True},
-        'bandwidth_m_hz': {'required': True},
-        'end_point': {'required': True},
+        "name": {"required": True},
+        "center_frequency_m_hz": {"required": True},
+        "bandwidth_m_hz": {"required": True},
+        "end_point": {"required": True},
     }
 
     _attribute_map = {
-        'center_frequency_m_hz': {'key': 'centerFrequencyMHz', 'type': 'float'},
-        'bandwidth_m_hz': {'key': 'bandwidthMHz', 'type': 'float'},
-        'end_point': {'key': 'endPoint', 'type': 'EndPoint'},
-        'modulation_configuration': {'key': 'modulationConfiguration', 'type': 'str'},
-        'demodulation_configuration': {'key': 'demodulationConfiguration', 'type': 'str'},
-        'encoding_configuration': {'key': 'encodingConfiguration', 'type': 'str'},
-        'decoding_configuration': {'key': 'decodingConfiguration', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
+        "center_frequency_m_hz": {"key": "centerFrequencyMHz", "type": "float"},
+        "bandwidth_m_hz": {"key": "bandwidthMHz", "type": "float"},
+        "end_point": {"key": "endPoint", "type": "EndPoint"},
+        "modulation_configuration": {"key": "modulationConfiguration", "type": "str"},
+        "demodulation_configuration": {"key": "demodulationConfiguration", "type": "str"},
+        "encoding_configuration": {"key": "encodingConfiguration", "type": "str"},
+        "decoding_configuration": {"key": "decodingConfiguration", "type": "str"},
     }
 
     def __init__(
         self,
         *,
+        name: str,
         center_frequency_m_hz: float,
         bandwidth_m_hz: float,
-        end_point: "EndPoint",
+        end_point: "_models.EndPoint",
         modulation_configuration: Optional[str] = None,
         demodulation_configuration: Optional[str] = None,
         encoding_configuration: Optional[str] = None,
         decoding_configuration: Optional[str] = None,
-        **kwargs
-    ):
-        super(ContactProfileLinkChannel, self).__init__(**kwargs)
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Channel name. Required.
+        :paramtype name: str
+        :keyword center_frequency_m_hz: Center Frequency in MHz. Required.
+        :paramtype center_frequency_m_hz: float
+        :keyword bandwidth_m_hz: Bandwidth in MHz. Required.
+        :paramtype bandwidth_m_hz: float
+        :keyword end_point: Customer end point to store and retrieve data during a contact with the
+         spacecraft. Required.
+        :paramtype end_point: ~azure.mgmt.orbital.models.EndPoint
+        :keyword modulation_configuration: Copy of the modem configuration file such as Kratos QRadio.
+         Only valid for uplink directions. If provided, the modem connects to the customer endpoint and
+         accepts commands from the customer instead of a VITA.49 stream.
+        :paramtype modulation_configuration: str
+        :keyword demodulation_configuration: Copy of the modem configuration file such as Kratos QRadio
+         or Kratos QuantumRx. Only valid for downlink directions. If provided, the modem connects to the
+         customer endpoint and sends demodulated data instead of a VITA.49 stream.
+        :paramtype demodulation_configuration: str
+        :keyword encoding_configuration: Currently unused.
+        :paramtype encoding_configuration: str
+        :keyword decoding_configuration: Currently unused.
+        :paramtype decoding_configuration: str
+        """
+        super().__init__(**kwargs)
+        self.name = name
         self.center_frequency_m_hz = center_frequency_m_hz
         self.bandwidth_m_hz = bandwidth_m_hz
         self.end_point = end_point
@@ -780,64 +1298,409 @@ class ContactProfileLinkChannel(msrest.serialization.Model):
         self.decoding_configuration = decoding_configuration
 
 
-class ContactProfileListResult(msrest.serialization.Model):
+class ContactProfileListResult(_serialization.Model):
     """Response for the ListContactProfiles API service call.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param value: A list of contact profile resources in a resource group.
-    :type value: list[~azure_orbital.models.ContactProfile]
+    :ivar value: A list of contact profile resources in a resource group.
+    :vartype value: list[~azure.mgmt.orbital.models.ContactProfile]
     :ivar next_link: The URL to get the next set of results.
     :vartype next_link: str
     """
 
     _validation = {
-        'next_link': {'readonly': True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[ContactProfile]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[ContactProfile]"},
+        "next_link": {"key": "nextLink", "type": "str"},
+    }
+
+    def __init__(self, *, value: Optional[List["_models.ContactProfile"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword value: A list of contact profile resources in a resource group.
+        :paramtype value: list[~azure.mgmt.orbital.models.ContactProfile]
+        """
+        super().__init__(**kwargs)
+        self.value = value
+        self.next_link = None
+
+
+class ContactProfilesProperties(_serialization.Model):
+    """List of Contact Profile Resource Properties.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The current state of the resource's creation, deletion, or
+     modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+     "deleting".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.orbital.models.ContactProfilesPropertiesProvisioningState
+    :ivar minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format. Used
+     for listing the available contacts with a spacecraft at a given ground station.
+    :vartype minimum_viable_contact_duration: str
+    :ivar minimum_elevation_degrees: Minimum viable elevation for the contact in decimal degrees.
+     Used for listing the available contacts with a spacecraft at a given ground station.
+    :vartype minimum_elevation_degrees: float
+    :ivar auto_tracking_configuration: Auto-tracking configuration. Known values are: "disabled",
+     "xBand", and "sBand".
+    :vartype auto_tracking_configuration: str or
+     ~azure.mgmt.orbital.models.AutoTrackingConfiguration
+    :ivar event_hub_uri: ARM resource identifier of the Event Hub used for telemetry. Requires
+     granting Orbital Resource Provider the rights to send telemetry into the hub.
+    :vartype event_hub_uri: str
+    :ivar network_configuration: Network configuration of customer virtual network. Required.
+    :vartype network_configuration:
+     ~azure.mgmt.orbital.models.ContactProfilesPropertiesNetworkConfiguration
+    :ivar third_party_configurations: Third-party mission configuration of the Contact Profile.
+     Describes RF links, modem processing, and IP endpoints.
+    :vartype third_party_configurations:
+     list[~azure.mgmt.orbital.models.ContactProfileThirdPartyConfiguration]
+    :ivar links: Links of the Contact Profile. Describes RF links, modem processing, and IP
+     endpoints. Required.
+    :vartype links: list[~azure.mgmt.orbital.models.ContactProfileLink]
+    """
+
+    _validation = {
+        "network_configuration": {"required": True},
+        "links": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "minimum_viable_contact_duration": {"key": "minimumViableContactDuration", "type": "str"},
+        "minimum_elevation_degrees": {"key": "minimumElevationDegrees", "type": "float"},
+        "auto_tracking_configuration": {"key": "autoTrackingConfiguration", "type": "str"},
+        "event_hub_uri": {"key": "eventHubUri", "type": "str"},
+        "network_configuration": {
+            "key": "networkConfiguration",
+            "type": "ContactProfilesPropertiesNetworkConfiguration",
+        },
+        "third_party_configurations": {
+            "key": "thirdPartyConfigurations",
+            "type": "[ContactProfileThirdPartyConfiguration]",
+        },
+        "links": {"key": "links", "type": "[ContactProfileLink]"},
     }
 
     def __init__(
         self,
         *,
-        value: Optional[List["ContactProfile"]] = None,
-        **kwargs
-    ):
-        super(ContactProfileListResult, self).__init__(**kwargs)
-        self.value = value
-        self.next_link = None
+        network_configuration: "_models.ContactProfilesPropertiesNetworkConfiguration",
+        links: List["_models.ContactProfileLink"],
+        provisioning_state: Optional[Union[str, "_models.ContactProfilesPropertiesProvisioningState"]] = None,
+        minimum_viable_contact_duration: Optional[str] = None,
+        minimum_elevation_degrees: Optional[float] = None,
+        auto_tracking_configuration: Optional[Union[str, "_models.AutoTrackingConfiguration"]] = None,
+        event_hub_uri: Optional[str] = None,
+        third_party_configurations: Optional[List["_models.ContactProfileThirdPartyConfiguration"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword provisioning_state: The current state of the resource's creation, deletion, or
+         modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+         "deleting".
+        :paramtype provisioning_state: str or
+         ~azure.mgmt.orbital.models.ContactProfilesPropertiesProvisioningState
+        :keyword minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format.
+         Used for listing the available contacts with a spacecraft at a given ground station.
+        :paramtype minimum_viable_contact_duration: str
+        :keyword minimum_elevation_degrees: Minimum viable elevation for the contact in decimal
+         degrees. Used for listing the available contacts with a spacecraft at a given ground station.
+        :paramtype minimum_elevation_degrees: float
+        :keyword auto_tracking_configuration: Auto-tracking configuration. Known values are:
+         "disabled", "xBand", and "sBand".
+        :paramtype auto_tracking_configuration: str or
+         ~azure.mgmt.orbital.models.AutoTrackingConfiguration
+        :keyword event_hub_uri: ARM resource identifier of the Event Hub used for telemetry. Requires
+         granting Orbital Resource Provider the rights to send telemetry into the hub.
+        :paramtype event_hub_uri: str
+        :keyword network_configuration: Network configuration of customer virtual network. Required.
+        :paramtype network_configuration:
+         ~azure.mgmt.orbital.models.ContactProfilesPropertiesNetworkConfiguration
+        :keyword third_party_configurations: Third-party mission configuration of the Contact Profile.
+         Describes RF links, modem processing, and IP endpoints.
+        :paramtype third_party_configurations:
+         list[~azure.mgmt.orbital.models.ContactProfileThirdPartyConfiguration]
+        :keyword links: Links of the Contact Profile. Describes RF links, modem processing, and IP
+         endpoints. Required.
+        :paramtype links: list[~azure.mgmt.orbital.models.ContactProfileLink]
+        """
+        super().__init__(**kwargs)
+        self.provisioning_state = provisioning_state
+        self.minimum_viable_contact_duration = minimum_viable_contact_duration
+        self.minimum_elevation_degrees = minimum_elevation_degrees
+        self.auto_tracking_configuration = auto_tracking_configuration
+        self.event_hub_uri = event_hub_uri
+        self.network_configuration = network_configuration
+        self.third_party_configurations = third_party_configurations
+        self.links = links
 
 
-class EndPoint(msrest.serialization.Model):
-    """Customer End point to store/retrieve data during a contact.
+class ContactProfileProperties(ContactProfilesProperties):
+    """Properties of the contact profile resource.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param ip_address: Required. IP Address.
-    :type ip_address: str
-    :param end_point_name: Required. Name of an end point.
-    :type end_point_name: str
-    :param port: Required. TCP port to listen on to receive data.
-    :type port: str
-    :param protocol: Required. Protocol either UDP or TCP. Possible values include: "TCP", "UDP".
-    :type protocol: str or ~azure_orbital.models.Protocol
+    :ivar provisioning_state: The current state of the resource's creation, deletion, or
+     modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+     "deleting".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.orbital.models.ContactProfilesPropertiesProvisioningState
+    :ivar minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format. Used
+     for listing the available contacts with a spacecraft at a given ground station.
+    :vartype minimum_viable_contact_duration: str
+    :ivar minimum_elevation_degrees: Minimum viable elevation for the contact in decimal degrees.
+     Used for listing the available contacts with a spacecraft at a given ground station.
+    :vartype minimum_elevation_degrees: float
+    :ivar auto_tracking_configuration: Auto-tracking configuration. Known values are: "disabled",
+     "xBand", and "sBand".
+    :vartype auto_tracking_configuration: str or
+     ~azure.mgmt.orbital.models.AutoTrackingConfiguration
+    :ivar event_hub_uri: ARM resource identifier of the Event Hub used for telemetry. Requires
+     granting Orbital Resource Provider the rights to send telemetry into the hub.
+    :vartype event_hub_uri: str
+    :ivar network_configuration: Network configuration of customer virtual network. Required.
+    :vartype network_configuration:
+     ~azure.mgmt.orbital.models.ContactProfilesPropertiesNetworkConfiguration
+    :ivar third_party_configurations: Third-party mission configuration of the Contact Profile.
+     Describes RF links, modem processing, and IP endpoints.
+    :vartype third_party_configurations:
+     list[~azure.mgmt.orbital.models.ContactProfileThirdPartyConfiguration]
+    :ivar links: Links of the Contact Profile. Describes RF links, modem processing, and IP
+     endpoints. Required.
+    :vartype links: list[~azure.mgmt.orbital.models.ContactProfileLink]
     """
 
     _validation = {
-        'ip_address': {'required': True},
-        'end_point_name': {'required': True},
-        'port': {'required': True},
-        'protocol': {'required': True},
+        "network_configuration": {"required": True},
+        "links": {"required": True},
     }
 
     _attribute_map = {
-        'ip_address': {'key': 'ipAddress', 'type': 'str'},
-        'end_point_name': {'key': 'endPointName', 'type': 'str'},
-        'port': {'key': 'port', 'type': 'str'},
-        'protocol': {'key': 'protocol', 'type': 'str'},
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "minimum_viable_contact_duration": {"key": "minimumViableContactDuration", "type": "str"},
+        "minimum_elevation_degrees": {"key": "minimumElevationDegrees", "type": "float"},
+        "auto_tracking_configuration": {"key": "autoTrackingConfiguration", "type": "str"},
+        "event_hub_uri": {"key": "eventHubUri", "type": "str"},
+        "network_configuration": {
+            "key": "networkConfiguration",
+            "type": "ContactProfilesPropertiesNetworkConfiguration",
+        },
+        "third_party_configurations": {
+            "key": "thirdPartyConfigurations",
+            "type": "[ContactProfileThirdPartyConfiguration]",
+        },
+        "links": {"key": "links", "type": "[ContactProfileLink]"},
+    }
+
+    def __init__(
+        self,
+        *,
+        network_configuration: "_models.ContactProfilesPropertiesNetworkConfiguration",
+        links: List["_models.ContactProfileLink"],
+        provisioning_state: Optional[Union[str, "_models.ContactProfilesPropertiesProvisioningState"]] = None,
+        minimum_viable_contact_duration: Optional[str] = None,
+        minimum_elevation_degrees: Optional[float] = None,
+        auto_tracking_configuration: Optional[Union[str, "_models.AutoTrackingConfiguration"]] = None,
+        event_hub_uri: Optional[str] = None,
+        third_party_configurations: Optional[List["_models.ContactProfileThirdPartyConfiguration"]] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword provisioning_state: The current state of the resource's creation, deletion, or
+         modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+         "deleting".
+        :paramtype provisioning_state: str or
+         ~azure.mgmt.orbital.models.ContactProfilesPropertiesProvisioningState
+        :keyword minimum_viable_contact_duration: Minimum viable contact duration in ISO 8601 format.
+         Used for listing the available contacts with a spacecraft at a given ground station.
+        :paramtype minimum_viable_contact_duration: str
+        :keyword minimum_elevation_degrees: Minimum viable elevation for the contact in decimal
+         degrees. Used for listing the available contacts with a spacecraft at a given ground station.
+        :paramtype minimum_elevation_degrees: float
+        :keyword auto_tracking_configuration: Auto-tracking configuration. Known values are:
+         "disabled", "xBand", and "sBand".
+        :paramtype auto_tracking_configuration: str or
+         ~azure.mgmt.orbital.models.AutoTrackingConfiguration
+        :keyword event_hub_uri: ARM resource identifier of the Event Hub used for telemetry. Requires
+         granting Orbital Resource Provider the rights to send telemetry into the hub.
+        :paramtype event_hub_uri: str
+        :keyword network_configuration: Network configuration of customer virtual network. Required.
+        :paramtype network_configuration:
+         ~azure.mgmt.orbital.models.ContactProfilesPropertiesNetworkConfiguration
+        :keyword third_party_configurations: Third-party mission configuration of the Contact Profile.
+         Describes RF links, modem processing, and IP endpoints.
+        :paramtype third_party_configurations:
+         list[~azure.mgmt.orbital.models.ContactProfileThirdPartyConfiguration]
+        :keyword links: Links of the Contact Profile. Describes RF links, modem processing, and IP
+         endpoints. Required.
+        :paramtype links: list[~azure.mgmt.orbital.models.ContactProfileLink]
+        """
+        super().__init__(
+            provisioning_state=provisioning_state,
+            minimum_viable_contact_duration=minimum_viable_contact_duration,
+            minimum_elevation_degrees=minimum_elevation_degrees,
+            auto_tracking_configuration=auto_tracking_configuration,
+            event_hub_uri=event_hub_uri,
+            network_configuration=network_configuration,
+            third_party_configurations=third_party_configurations,
+            links=links,
+            **kwargs
+        )
+
+
+class ContactProfilesPropertiesNetworkConfiguration(_serialization.Model):
+    """Network configuration of customer virtual network.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar subnet_id: ARM resource identifier of the subnet delegated to the
+     Microsoft.Orbital/orbitalGateways. Needs to be at least a class C subnet, and should not have
+     any IP created in it. Required.
+    :vartype subnet_id: str
+    """
+
+    _validation = {
+        "subnet_id": {"required": True},
+    }
+
+    _attribute_map = {
+        "subnet_id": {"key": "subnetId", "type": "str"},
+    }
+
+    def __init__(self, *, subnet_id: str, **kwargs: Any) -> None:
+        """
+        :keyword subnet_id: ARM resource identifier of the subnet delegated to the
+         Microsoft.Orbital/orbitalGateways. Needs to be at least a class C subnet, and should not have
+         any IP created in it. Required.
+        :paramtype subnet_id: str
+        """
+        super().__init__(**kwargs)
+        self.subnet_id = subnet_id
+
+
+class ContactProfileThirdPartyConfiguration(_serialization.Model):
+    """Contact Profile third-party partner configuration.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provider_name: Name of the third-party provider. Required.
+    :vartype provider_name: str
+    :ivar mission_configuration: Name of string referencing the configuration describing contact
+     set-up for a particular mission. Expected values are those which have been created in
+     collaboration with the partner network. Required.
+    :vartype mission_configuration: str
+    """
+
+    _validation = {
+        "provider_name": {"required": True},
+        "mission_configuration": {"required": True},
+    }
+
+    _attribute_map = {
+        "provider_name": {"key": "providerName", "type": "str"},
+        "mission_configuration": {"key": "missionConfiguration", "type": "str"},
+    }
+
+    def __init__(self, *, provider_name: str, mission_configuration: str, **kwargs: Any) -> None:
+        """
+        :keyword provider_name: Name of the third-party provider. Required.
+        :paramtype provider_name: str
+        :keyword mission_configuration: Name of string referencing the configuration describing contact
+         set-up for a particular mission. Expected values are those which have been created in
+         collaboration with the partner network. Required.
+        :paramtype mission_configuration: str
+        """
+        super().__init__(**kwargs)
+        self.provider_name = provider_name
+        self.mission_configuration = mission_configuration
+
+
+class ContactsPropertiesAntennaConfiguration(_serialization.Model):
+    """The configuration associated with the allocated antenna.
+
+    :ivar destination_ip: The destination IP a packet can be sent to. This would for example be the
+     TCP endpoint you would send data to.
+    :vartype destination_ip: str
+    :ivar source_ips: List of Source IP.
+    :vartype source_ips: list[str]
+    """
+
+    _attribute_map = {
+        "destination_ip": {"key": "destinationIp", "type": "str"},
+        "source_ips": {"key": "sourceIps", "type": "[str]"},
+    }
+
+    def __init__(
+        self, *, destination_ip: Optional[str] = None, source_ips: Optional[List[str]] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword destination_ip: The destination IP a packet can be sent to. This would for example be
+         the TCP endpoint you would send data to.
+        :paramtype destination_ip: str
+        :keyword source_ips: List of Source IP.
+        :paramtype source_ips: list[str]
+        """
+        super().__init__(**kwargs)
+        self.destination_ip = destination_ip
+        self.source_ips = source_ips
+
+
+class ContactsPropertiesContactProfile(ResourceReference):
+    """The reference to the contact profile resource.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id: Resource ID. Required.
+    :vartype id: str
+    """
+
+    _validation = {
+        "id": {"required": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: str, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Resource ID. Required.
+        :paramtype id: str
+        """
+        super().__init__(id=id, **kwargs)
+
+
+class EndPoint(_serialization.Model):
+    """Customer end point to store and retrieve data during a contact with the spacecraft.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar ip_address: IP Address (IPv4). Required.
+    :vartype ip_address: str
+    :ivar end_point_name: Name of an end point. Required.
+    :vartype end_point_name: str
+    :ivar port: TCP port to listen on to receive data. Required.
+    :vartype port: str
+    :ivar protocol: Protocol either UDP or TCP. Required. Known values are: "TCP" and "UDP".
+    :vartype protocol: str or ~azure.mgmt.orbital.models.Protocol
+    """
+
+    _validation = {
+        "ip_address": {"required": True},
+        "end_point_name": {"required": True},
+        "port": {"required": True},
+        "protocol": {"required": True},
+    }
+
+    _attribute_map = {
+        "ip_address": {"key": "ipAddress", "type": "str"},
+        "end_point_name": {"key": "endPointName", "type": "str"},
+        "port": {"key": "port", "type": "str"},
+        "protocol": {"key": "protocol", "type": "str"},
     }
 
     def __init__(
@@ -846,17 +1709,119 @@ class EndPoint(msrest.serialization.Model):
         ip_address: str,
         end_point_name: str,
         port: str,
-        protocol: Union[str, "Protocol"],
-        **kwargs
-    ):
-        super(EndPoint, self).__init__(**kwargs)
+        protocol: Union[str, "_models.Protocol"],
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword ip_address: IP Address (IPv4). Required.
+        :paramtype ip_address: str
+        :keyword end_point_name: Name of an end point. Required.
+        :paramtype end_point_name: str
+        :keyword port: TCP port to listen on to receive data. Required.
+        :paramtype port: str
+        :keyword protocol: Protocol either UDP or TCP. Required. Known values are: "TCP" and "UDP".
+        :paramtype protocol: str or ~azure.mgmt.orbital.models.Protocol
+        """
+        super().__init__(**kwargs)
         self.ip_address = ip_address
         self.end_point_name = end_point_name
         self.port = port
         self.protocol = protocol
 
 
-class Operation(msrest.serialization.Model):
+class ErrorAdditionalInfo(_serialization.Model):
+    """The resource management error additional info.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar type: The additional info type.
+    :vartype type: str
+    :ivar info: The additional info.
+    :vartype info: JSON
+    """
+
+    _validation = {
+        "type": {"readonly": True},
+        "info": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "type": {"key": "type", "type": "str"},
+        "info": {"key": "info", "type": "object"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.type = None
+        self.info = None
+
+
+class ErrorDetail(_serialization.Model):
+    """The error detail.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar code: The error code.
+    :vartype code: str
+    :ivar message: The error message.
+    :vartype message: str
+    :ivar target: The error target.
+    :vartype target: str
+    :ivar details: The error details.
+    :vartype details: list[~azure.mgmt.orbital.models.ErrorDetail]
+    :ivar additional_info: The error additional info.
+    :vartype additional_info: list[~azure.mgmt.orbital.models.ErrorAdditionalInfo]
+    """
+
+    _validation = {
+        "code": {"readonly": True},
+        "message": {"readonly": True},
+        "target": {"readonly": True},
+        "details": {"readonly": True},
+        "additional_info": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
+        "details": {"key": "details", "type": "[ErrorDetail]"},
+        "additional_info": {"key": "additionalInfo", "type": "[ErrorAdditionalInfo]"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.code = None
+        self.message = None
+        self.target = None
+        self.details = None
+        self.additional_info = None
+
+
+class ErrorResponse(_serialization.Model):
+    """Common error response for all Azure Resource Manager APIs to return error details for failed
+    operations. (This also follows the OData error response format.).
+
+    :ivar error: The error object.
+    :vartype error: ~azure.mgmt.orbital.models.ErrorDetail
+    """
+
+    _attribute_map = {
+        "error": {"key": "error", "type": "ErrorDetail"},
+    }
+
+    def __init__(self, *, error: Optional["_models.ErrorDetail"] = None, **kwargs: Any) -> None:
+        """
+        :keyword error: The error object.
+        :paramtype error: ~azure.mgmt.orbital.models.ErrorDetail
+        """
+        super().__init__(**kwargs)
+        self.error = error
+
+
+class Operation(_serialization.Model):
     """Details of a REST API operation, returned from the Resource Provider Operations API.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -867,39 +1832,38 @@ class Operation(msrest.serialization.Model):
     :ivar is_data_action: Whether the operation applies to data-plane. This is "true" for
      data-plane operations and "false" for ARM/control-plane operations.
     :vartype is_data_action: bool
-    :param display: Localized display information for this particular operation.
-    :type display: ~azure_orbital.models.OperationDisplay
+    :ivar display: Localized display information for this particular operation.
+    :vartype display: ~azure.mgmt.orbital.models.OperationDisplay
     :ivar origin: The intended executor of the operation; as in Resource Based Access Control
-     (RBAC) and audit logs UX. Default value is "user,system". Possible values include: "user",
-     "system", "user,system".
-    :vartype origin: str or ~azure_orbital.models.Origin
+     (RBAC) and audit logs UX. Default value is "user,system". Known values are: "user", "system",
+     and "user,system".
+    :vartype origin: str or ~azure.mgmt.orbital.models.Origin
     :ivar action_type: Enum. Indicates the action type. "Internal" refers to actions that are for
-     internal only APIs. Possible values include: "Internal".
-    :vartype action_type: str or ~azure_orbital.models.ActionType
+     internal only APIs. "Internal"
+    :vartype action_type: str or ~azure.mgmt.orbital.models.ActionType
     """
 
     _validation = {
-        'name': {'readonly': True},
-        'is_data_action': {'readonly': True},
-        'origin': {'readonly': True},
-        'action_type': {'readonly': True},
+        "name": {"readonly": True},
+        "is_data_action": {"readonly": True},
+        "origin": {"readonly": True},
+        "action_type": {"readonly": True},
     }
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'is_data_action': {'key': 'isDataAction', 'type': 'bool'},
-        'display': {'key': 'display', 'type': 'OperationDisplay'},
-        'origin': {'key': 'origin', 'type': 'str'},
-        'action_type': {'key': 'actionType', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
+        "is_data_action": {"key": "isDataAction", "type": "bool"},
+        "display": {"key": "display", "type": "OperationDisplay"},
+        "origin": {"key": "origin", "type": "str"},
+        "action_type": {"key": "actionType", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        display: Optional["OperationDisplay"] = None,
-        **kwargs
-    ):
-        super(Operation, self).__init__(**kwargs)
+    def __init__(self, *, display: Optional["_models.OperationDisplay"] = None, **kwargs: Any) -> None:
+        """
+        :keyword display: Localized display information for this particular operation.
+        :paramtype display: ~azure.mgmt.orbital.models.OperationDisplay
+        """
+        super().__init__(**kwargs)
         self.name = None
         self.is_data_action = None
         self.display = display
@@ -907,7 +1871,7 @@ class Operation(msrest.serialization.Model):
         self.action_type = None
 
 
-class OperationDisplay(msrest.serialization.Model):
+class OperationDisplay(_serialization.Model):
     """Localized display information for this particular operation.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -927,134 +1891,215 @@ class OperationDisplay(msrest.serialization.Model):
     """
 
     _validation = {
-        'provider': {'readonly': True},
-        'resource': {'readonly': True},
-        'operation': {'readonly': True},
-        'description': {'readonly': True},
+        "provider": {"readonly": True},
+        "resource": {"readonly": True},
+        "operation": {"readonly": True},
+        "description": {"readonly": True},
     }
 
     _attribute_map = {
-        'provider': {'key': 'provider', 'type': 'str'},
-        'resource': {'key': 'resource', 'type': 'str'},
-        'operation': {'key': 'operation', 'type': 'str'},
-        'description': {'key': 'description', 'type': 'str'},
+        "provider": {"key": "provider", "type": "str"},
+        "resource": {"key": "resource", "type": "str"},
+        "operation": {"key": "operation", "type": "str"},
+        "description": {"key": "description", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(OperationDisplay, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.provider = None
         self.resource = None
         self.operation = None
         self.description = None
 
 
-class OperationListResult(msrest.serialization.Model):
-    """A list of REST API operations supported by an Azure Resource Provider. It contains an URL link to get the next set of results.
+class OperationListResult(_serialization.Model):
+    """A list of REST API operations supported by an Azure Resource Provider. It contains an URL link
+    to get the next set of results.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar value: List of operations supported by the resource provider.
-    :vartype value: list[~azure_orbital.models.Operation]
+    :vartype value: list[~azure.mgmt.orbital.models.Operation]
     :ivar next_link: URL to get the next set of operation list results (if there are any).
     :vartype next_link: str
     """
 
     _validation = {
-        'value': {'readonly': True},
-        'next_link': {'readonly': True},
+        "value": {"readonly": True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[Operation]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[Operation]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(OperationListResult, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.value = None
         self.next_link = None
 
 
-class ResourceIdListResult(msrest.serialization.Model):
-    """Response for an API service call that lists the resource IDs of resources associated with another resource.
+class OperationResult(_serialization.Model):
+    """Operation Result Entity.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param value: A list of Azure Resource IDs.
-    :type value: list[~azure_orbital.models.ResourceIdListResultValueItem]
+    :ivar id: ID of the resource.
+    :vartype id: str
+    :ivar name: Name of the resource.
+    :vartype name: str
+    :ivar status: The status of operation. Known values are: "Succeeded", "Canceled", "Failed", and
+     "Running".
+    :vartype status: str or ~azure.mgmt.orbital.models.Status
+    :ivar start_time: The operation start time (ISO 8601 UTC standard).
+    :vartype start_time: ~datetime.datetime
+    :ivar end_time: The operation end time (ISO 8601 UTC standard).
+    :vartype end_time: ~datetime.datetime
+    :ivar percent_complete: Percentage completed.
+    :vartype percent_complete: float
+    :ivar value: A list of results when the operation returns multiple results.
+    :vartype value: list[JSON]
+    :ivar next_link: The URL to get the next set of results.
+    :vartype next_link: str
+    :ivar properties: Operation result properties.
+    :vartype properties: JSON
+    :ivar error: Operation result error properties.
+    :vartype error: ~azure.mgmt.orbital.models.OperationResultErrorProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "status": {"readonly": True},
+        "start_time": {"readonly": True},
+        "end_time": {"readonly": True},
+        "percent_complete": {"readonly": True, "maximum": 100, "minimum": 0},
+        "value": {"readonly": True},
+        "next_link": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "status": {"key": "status", "type": "str"},
+        "start_time": {"key": "startTime", "type": "iso-8601"},
+        "end_time": {"key": "endTime", "type": "iso-8601"},
+        "percent_complete": {"key": "percentComplete", "type": "float"},
+        "value": {"key": "value", "type": "[object]"},
+        "next_link": {"key": "nextLink", "type": "str"},
+        "properties": {"key": "properties", "type": "object"},
+        "error": {"key": "error", "type": "OperationResultErrorProperties"},
+    }
+
+    def __init__(
+        self,
+        *,
+        properties: Optional[JSON] = None,
+        error: Optional["_models.OperationResultErrorProperties"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword properties: Operation result properties.
+        :paramtype properties: JSON
+        :keyword error: Operation result error properties.
+        :paramtype error: ~azure.mgmt.orbital.models.OperationResultErrorProperties
+        """
+        super().__init__(**kwargs)
+        self.id = None
+        self.name = None
+        self.status = None
+        self.start_time = None
+        self.end_time = None
+        self.percent_complete = None
+        self.value = None
+        self.next_link = None
+        self.properties = properties
+        self.error = error
+
+
+class OperationResultErrorProperties(_serialization.Model):
+    """Operation result error properties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar code: The code of the error.
+    :vartype code: str
+    :ivar message: The error message.
+    :vartype message: str
+    """
+
+    _validation = {
+        "code": {"readonly": True},
+        "message": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.code = None
+        self.message = None
+
+
+class ResourceIdListResult(_serialization.Model):
+    """Response for an API service call that lists the resource IDs of resources associated with
+    another resource.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar value: A list of Azure Resource IDs.
+    :vartype value: list[~azure.mgmt.orbital.models.ResourceIdListResultValueItem]
     :ivar next_link: The URL to get the next set of results.
     :vartype next_link: str
     """
 
     _validation = {
-        'next_link': {'readonly': True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[ResourceIdListResultValueItem]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[ResourceIdListResultValueItem]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["ResourceIdListResultValueItem"]] = None,
-        **kwargs
-    ):
-        super(ResourceIdListResult, self).__init__(**kwargs)
+    def __init__(self, *, value: Optional[List["_models.ResourceIdListResultValueItem"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword value: A list of Azure Resource IDs.
+        :paramtype value: list[~azure.mgmt.orbital.models.ResourceIdListResultValueItem]
+        """
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = None
 
 
-class ResourceIdListResultValueItem(msrest.serialization.Model):
+class ResourceIdListResultValueItem(_serialization.Model):
     """ResourceIdListResultValueItem.
 
-    :param id: The Azure Resource ID.
-    :type id: str
+    :ivar id: The Azure Resource ID.
+    :vartype id: str
     """
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        id: Optional[str] = None,
-        **kwargs
-    ):
-        super(ResourceIdListResultValueItem, self).__init__(**kwargs)
+    def __init__(self, *, id: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: The Azure Resource ID.
+        :paramtype id: str
+        """
+        super().__init__(**kwargs)
         self.id = id
 
 
-class ResourceReference(msrest.serialization.Model):
-    """Resource Reference.
-
-    :param id: Resource ID.
-    :type id: str
-    """
-
-    _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-    }
-
-    def __init__(
-        self,
-        *,
-        id: Optional[str] = None,
-        **kwargs
-    ):
-        super(ResourceReference, self).__init__(**kwargs)
-        self.id = id
-
-
-class Spacecraft(TrackedResource):
+class Spacecraft(TrackedResource):  # pylint: disable=too-many-instance-attributes
     """Customer creates a spacecraft resource to schedule a contact.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -1071,199 +2116,259 @@ class Spacecraft(TrackedResource):
     :vartype type: str
     :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
      information.
-    :vartype system_data: ~azure_orbital.models.SystemData
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
-    :param location: Required. The geo-location where the resource lives.
-    :type location: str
-    :ivar etag: A unique read-only string that changes whenever the resource is updated.
-    :vartype etag: str
-    :param norad_id: NORAD ID of the spacecraft.
-    :type norad_id: str
-    :ivar authorization_status: Authorization status of spacecraft. Possible values include:
-     "Allowed", "Pending", "Denied".
-    :vartype authorization_status: str or ~azure_orbital.models.AuthorizationStatus
-    :ivar authorization_status_extended: Details of the authorization status.
-    :vartype authorization_status_extended: str
-    :param title_line: Title line of Two Line Element (TLE).
-    :type title_line: str
-    :param tle_line1: Line 1 of Two Line Element (TLE).
-    :type tle_line1: str
-    :param tle_line2: Line 2 of Two Line Element (TLE).
-    :type tle_line2: str
-    :param links: Links of the Spacecraft.
-    :type links: list[~azure_orbital.models.SpacecraftLink]
+    :vartype system_data: ~azure.mgmt.orbital.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives. Required.
+    :vartype location: str
+    :ivar provisioning_state: The current state of the resource's creation, deletion, or
+     modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+     "deleting".
+    :vartype provisioning_state: str or
+     ~azure.mgmt.orbital.models.SpacecraftsPropertiesProvisioningState
+    :ivar norad_id: NORAD ID of the spacecraft.
+    :vartype norad_id: str
+    :ivar title_line: Title line of the two-line element set (TLE). Required.
+    :vartype title_line: str
+    :ivar tle_line1: Line 1 of the two-line element set (TLE). Required.
+    :vartype tle_line1: str
+    :ivar tle_line2: Line 2 of the two-line element set (TLE). Required.
+    :vartype tle_line2: str
+    :ivar links: Immutable list of Spacecraft links. Required.
+    :vartype links: list[~azure.mgmt.orbital.models.SpacecraftLink]
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'system_data': {'readonly': True},
-        'location': {'required': True},
-        'etag': {'readonly': True},
-        'authorization_status': {'readonly': True},
-        'authorization_status_extended': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "location": {"required": True},
+        "title_line": {"required": True},
+        "tle_line1": {"required": True},
+        "tle_line2": {"required": True},
+        "links": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'location': {'key': 'location', 'type': 'str'},
-        'etag': {'key': 'etag', 'type': 'str'},
-        'norad_id': {'key': 'properties.noradId', 'type': 'str'},
-        'authorization_status': {'key': 'properties.authorizationStatus', 'type': 'str'},
-        'authorization_status_extended': {'key': 'properties.authorizationStatusExtended', 'type': 'str'},
-        'title_line': {'key': 'properties.titleLine', 'type': 'str'},
-        'tle_line1': {'key': 'properties.tleLine1', 'type': 'str'},
-        'tle_line2': {'key': 'properties.tleLine2', 'type': 'str'},
-        'links': {'key': 'properties.links', 'type': '[SpacecraftLink]'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
+        "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
+        "norad_id": {"key": "properties.noradId", "type": "str"},
+        "title_line": {"key": "properties.titleLine", "type": "str"},
+        "tle_line1": {"key": "properties.tleLine1", "type": "str"},
+        "tle_line2": {"key": "properties.tleLine2", "type": "str"},
+        "links": {"key": "properties.links", "type": "[SpacecraftLink]"},
     }
 
     def __init__(
         self,
         *,
         location: str,
+        title_line: str,
+        tle_line1: str,
+        tle_line2: str,
+        links: List["_models.SpacecraftLink"],
         tags: Optional[Dict[str, str]] = None,
+        provisioning_state: Optional[Union[str, "_models.SpacecraftsPropertiesProvisioningState"]] = None,
         norad_id: Optional[str] = None,
-        title_line: Optional[str] = None,
-        tle_line1: Optional[str] = None,
-        tle_line2: Optional[str] = None,
-        links: Optional[List["SpacecraftLink"]] = None,
-        **kwargs
-    ):
-        super(Spacecraft, self).__init__(tags=tags, location=location, **kwargs)
-        self.etag = None
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives. Required.
+        :paramtype location: str
+        :keyword provisioning_state: The current state of the resource's creation, deletion, or
+         modification. Known values are: "creating", "succeeded", "failed", "canceled", "updating", and
+         "deleting".
+        :paramtype provisioning_state: str or
+         ~azure.mgmt.orbital.models.SpacecraftsPropertiesProvisioningState
+        :keyword norad_id: NORAD ID of the spacecraft.
+        :paramtype norad_id: str
+        :keyword title_line: Title line of the two-line element set (TLE). Required.
+        :paramtype title_line: str
+        :keyword tle_line1: Line 1 of the two-line element set (TLE). Required.
+        :paramtype tle_line1: str
+        :keyword tle_line2: Line 2 of the two-line element set (TLE). Required.
+        :paramtype tle_line2: str
+        :keyword links: Immutable list of Spacecraft links. Required.
+        :paramtype links: list[~azure.mgmt.orbital.models.SpacecraftLink]
+        """
+        super().__init__(tags=tags, location=location, **kwargs)
+        self.provisioning_state = provisioning_state
         self.norad_id = norad_id
-        self.authorization_status = None
-        self.authorization_status_extended = None
         self.title_line = title_line
         self.tle_line1 = tle_line1
         self.tle_line2 = tle_line2
         self.links = links
 
 
-class SpacecraftLink(msrest.serialization.Model):
-    """Spacecraft Link.
+class SpacecraftLink(_serialization.Model):
+    """List of authorized spacecraft links per ground station and the expiration date of the
+    authorization.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param center_frequency_m_hz: Required. Center Frequency in MHz.
-    :type center_frequency_m_hz: float
-    :param bandwidth_m_hz: Required. Bandwidth in MHz.
-    :type bandwidth_m_hz: float
-    :param direction: Required. Direction (uplink or downlink). Possible values include: "uplink",
-     "downlink".
-    :type direction: str or ~azure_orbital.models.Direction
-    :param polarization: Required. polarization. eg (RHCP, LHCP). Possible values include: "RHCP",
-     "LHCP", "dualRhcpLhcp", "linearVertical", "linearHorizontal".
-    :type polarization: str or ~azure_orbital.models.Polarization
+    :ivar name: Link name. Required.
+    :vartype name: str
+    :ivar center_frequency_m_hz: Center Frequency in MHz. Required.
+    :vartype center_frequency_m_hz: float
+    :ivar bandwidth_m_hz: Bandwidth in MHz. Required.
+    :vartype bandwidth_m_hz: float
+    :ivar direction: Direction (Uplink or Downlink). Required. Known values are: "Uplink" and
+     "Downlink".
+    :vartype direction: str or ~azure.mgmt.orbital.models.Direction
+    :ivar polarization: Polarization. e.g. (RHCP, LHCP). Required. Known values are: "RHCP",
+     "LHCP", "linearVertical", and "linearHorizontal".
+    :vartype polarization: str or ~azure.mgmt.orbital.models.Polarization
+    :ivar authorizations: Authorized Ground Stations.
+    :vartype authorizations: list[~azure.mgmt.orbital.models.AuthorizedGroundstation]
     """
 
     _validation = {
-        'center_frequency_m_hz': {'required': True},
-        'bandwidth_m_hz': {'required': True},
-        'direction': {'required': True},
-        'polarization': {'required': True},
+        "name": {"required": True},
+        "center_frequency_m_hz": {"required": True},
+        "bandwidth_m_hz": {"required": True},
+        "direction": {"required": True},
+        "polarization": {"required": True},
+        "authorizations": {"readonly": True},
     }
 
     _attribute_map = {
-        'center_frequency_m_hz': {'key': 'centerFrequencyMHz', 'type': 'float'},
-        'bandwidth_m_hz': {'key': 'bandwidthMHz', 'type': 'float'},
-        'direction': {'key': 'direction', 'type': 'str'},
-        'polarization': {'key': 'polarization', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
+        "center_frequency_m_hz": {"key": "centerFrequencyMHz", "type": "float"},
+        "bandwidth_m_hz": {"key": "bandwidthMHz", "type": "float"},
+        "direction": {"key": "direction", "type": "str"},
+        "polarization": {"key": "polarization", "type": "str"},
+        "authorizations": {"key": "authorizations", "type": "[AuthorizedGroundstation]"},
     }
 
     def __init__(
         self,
         *,
+        name: str,
         center_frequency_m_hz: float,
         bandwidth_m_hz: float,
-        direction: Union[str, "Direction"],
-        polarization: Union[str, "Polarization"],
-        **kwargs
-    ):
-        super(SpacecraftLink, self).__init__(**kwargs)
+        direction: Union[str, "_models.Direction"],
+        polarization: Union[str, "_models.Polarization"],
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Link name. Required.
+        :paramtype name: str
+        :keyword center_frequency_m_hz: Center Frequency in MHz. Required.
+        :paramtype center_frequency_m_hz: float
+        :keyword bandwidth_m_hz: Bandwidth in MHz. Required.
+        :paramtype bandwidth_m_hz: float
+        :keyword direction: Direction (Uplink or Downlink). Required. Known values are: "Uplink" and
+         "Downlink".
+        :paramtype direction: str or ~azure.mgmt.orbital.models.Direction
+        :keyword polarization: Polarization. e.g. (RHCP, LHCP). Required. Known values are: "RHCP",
+         "LHCP", "linearVertical", and "linearHorizontal".
+        :paramtype polarization: str or ~azure.mgmt.orbital.models.Polarization
+        """
+        super().__init__(**kwargs)
+        self.name = name
         self.center_frequency_m_hz = center_frequency_m_hz
         self.bandwidth_m_hz = bandwidth_m_hz
         self.direction = direction
         self.polarization = polarization
+        self.authorizations = None
 
 
-class SpacecraftListResult(msrest.serialization.Model):
+class SpacecraftListResult(_serialization.Model):
     """Response for the ListSpacecrafts API service call.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param value: A list of spacecraft resources in a resource group.
-    :type value: list[~azure_orbital.models.Spacecraft]
+    :ivar value: A list of spacecraft resources in a resource group.
+    :vartype value: list[~azure.mgmt.orbital.models.Spacecraft]
     :ivar next_link: The URL to get the next set of results.
     :vartype next_link: str
     """
 
     _validation = {
-        'next_link': {'readonly': True},
+        "next_link": {"readonly": True},
     }
 
     _attribute_map = {
-        'value': {'key': 'value', 'type': '[Spacecraft]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "value": {"key": "value", "type": "[Spacecraft]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        value: Optional[List["Spacecraft"]] = None,
-        **kwargs
-    ):
-        super(SpacecraftListResult, self).__init__(**kwargs)
+    def __init__(self, *, value: Optional[List["_models.Spacecraft"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword value: A list of spacecraft resources in a resource group.
+        :paramtype value: list[~azure.mgmt.orbital.models.Spacecraft]
+        """
+        super().__init__(**kwargs)
         self.value = value
         self.next_link = None
 
 
-class SystemData(msrest.serialization.Model):
+class SystemData(_serialization.Model):
     """Metadata pertaining to creation and last modification of the resource.
 
-    :param created_by: The identity that created the resource.
-    :type created_by: str
-    :param created_by_type: The type of identity that created the resource. Possible values
-     include: "User", "Application", "ManagedIdentity", "Key".
-    :type created_by_type: str or ~azure_orbital.models.CreatedByType
-    :param created_at: The timestamp of resource creation (UTC).
-    :type created_at: ~datetime.datetime
-    :param last_modified_by: The identity that last modified the resource.
-    :type last_modified_by: str
-    :param last_modified_by_type: The type of identity that last modified the resource. Possible
-     values include: "User", "Application", "ManagedIdentity", "Key".
-    :type last_modified_by_type: str or ~azure_orbital.models.CreatedByType
-    :param last_modified_at: The timestamp of resource last modification (UTC).
-    :type last_modified_at: ~datetime.datetime
+    :ivar created_by: The identity that created the resource.
+    :vartype created_by: str
+    :ivar created_by_type: The type of identity that created the resource. Known values are:
+     "User", "Application", "ManagedIdentity", and "Key".
+    :vartype created_by_type: str or ~azure.mgmt.orbital.models.CreatedByType
+    :ivar created_at: The timestamp of resource creation (UTC).
+    :vartype created_at: ~datetime.datetime
+    :ivar last_modified_by: The identity that last modified the resource.
+    :vartype last_modified_by: str
+    :ivar last_modified_by_type: The type of identity that last modified the resource. Known values
+     are: "User", "Application", "ManagedIdentity", and "Key".
+    :vartype last_modified_by_type: str or ~azure.mgmt.orbital.models.CreatedByType
+    :ivar last_modified_at: The timestamp of resource last modification (UTC).
+    :vartype last_modified_at: ~datetime.datetime
     """
 
     _attribute_map = {
-        'created_by': {'key': 'createdBy', 'type': 'str'},
-        'created_by_type': {'key': 'createdByType', 'type': 'str'},
-        'created_at': {'key': 'createdAt', 'type': 'iso-8601'},
-        'last_modified_by': {'key': 'lastModifiedBy', 'type': 'str'},
-        'last_modified_by_type': {'key': 'lastModifiedByType', 'type': 'str'},
-        'last_modified_at': {'key': 'lastModifiedAt', 'type': 'iso-8601'},
+        "created_by": {"key": "createdBy", "type": "str"},
+        "created_by_type": {"key": "createdByType", "type": "str"},
+        "created_at": {"key": "createdAt", "type": "iso-8601"},
+        "last_modified_by": {"key": "lastModifiedBy", "type": "str"},
+        "last_modified_by_type": {"key": "lastModifiedByType", "type": "str"},
+        "last_modified_at": {"key": "lastModifiedAt", "type": "iso-8601"},
     }
 
     def __init__(
         self,
         *,
         created_by: Optional[str] = None,
-        created_by_type: Optional[Union[str, "CreatedByType"]] = None,
+        created_by_type: Optional[Union[str, "_models.CreatedByType"]] = None,
         created_at: Optional[datetime.datetime] = None,
         last_modified_by: Optional[str] = None,
-        last_modified_by_type: Optional[Union[str, "CreatedByType"]] = None,
+        last_modified_by_type: Optional[Union[str, "_models.CreatedByType"]] = None,
         last_modified_at: Optional[datetime.datetime] = None,
-        **kwargs
-    ):
-        super(SystemData, self).__init__(**kwargs)
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword created_by: The identity that created the resource.
+        :paramtype created_by: str
+        :keyword created_by_type: The type of identity that created the resource. Known values are:
+         "User", "Application", "ManagedIdentity", and "Key".
+        :paramtype created_by_type: str or ~azure.mgmt.orbital.models.CreatedByType
+        :keyword created_at: The timestamp of resource creation (UTC).
+        :paramtype created_at: ~datetime.datetime
+        :keyword last_modified_by: The identity that last modified the resource.
+        :paramtype last_modified_by: str
+        :keyword last_modified_by_type: The type of identity that last modified the resource. Known
+         values are: "User", "Application", "ManagedIdentity", and "Key".
+        :paramtype last_modified_by_type: str or ~azure.mgmt.orbital.models.CreatedByType
+        :keyword last_modified_at: The timestamp of resource last modification (UTC).
+        :paramtype last_modified_at: ~datetime.datetime
+        """
+        super().__init__(**kwargs)
         self.created_by = created_by
         self.created_by_type = created_by_type
         self.created_at = created_at
@@ -1272,22 +2377,21 @@ class SystemData(msrest.serialization.Model):
         self.last_modified_at = last_modified_at
 
 
-class TagsObject(msrest.serialization.Model):
+class TagsObject(_serialization.Model):
     """Tags object for patch operations.
 
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
     """
 
     _attribute_map = {
-        'tags': {'key': 'tags', 'type': '{str}'},
+        "tags": {"key": "tags", "type": "{str}"},
     }
 
-    def __init__(
-        self,
-        *,
-        tags: Optional[Dict[str, str]] = None,
-        **kwargs
-    ):
-        super(TagsObject, self).__init__(**kwargs)
+    def __init__(self, *, tags: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        """
+        super().__init__(**kwargs)
         self.tags = tags

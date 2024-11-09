@@ -1,5 +1,88 @@
 # Release History
 
+## 10.2.0b1 (2024-10-21)
+
+### Features Added
+
+  - Client `ContainerInstanceManagementClient` added operation group `container_group_profiles`
+  - Client `ContainerInstanceManagementClient` added operation group `container_group_profile`
+  - Model `Container` added property `config_map`
+  - Model `ContainerGroup` added property `container_group_profile`
+  - Model `ContainerGroup` added property `standby_pool_profile`
+  - Model `ContainerGroup` added property `is_created_from_standby_pool`
+  - Model `ContainerGroupProperties` added property `container_group_profile`
+  - Model `ContainerGroupProperties` added property `standby_pool_profile`
+  - Model `ContainerGroupProperties` added property `is_created_from_standby_pool`
+  - Added model `ConfigMap`
+  - Added model `ContainerGroupProfile`
+  - Added model `ContainerGroupProfileListResult`
+  - Added model `ContainerGroupProfilePatch`
+  - Added model `ContainerGroupProfileProperties`
+  - Added model `ContainerGroupProfileReferenceDefinition`
+  - Added model `StandbyPoolProfileDefinition`
+  - Added model `ContainerGroupProfileOperations`
+  - Added model `ContainerGroupProfilesOperations`
+
+## 10.1.0 (2023-04-21)
+
+### Features Added
+
+  - Model Container has a new parameter security_context
+  - Model ContainerGroup has a new parameter confidential_compute_properties
+  - Model ContainerGroup has a new parameter extensions
+  - Model ContainerGroup has a new parameter priority
+  - Model ContainerGroupProperties has a new parameter confidential_compute_properties
+  - Model ContainerGroupProperties has a new parameter extensions
+  - Model ContainerGroupProperties has a new parameter priority
+  - Model EncryptionProperties has a new parameter identity
+  - Model InitContainerDefinition has a new parameter security_context
+
+## 10.1.0b2 (2023-04-20)
+
+### Features Added
+
+  - Model ContainerGroup has a new parameter is_custom_provisioning_timeout
+  - Model ContainerGroup has a new parameter provisioning_timeout_in_seconds
+  - Model ContainerGroupProperties has a new parameter is_custom_provisioning_timeout
+  - Model ContainerGroupProperties has a new parameter provisioning_timeout_in_seconds
+
+### Breaking Changes
+
+  - Model ContainerGroup no longer has parameter confidential_compute_properties
+  - Model ContainerGroup no longer has parameter priority
+  - Model ContainerGroupProperties no longer has parameter confidential_compute_properties
+  - Model ContainerGroupProperties no longer has parameter priority
+
+## 10.1.0b1 (2022-12-26)
+
+### Features Added
+
+  - Model ContainerGroup has a new parameter confidential_compute_properties
+  - Model ContainerGroup has a new parameter extensions
+  - Model ContainerGroup has a new parameter priority
+  - Model ContainerGroupProperties has a new parameter confidential_compute_properties
+  - Model ContainerGroupProperties has a new parameter extensions
+  - Model ContainerGroupProperties has a new parameter priority
+  - Model EncryptionProperties has a new parameter identity
+
+## 10.0.0 (2022-08-29)
+
+### Features Added
+
+  - Added operation group SubnetServiceAssociationLinkOperations
+  - Model IpAddress has a new parameter auto_generated_domain_name_label_scope
+  - Model Usage has a new parameter id
+
+### Breaking Changes
+
+  - Model IpAddress no longer has parameter dns_name_label_reuse_policy
+
+## 9.2.0 (2022-04-15)
+
+**Features**
+
+  - Model IpAddress has a new parameter dns_name_label_reuse_policy
+
 ## 9.1.0 (2021-10-13)
 
 **Features**

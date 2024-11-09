@@ -1,32 +1,26 @@
 trigger: none
 
-stages:
-  - template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
+extends:
+    template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
     parameters:
       BuildTargetingString: azure-ai-formrecognizer
       ServiceDirectory: formrecognizer
       TestTimeoutInMinutes: 200
       MatrixReplace:
         - TestSamples=.*/true
-      Clouds: 'Prod,Canary'
+      Clouds: 'Prod'
       # This is a specific request from the formrecognizer service team
       # their claim is that the full matrix ends up stress-testing their service.
       # As such, the canary test runs should run on a reduced matrix.
       CloudConfig:
         Prod:
-          SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
-          Location: $(LOCATION)
-        Canary:
-          SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
+          ServiceConnection: azure-sdk-tests
           Location: 'centraluseuap'
-          MatrixFilters:
-            - OSVmImage=^(?!macOS).*
-            - PythonVersion=^(?!pypy3).*
       EnvVars:
         AZURE_SUBSCRIPTION_ID: $(provisioner-subscription)
-        AZURE_TENANT_ID: $(aad-azure-sdk-test-tenant-id)
-        AZURE_CLIENT_SECRET: $(aad-azure-sdk-test-client-secret)
-        AZURE_CLIENT_ID: $(aad-azure-sdk-test-client-id)
         TEST_MODE: 'RunLiveNoRecord'
         AZURE_SKIP_LIVE_RECORDING: 'True'
         AZURE_TEST_RUN_LIVE: 'true'
+        # Set fake authority host to ensure Managed Identity fail for Default Azure Credential
+        # so "execute samples" step correctly picks up Powershell credential.
+        AZURE_POD_IDENTITY_AUTHORITY_HOST: "FakeAuthorityHost"

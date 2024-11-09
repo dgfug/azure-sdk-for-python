@@ -1,5 +1,135 @@
 # Release History
 
+## 10.3.0b4 (2024-04-29)
+
+### Features Added
+
+  - Added operation NamespaceTopicEventSubscriptionsOperations.get_full_url
+  - Added operation NamespacesOperations.begin_validate_custom_domain_ownership
+  - Model ClientAuthenticationSettings has a new parameter custom_jwt_authentication
+  - Model NamespaceUpdateParameters has a new parameter topics_configuration
+  - Model PushInfo has a new parameter destination
+  - Model Subscription has a new parameter expiration_time_utc
+  - Model SubscriptionUpdateParameters has a new parameter expiration_time_utc
+  - Model TopicSpacesConfiguration has a new parameter custom_domains
+  - Model TopicsConfiguration has a new parameter custom_domains
+  - Model UpdateTopicSpacesConfigurationInfo has a new parameter custom_domains
+
+## 10.3.0b3 (2023-12-04)
+
+### Features Added
+
+  - Added operation NamespaceTopicEventSubscriptionsOperations.get_delivery_attributes
+  - Added operation group NetworkSecurityPerimeterConfigurationsOperations
+  - Model DeliveryConfiguration has a new parameter push
+  - Model TopicTypeInfo has a new parameter additional_enforced_permissions
+
+### Breaking Changes
+
+  - Model Client no longer has parameter authentication
+  - Parameter value_type of model StaticRoutingEnrichment is now required
+
+## 10.3.0b2 (2023-05-19)
+
+### Features Added
+
+  - Added operation group CaCertificatesOperations
+  - Added operation group ClientGroupsOperations
+  - Added operation group ClientsOperations
+  - Added operation group NamespaceTopicEventSubscriptionsOperations
+  - Added operation group NamespaceTopicsOperations
+  - Added operation group NamespacesOperations
+  - Added operation group PartnerDestinationsOperations
+  - Added operation group PermissionBindingsOperations
+  - Added operation group TopicSpacesOperations
+  - Model Channel has a new parameter partner_destination_info
+  - Model ChannelUpdateParameters has a new parameter partner_destination_info
+  - Model Domain has a new parameter event_type_info
+  - Model Domain has a new parameter minimum_tls_version_allowed
+  - Model Domain has a new parameter sku
+  - Model DomainUpdateParameters has a new parameter event_type_info
+  - Model DomainUpdateParameters has a new parameter minimum_tls_version_allowed
+  - Model DomainUpdateParameters has a new parameter sku
+  - Model PartnerNamespace has a new parameter minimum_tls_version_allowed
+  - Model PartnerNamespaceUpdateParameters has a new parameter minimum_tls_version_allowed
+  - Model Topic has a new parameter event_type_info
+  - Model Topic has a new parameter extended_location
+  - Model Topic has a new parameter kind
+  - Model Topic has a new parameter minimum_tls_version_allowed
+  - Model Topic has a new parameter sku
+  - Model TopicTypeInfo has a new parameter are_regional_and_global_sources_supported
+  - Model TopicUpdateParameters has a new parameter event_type_info
+  - Model TopicUpdateParameters has a new parameter minimum_tls_version_allowed
+  - Model TopicUpdateParameters has a new parameter sku
+  - Model VerifiedPartner has a new parameter partner_destination_details
+  - Model WebHookEventSubscriptionDestination has a new parameter minimum_tls_version_allowed
+
+## 10.3.0b1 (2022-11-30)
+
+### Other Changes
+
+  - Added generated samples in github repo
+  - Drop support for python<3.7.0
+
+## 10.2.0 (2022-06-20)
+
+**Features**
+
+  - Added operation group ChannelsOperations
+  - Added operation group DomainEventSubscriptionsOperations
+  - Added operation group DomainTopicEventSubscriptionsOperations
+  - Added operation group PartnerConfigurationsOperations
+  - Added operation group PartnerNamespacesOperations
+  - Added operation group PartnerRegistrationsOperations
+  - Added operation group PartnerTopicEventSubscriptionsOperations
+  - Added operation group PartnerTopicsOperations
+  - Added operation group TopicEventSubscriptionsOperations
+  - Added operation group VerifiedPartnersOperations
+  - Model Domain has a new parameter data_residency_boundary
+  - Model DomainUpdateParameters has a new parameter data_residency_boundary
+  - Model Operation has a new parameter is_data_action
+  - Model Topic has a new parameter data_residency_boundary
+  - Model TopicUpdateParameters has a new parameter data_residency_boundary
+
+## 10.2.0b2 (2022-05-30)
+
+**Breaking changes**
+
+  - Operation DomainEventSubscriptionsOperations.list has a new parameter filter
+  - Operation DomainEventSubscriptionsOperations.list has a new parameter top
+  - Operation DomainTopicEventSubscriptionsOperations.list has a new parameter filter
+  - Operation DomainTopicEventSubscriptionsOperations.list has a new parameter top
+  - Operation TopicEventSubscriptionsOperations.list has a new parameter filter
+  - Operation TopicEventSubscriptionsOperations.list has a new parameter top
+
+## 10.2.0b1 (2022-04-07)
+
+**Features**
+
+  - Added operation group ChannelsOperations
+  - Added operation group DomainEventSubscriptionsOperations
+  - Added operation group DomainTopicEventSubscriptionsOperations
+  - Added operation group EventChannelsOperations
+  - Added operation group PartnerConfigurationsOperations
+  - Added operation group PartnerDestinationsOperations
+  - Added operation group PartnerNamespacesOperations
+  - Added operation group PartnerRegistrationsOperations
+  - Added operation group PartnerTopicEventSubscriptionsOperations
+  - Added operation group PartnerTopicsOperations
+  - Added operation group TopicEventSubscriptionsOperations
+  - Added operation group VerifiedPartnersOperations
+  - Model Domain has a new parameter data_residency_boundary
+  - Model Domain has a new parameter sku
+  - Model DomainUpdateParameters has a new parameter data_residency_boundary
+  - Model DomainUpdateParameters has a new parameter sku
+  - Model Operation has a new parameter is_data_action
+  - Model Topic has a new parameter data_residency_boundary
+  - Model Topic has a new parameter extended_location
+  - Model Topic has a new parameter kind
+  - Model Topic has a new parameter sku
+  - Model TopicUpdateParameters has a new parameter data_residency_boundary
+  - Model TopicUpdateParameters has a new parameter sku
+
 ## 10.1.0 (2021-12-13)
 
 **Features**

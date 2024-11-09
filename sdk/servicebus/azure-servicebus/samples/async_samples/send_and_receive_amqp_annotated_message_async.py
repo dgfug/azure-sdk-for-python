@@ -11,51 +11,44 @@ Example to show sending, receiving and parsing amqp annotated message(s) to a Se
 
 import os
 import asyncio
-from azure.servicebus.amqp import AmqpAnnotatedMessage, AmqpMessageBodyType
+from azure.servicebus.amqp import AmqpAnnotatedMessage, AmqpMessageBodyType, AmqpMessageProperties, AmqpMessageHeader
 from azure.servicebus.aio import ServiceBusClient
+from azure.identity.aio import DefaultAzureCredential
 
-CONNECTION_STR = os.environ['SERVICE_BUS_CONNECTION_STR']
-QUEUE_NAME = os.environ["SERVICE_BUS_QUEUE_NAME"]
+FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
+QUEUE_NAME = os.environ["SERVICEBUS_QUEUE_NAME"]
 
 
 async def send_data_message(sender):
-    data_body = [b'aa', b'bb', b'cc']
+    data_body = [b"aa", b"bb", b"cc"]
     application_properties = {"body_type": "data"}
     delivery_annotations = {"delivery_annotation_key": "value"}
     data_message = AmqpAnnotatedMessage(
-        data_body=data_body,
-        delivery_annotations=delivery_annotations,
-        application_properties=application_properties
+        data_body=data_body, delivery_annotations=delivery_annotations, application_properties=application_properties
     )
     await sender.send_messages(data_message)
     print("Message of data body sent.")
 
 
 async def send_sequence_message(sender):
-    sequence_body = [b'message', 123.456, True]
-    footer = {'footer_key': 'footer_value'}
+    sequence_body = [b"message", 123.456, True]
+    footer = {"footer_key": "footer_value"}
     properties = {"subject": "sequence"}
     application_properties = {"body_type": "sequence"}
     sequence_message = AmqpAnnotatedMessage(
-        sequence_body=sequence_body,
-        footer=footer,
-        properties=properties,
-        application_properties=application_properties
+        sequence_body=sequence_body, footer=footer, properties=properties, application_properties=application_properties
     )
     await sender.send_messages(sequence_message)
     print("Message of sequence body sent.")
 
 
 async def send_value_message(sender):
-    value_body = {b"key": [-123, b'data', False]}
+    value_body = {b"key": [-123, b"data", False]}
     header = {"priority": 10}
     annotations = {"annotation_key": "value"}
     application_properties = {"body_type": "value"}
     value_message = AmqpAnnotatedMessage(
-        value_body=value_body,
-        header=header,
-        annotations=annotations,
-        application_properties=application_properties
+        value_body=value_body, header=header, annotations=annotations, application_properties=application_properties
     )
     await sender.send_messages(value_message)
     print("Message of value body sent.")
@@ -79,7 +72,8 @@ async def receive_and_parse_message(receiver):
 
 
 async def main():
-    servicebus_client = ServiceBusClient.from_connection_string(conn_str=CONNECTION_STR)
+    credential = DefaultAzureCredential()
+    servicebus_client = ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential)
 
     async with servicebus_client:
         sender = servicebus_client.get_queue_sender(queue_name=QUEUE_NAME)

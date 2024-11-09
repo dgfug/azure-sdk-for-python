@@ -27,7 +27,7 @@ These code samples show common scenario operations with the Azure Metrics Adviso
 
 ## Prerequisites
 
-* Python 3.6 or later is required to use this package
+* Python 3.7 or later is required to use this package
 * You must have an [Azure subscription][azure_subscription] and an
 [Azure Metrics Advisor account][portal_metrics_advisor_account] to run these samples.
 
@@ -56,7 +56,7 @@ what you can do with the Azure Metrics Advisor client library.
 [pip]: https://pypi.org/project/pip/
 [azure_subscription]: https://azure.microsoft.com/free/
 [portal_metrics_advisor_account]: https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesMetricsAdvisor
-[reference_documentation]: https://aka.ms/azsdk/python/metricsadvisor/docs
+[reference_documentation]: https://learn.microsoft.com/azure/ai-services/metrics-advisor/
 
 [sample_authentication]: https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/metricsadvisor/azure-ai-metricsadvisor/samples/sample_authentication.py
 [sample_authentication_async]: https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/metricsadvisor/azure-ai-metricsadvisor/samples/async_samples/sample_authentication_async.py

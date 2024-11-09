@@ -13,9 +13,10 @@ the last enqueued event properties of specific partition.
 import asyncio
 import os
 from azure.eventhub.aio import EventHubConsumerClient
+from azure.identity.aio import DefaultAzureCredential
 
-CONNECTION_STR = os.environ["EVENT_HUB_CONN_STR"]
-EVENTHUB_NAME = os.environ['EVENT_HUB_NAME']
+FULLY_QUALIFIED_NAMESPACE = os.environ["EVENT_HUB_HOSTNAME"]
+EVENTHUB_NAME = os.environ["EVENT_HUB_NAME"]
 
 
 async def on_event(partition_context, event):
@@ -23,27 +24,29 @@ async def on_event(partition_context, event):
     # Do some sync or async operations. If the operation is i/o intensive, async will have better performance.
     print(event)
 
-    print("Last enqueued event properties from partition: {} is: {}.".format(
-        partition_context.partition_id,
-        partition_context.last_enqueued_event_properties)
+    print(
+        "Last enqueued event properties from partition: {} is: {}.".format(
+            partition_context.partition_id, partition_context.last_enqueued_event_properties
+        )
     )
     await partition_context.update_checkpoint(event)
 
 
 async def main():
-    client = EventHubConsumerClient.from_connection_string(
-        conn_str=CONNECTION_STR,
-        consumer_group="$default",
+    client = EventHubConsumerClient(
+        fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,
         eventhub_name=EVENTHUB_NAME,
+        credential=DefaultAzureCredential(),
+        consumer_group="$default",
     )
     async with client:
         await client.receive(
             on_event=on_event,
-            partition_id='0',
+            partition_id="0",
             track_last_enqueued_event_properties=True,
             starting_position="-1",  # "-1" is from the beginning of the partition.
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

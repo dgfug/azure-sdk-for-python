@@ -1,18 +1,17 @@
-# coding=utf-8
 # ------------------------------------
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 # ------------------------------------
 
 import re
-import six
+from typing import Any, Optional
 from azure.core.credentials import AzureKeyCredential
 from azure.core.pipeline.policies import AzureKeyCredentialPolicy, SansIOHTTPPolicy
 from azure.core.pipeline.transport import HttpTransport
 from azure.core.exceptions import HttpResponseError
 
 
-POLLING_INTERVAL = 5
+POLLING_INTERVAL = 1
 COGNITIVE_KEY_HEADER = "Ocp-Apim-Subscription-Key"
 
 
@@ -21,11 +20,11 @@ def _get_deserialize(api_version):
         from ._generated.v2_0 import FormRecognizerClient
     elif api_version == "2.1":
         from ._generated.v2_1 import FormRecognizerClient
-    elif api_version == "2022-01-30-preview":
-        from ._generated.v2022_01_30_preview import FormRecognizerClient
-    return FormRecognizerClient(  # pylint: disable=protected-access
-        "dummy", "dummy"
-    )._deserialize
+    elif api_version == "2023-07-31":
+        from ._generated.v2023_07_31 import FormRecognizerClient
+    elif api_version == "2022-08-31":
+        from ._generated.v2022_08_31 import FormRecognizerClient
+    return FormRecognizerClient("dummy", "dummy")._deserialize  # pylint: disable=protected-access
 
 
 def get_element_type(element_pointer):
@@ -77,17 +76,28 @@ def adjust_value_type(value_type):
     return value_type
 
 
-def adjust_confidence(score):
-    """Adjust confidence when not returned."""
+def adjust_confidence(score: Optional[float]) -> float:
+    """Adjust confidence when not returned.
+
+    :param float or None score: Confidence score to be adjusted.
+    :return: The adjusted confidence score.
+    :rtype: float
+    """
     if score is None:
         return 1.0
     return score
 
 
-def adjust_text_angle(text_angle):
-    """Adjust to (-180, 180]"""
-    if text_angle > 180:
-        text_angle -= 360
+def adjust_text_angle(text_angle: Optional[float]) -> Optional[float]:
+    """Adjust to (-180, 180]
+
+    :param float or None text_angle: The text angle to be adjusted.
+    :return: The adjusted text angle.
+    :rtype: float
+    """
+    if text_angle is not None:
+        if text_angle > 180.0:
+            text_angle -= 360.0
     return text_angle
 
 
@@ -96,9 +106,7 @@ def get_authentication_policy(credential):
     if credential is None:
         raise ValueError("Parameter 'credential' must not be None.")
     if isinstance(credential, AzureKeyCredential):
-        authentication_policy = AzureKeyCredentialPolicy(
-            name=COGNITIVE_KEY_HEADER, credential=credential
-        )
+        authentication_policy = AzureKeyCredentialPolicy(name=COGNITIVE_KEY_HEADER, credential=credential)
     elif credential is not None and not hasattr(credential, "get_token"):
         raise TypeError(
             "Unsupported credential: {}. Use an instance of AzureKeyCredential "
@@ -108,10 +116,15 @@ def get_authentication_policy(credential):
     return authentication_policy
 
 
-def get_content_type(form):
-    """Source: https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files"""
+def get_content_type(form: Any) -> str:
+    """Source: https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files
 
-    if isinstance(form, six.binary_type):
+    :param any form: The input form data.
+    :return: Returns an appropriate content type based on the input data.
+    :rtype: str
+    """
+
+    if isinstance(form, bytes):
         return check_beginning_bytes(form)
 
     if hasattr(form, "read") and hasattr(form, "seek"):
@@ -140,9 +153,7 @@ def check_beginning_bytes(form):
             return "image/tiff"
         if form[:2] == b"\x42\x4D":
             return "image/bmp"
-    raise ValueError(
-        "Content type could not be auto-detected. Please pass the content_type keyword argument."
-    )
+    raise ValueError("Content type could not be auto-detected. Please pass the content_type keyword argument.")
 
 
 class TransportWrapper(HttpTransport):
@@ -187,7 +198,6 @@ class QuotaExceededPolicy(SansIOHTTPPolicy):
         http_response = response.http_response
         if (
             http_response.status_code in [403, 429]
-            and "Out of call volume quota for FormRecognizer F0 pricing tier"
-            in http_response.text()
+            and "Out of call volume quota for FormRecognizer F0 pricing tier" in http_response.text()
         ):
             raise HttpResponseError(http_response.text(), response=http_response)

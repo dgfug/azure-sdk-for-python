@@ -6,24 +6,40 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
+from ._scheduled_event_operations import ScheduledEventOperations
 from ._public_maintenance_configurations_operations import PublicMaintenanceConfigurationsOperations
 from ._apply_updates_operations import ApplyUpdatesOperations
 from ._configuration_assignments_operations import ConfigurationAssignmentsOperations
 from ._maintenance_configurations_operations import MaintenanceConfigurationsOperations
-from ._maintenance_configurations_for_resource_group_operations import MaintenanceConfigurationsForResourceGroupOperations
+from ._maintenance_configurations_for_resource_group_operations import (
+    MaintenanceConfigurationsForResourceGroupOperations,
+)
 from ._apply_update_for_resource_group_operations import ApplyUpdateForResourceGroupOperations
-from ._configuration_assignments_within_subscription_operations import ConfigurationAssignmentsWithinSubscriptionOperations
+from ._configuration_assignments_within_subscription_operations import (
+    ConfigurationAssignmentsWithinSubscriptionOperations,
+)
+from ._configuration_assignments_for_subscriptions_operations import ConfigurationAssignmentsForSubscriptionsOperations
+from ._configuration_assignments_for_resource_group_operations import ConfigurationAssignmentsForResourceGroupOperations
 from ._operations import Operations
 from ._updates_operations import UpdatesOperations
 
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
+
 __all__ = [
-    'PublicMaintenanceConfigurationsOperations',
-    'ApplyUpdatesOperations',
-    'ConfigurationAssignmentsOperations',
-    'MaintenanceConfigurationsOperations',
-    'MaintenanceConfigurationsForResourceGroupOperations',
-    'ApplyUpdateForResourceGroupOperations',
-    'ConfigurationAssignmentsWithinSubscriptionOperations',
-    'Operations',
-    'UpdatesOperations',
+    "ScheduledEventOperations",
+    "PublicMaintenanceConfigurationsOperations",
+    "ApplyUpdatesOperations",
+    "ConfigurationAssignmentsOperations",
+    "MaintenanceConfigurationsOperations",
+    "MaintenanceConfigurationsForResourceGroupOperations",
+    "ApplyUpdateForResourceGroupOperations",
+    "ConfigurationAssignmentsWithinSubscriptionOperations",
+    "ConfigurationAssignmentsForSubscriptionsOperations",
+    "ConfigurationAssignmentsForResourceGroupOperations",
+    "Operations",
+    "UpdatesOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

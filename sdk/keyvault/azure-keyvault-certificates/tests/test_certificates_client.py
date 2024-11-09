@@ -6,10 +6,11 @@ import functools
 import json
 import logging
 import time
+from unittest.mock import Mock, patch
 
-from azure.core.exceptions import ResourceExistsError
+from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
 from azure.core.pipeline.policies import SansIOHTTPPolicy
-from azure_devtools.scenario_tests import RecordingProcessor, RequestUrlNormalizer
+from devtools_testutils import recorded_by_proxy
 from azure.keyvault.certificates import (
     AdministratorContact,
     ApiVersion,
@@ -17,6 +18,7 @@ from azure.keyvault.certificates import (
     CertificateContact,
     CertificatePolicyAction,
     CertificatePolicy,
+    CertificateProperties,
     KeyType,
     KeyCurveName,
     KeyUsageType,
@@ -28,27 +30,21 @@ from azure.keyvault.certificates import (
     WellKnownIssuerNames
 )
 from azure.keyvault.certificates._client import NO_SAN_OR_SUBJECT
+from azure.keyvault.certificates._shared.client_base import DEFAULT_VERSION
 import pytest
 
 from _shared.test_case import KeyVaultTestCase
-from _test_case import client_setup, get_decorator, CertificatesTestCase
+from _test_case import get_decorator, CertificatesClientPreparer
 from certs import CERT_CONTENT_PASSWORD_ENCODED, CERT_CONTENT_NOT_PASSWORD_ENCODED
 
 
 all_api_versions = get_decorator()
+only_latest = get_decorator(api_versions=[DEFAULT_VERSION])
 logging_enabled = get_decorator(logging_enable=True)
 logging_disabled = get_decorator(logging_enable=False)
 exclude_2016_10_01 = get_decorator(api_versions=[v for v in ApiVersion if v != ApiVersion.V2016_10_01])
 only_2016_10_01 = get_decorator(api_versions=[ApiVersion.V2016_10_01])
-
-
-class RetryAfterReplacer(RecordingProcessor):
-    """Replace the retry after wait time in the replay process to 0."""
-
-    def process_response(self, response):
-        if "retry-after" in response["headers"]:
-            response["headers"]["retry-after"] = "0"
-        return response
+LIST_TEST_SIZE = 7
 
 
 class MockHandler(logging.Handler):
@@ -60,12 +56,7 @@ class MockHandler(logging.Handler):
         self.messages.append(record)
 
 
-class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
-
-    def __init__(self, *args, **kwargs):
-        super(CertificateClientTests, self).__init__(
-            *args, replay_processors=[RetryAfterReplacer(), RequestUrlNormalizer()], **kwargs
-        )
+class TestCertificateClient(KeyVaultTestCase):
 
     def _import_common_certificate(self, client, cert_name):
         cert_password = "1234"
@@ -88,91 +79,92 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         )
 
     def _validate_certificate_operation(self, pending_cert_operation, vault, cert_name, original_cert_policy):
-        self.assertIsNotNone(pending_cert_operation)
-        self.assertIsNotNone(pending_cert_operation.csr)
-        self.assertEqual(original_cert_policy.issuer_name, pending_cert_operation.issuer_name)
+        assert pending_cert_operation is not None
+        assert pending_cert_operation.csr is not None
+        assert original_cert_policy.issuer_name == pending_cert_operation.issuer_name
         pending_id = KeyVaultCertificateIdentifier(pending_cert_operation.id)
-        self.assertEqual(pending_id.vault_url.strip("/"), vault.strip("/"))
-        self.assertEqual(pending_id.name, cert_name)
+        assert pending_id.vault_url.strip("/") == vault.strip("/")
+        assert pending_id.name == cert_name
 
     def _validate_certificate_bundle(self, cert, cert_name, cert_policy):
-        self.assertIsNotNone(cert)
-        self.assertEqual(cert_name, cert.name)
-        self.assertIsNotNone(cert.cer)
-        self.assertIsNotNone(cert.policy)
+        assert cert is not None
+        assert cert_name == cert.name
+        assert cert.cer is not None
+        assert cert.policy is not None
         self._validate_certificate_policy(cert_policy, cert_policy)
 
     def _validate_certificate_policy(self, a, b):
-        self.assertEqual(a.issuer_name, b.issuer_name)
-        self.assertEqual(a.subject, b.subject)
-        self.assertEqual(a.exportable, b.exportable)
-        self.assertEqual(a.key_type, b.key_type)
-        self.assertEqual(a.key_size, b.key_size)
-        self.assertEqual(a.reuse_key, b.reuse_key)
-        self.assertEqual(a.key_curve_name, b.key_curve_name)
+        assert a.issuer_name == b.issuer_name
+        assert a.subject == b.subject
+        assert a.exportable == b.exportable
+        assert a.key_type == b.key_type
+        assert a.key_size == b.key_size
+        assert a.reuse_key == b.reuse_key
+        assert a.key_curve_name == b.key_curve_name
         if a.enhanced_key_usage:
-            self.assertEqual(set(a.enhanced_key_usage), set(b.enhanced_key_usage))
+            assert set(a.enhanced_key_usage) == set(b.enhanced_key_usage)
         if a.key_usage:
-            self.assertEqual(set(a.key_usage), set(b.key_usage))
-        self.assertEqual(a.content_type, b.content_type)
-        self.assertEqual(a.validity_in_months, b.validity_in_months)
-        self.assertEqual(a.certificate_type, b.certificate_type)
-        self.assertEqual(a.certificate_transparency, b.certificate_transparency)
+            assert set(a.key_usage) == set(b.key_usage)
+        assert a.content_type == b.content_type
+        assert a.validity_in_months == b.validity_in_months
+        assert a.certificate_type == b.certificate_type
+        assert a.certificate_transparency == b.certificate_transparency
         self._validate_sans(a, b)
         if a.lifetime_actions:
             self._validate_lifetime_actions(a.lifetime_actions, b.lifetime_actions)
 
     def _validate_sans(self, a, b):
         if a.san_dns_names:
-            self.assertEqual(set(a.san_dns_names), set(b.san_dns_names))
+            assert set(a.san_dns_names) == set(b.san_dns_names)
         if a.san_emails:
-            self.assertEqual(set(a.san_emails), set(b.san_emails))
+            assert set(a.san_emails) == set(b.san_emails)
         if a.san_user_principal_names:
-            self.assertEqual(set(a.san_user_principal_names), set(b.san_user_principal_names))
+            assert set(a.san_user_principal_names) == set(b.san_user_principal_names)
 
     def _validate_lifetime_actions(self, a, b):
-        self.assertEqual(len(a), len(b))
+        assert len(a) == len(b)
         for a_entry in a:
             b_entry = next(x for x in b if x.action == a_entry.action)
-            self.assertEqual(a_entry.lifetime_percentage, b_entry.lifetime_percentage)
-            self.assertEqual(a_entry.days_before_expiry, b_entry.days_before_expiry)
+            assert a_entry.lifetime_percentage == b_entry.lifetime_percentage
+            assert  a_entry.days_before_expiry == b_entry.days_before_expiry
 
     def _validate_certificate_list(self, a, b):
         # verify that all certificates in a exist in b
         for cert in b:
             if cert.id in a.keys():
                 del a[cert.id]
-        self.assertEqual(len(a), 0)
+        assert len(a) == 0
 
     def _validate_certificate_contacts(self, a, b):
-        self.assertEqual(len(a), len(b))
+        assert len(a) == len(b)
         for a_entry in a:
             b_entry = next(x for x in b if x.email == a_entry.email)
-            self.assertEqual(a_entry.name, b_entry.name)
-            self.assertEqual(a_entry.phone, b_entry.phone)
+            assert a_entry.name == b_entry.name
+            assert a_entry.phone == b_entry.phone
 
     def _admin_contact_equal(self, a, b):
         return a.first_name == b.first_name and a.last_name == b.last_name and a.email == b.email and a.phone == b.phone
 
     def _validate_certificate_issuer(self, a, b):
-        self.assertEqual(a.provider, b.provider)
-        self.assertEqual(a.account_id, b.account_id)
-        self.assertEqual(len(a.admin_contacts), len(b.admin_contacts))
+        assert a.provider == b.provider
+        assert a.account_id == b.account_id
+        assert len(a.admin_contacts) == len(b.admin_contacts)
         for a_admin_contact in a.admin_contacts:
             b_admin_contact = next(
                 (ad for ad in b.admin_contacts if self._admin_contact_equal(a_admin_contact, ad)), None
             )
-            self.assertIsNotNone(b_admin_contact)
-        self.assertEqual(a.password, b.password)
-        self.assertEqual(a.organization_id, b.organization_id)
+            assert b_admin_contact is not None
+        assert a.password == b.password
+        assert a.organization_id == b.organization_id
 
     def _validate_certificate_issuer_properties(self, a, b):
-        self.assertEqual(a.id, b.id)
-        self.assertEqual(a.name, b.name)
-        self.assertEqual(a.provider, b.provider)
+        assert a.id == b.id
+        assert a.name == b.name
+        assert a.provider == b.provider
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_crud_operations(self, client, **kwargs):
         cert_name = self.get_resource_name("cert")
         lifetime_actions = [LifetimeAction(lifetime_percentage=80, action=CertificatePolicyAction.auto_renew)]
@@ -194,7 +186,7 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         self._validate_certificate_bundle(cert=certificate, cert_name=cert_name, cert_policy=cert_policy)
 
-        self.assertEqual(client.get_certificate_operation(certificate_name=cert_name).status.lower(), "completed")
+        assert client.get_certificate_operation(certificate_name=cert_name).status.lower() == "completed"
 
         # get certificate
         cert = client.get_certificate(certificate_name=cert_name)
@@ -206,9 +198,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         tags = {"tag1": "updated_value1"}
         updated_cert = client.update_certificate_properties(cert_name, tags=tags)
         self._validate_certificate_bundle(cert=updated_cert, cert_name=cert_name, cert_policy=cert_policy)
-        self.assertEqual(tags, updated_cert.properties.tags)
-        self.assertEqual(cert.id, updated_cert.id)
-        self.assertNotEqual(cert.properties.updated_on, updated_cert.properties.updated_on)
+        assert tags == updated_cert.properties.tags
+        assert cert.id == updated_cert.id
+        assert cert.properties.updated_on != updated_cert.properties.updated_on
 
         # delete certificate
         delete_cert_poller = client.begin_delete_certificate(cert_name)
@@ -224,8 +216,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             if not hasattr(ex, "message") or "not found" not in ex.message.lower():
                 raise ex
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_import_certificate_not_password_encoded_no_policy(self, client, **kwargs):
         # If a certificate is not password encoded, we can import the certificate
         # without passing in 'password'
@@ -233,10 +226,11 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             certificate_name=self.get_resource_name("importNotPasswordEncodedCertificate"),
             certificate_bytes=CERT_CONTENT_NOT_PASSWORD_ENCODED,
         )
-        self.assertIsNotNone(certificate.policy)
+        assert certificate.policy is not None
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_import_certificate_password_encoded_no_policy(self, client, **kwargs):
         # If a certificate is password encoded, we have to pass in 'password'
         # when importing the certificate
@@ -245,17 +239,18 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             certificate_bytes=CERT_CONTENT_PASSWORD_ENCODED,
             password="1234",
         )
-        self.assertIsNotNone(certificate.policy)
+        assert certificate.policy is not None
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_list(self, client, **kwargs):
-        max_certificates = self.list_test_size
+        max_certificates = LIST_TEST_SIZE
         expected = {}
 
         # import some certificates
         for x in range(max_certificates):
-            cert_name = self.get_resource_name("cert{}".format(x))
+            cert_name = self.get_resource_name(f"cert{x}")
             error_count = 0
             try:
                 cert_bundle = self._import_common_certificate(client=client, cert_name=cert_name)
@@ -275,12 +270,13 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         returned_certificates = client.list_properties_of_certificates(max_page_size=max_certificates - 1)
         self._validate_certificate_list(expected, returned_certificates)
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_list_certificate_versions(self, client, **kwargs):
         cert_name = self.get_resource_name("certver")
 
-        max_certificates = self.list_test_size
+        max_certificates = LIST_TEST_SIZE
         expected = {}
 
         # import same certificates as different versions
@@ -305,8 +301,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             ),
         )
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_crud_contacts(self, client, **kwargs):
         contact_list = [
             CertificateContact(email="admin@contoso.com", name="John Doe", phone="1111111111"),
@@ -333,18 +330,19 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             if not hasattr(ex, "message") or "not found" not in ex.message.lower():
                 raise ex
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_recover_and_purge(self, client, **kwargs):
         certs = {}
         # create certificates to recover
-        for i in range(self.list_test_size):
-            cert_name = self.get_resource_name("certrec{}".format(str(i)))
+        for i in range(LIST_TEST_SIZE):
+            cert_name = self.get_resource_name(f"certrec{str(i)}")
             certs[cert_name] = self._import_common_certificate(client=client, cert_name=cert_name)
 
         # create certificates to purge
-        for i in range(self.list_test_size):
-            cert_name = self.get_resource_name("certprg{}".format(str(i)))
+        for i in range(LIST_TEST_SIZE):
+            cert_name = self.get_resource_name(f"certprg{str(i)}")
             certs[cert_name] = self._import_common_certificate(client=client, cert_name=cert_name)
 
         # delete all certificates
@@ -353,7 +351,7 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         # validate all our deleted certificates are returned by list_deleted_certificates
         deleted = [KeyVaultCertificateIdentifier(source_id=c.id).name for c in client.list_deleted_certificates()]
-        self.assertTrue(all(c in deleted for c in certs.keys()))
+        assert all(c in deleted for c in certs.keys())
 
         # recover select certificates (test resources have a "livekvtest" prefix)
         for certificate_name in [c for c in certs.keys() if c.startswith("livekvtestcertrec")]:
@@ -368,15 +366,16 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         # validate none of our deleted certificates are returned by list_deleted_certificates
         deleted = [KeyVaultCertificateIdentifier(source_id=c.id).name for c in client.list_deleted_certificates()]
-        self.assertTrue(not any(c in deleted for c in certs.keys()))
+        assert not any(c in deleted for c in certs.keys())
 
         # validate the recovered certificates
         expected = {k: v for k, v in certs.items() if k.startswith("livekvtestcertrec")}
         actual = {k: client.get_certificate_version(certificate_name=k, version="") for k in expected.keys()}
-        self.assertEqual(len(set(expected.keys()) & set(actual.keys())), len(expected))
+        assert len(set(expected.keys()) & set(actual.keys())) == len(expected)
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_async_request_cancellation_and_deletion(self, client, **kwargs):
         if self.is_live:
             pytest.skip("Skipping by default because of pipeline test flakiness: https://github.com/Azure/azure-sdk-for-python/issues/16333")
@@ -388,8 +387,8 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         # cancel certificate operation
         cancel_operation = client.cancel_certificate_operation(certificate_name=cert_name)
-        self.assertTrue(hasattr(cancel_operation, "cancellation_requested"))
-        self.assertTrue(cancel_operation.cancellation_requested)
+        assert hasattr(cancel_operation, "cancellation_requested")
+        assert cancel_operation.cancellation_requested
         self._validate_certificate_operation(
             pending_cert_operation=cancel_operation,
             vault=client.vault_url,
@@ -397,11 +396,11 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             original_cert_policy=cert_policy,
         )
 
-        self.assertEqual(create_certificate_poller.result().status.lower(), "cancelled")
+        assert create_certificate_poller.result().status.lower() == "cancelled"
 
         retrieved_operation = client.get_certificate_operation(cert_name)
-        self.assertTrue(hasattr(retrieved_operation, "cancellation_requested"))
-        self.assertTrue(retrieved_operation.cancellation_requested)
+        assert hasattr(retrieved_operation, "cancellation_requested")
+        assert retrieved_operation.cancellation_requested
         self._validate_certificate_operation(
             pending_cert_operation=retrieved_operation,
             vault=client.vault_url,
@@ -411,7 +410,7 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         # delete certificate operation
         deleted_operation = client.delete_certificate_operation(certificate_name=cert_name)
-        self.assertIsNotNone(deleted_operation)
+        assert deleted_operation is not None
         self._validate_certificate_operation(
             pending_cert_operation=deleted_operation,
             vault=client.vault_url,
@@ -429,8 +428,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         # delete cancelled certificate
         client.begin_delete_certificate(cert_name).wait()
 
-    @exclude_2016_10_01()
-    @client_setup
+    @pytest.mark.parametrize("api_version", exclude_2016_10_01)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_policy(self, client, **kwargs):
         cert_name = self.get_resource_name("policyCertificate")
         cert_policy = CertificatePolicy(
@@ -464,8 +464,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         self._validate_certificate_policy(cert_policy, returned_policy)
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_get_pending_certificate_signing_request(self, client, **kwargs):
         cert_name = self.get_resource_name("unknownIssuerCert")
 
@@ -474,10 +475,12 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             certificate_name=cert_name, policy=CertificatePolicy.get_default()
         ).wait()
         pending_version_csr = client.get_certificate_operation(certificate_name=cert_name).csr
-        self.assertEqual(client.get_certificate_operation(certificate_name=cert_name).csr, pending_version_csr)
+        assert client.get_certificate_operation(certificate_name=cert_name).csr == pending_version_csr
 
-    @exclude_2016_10_01()
-    @client_setup
+    
+    @pytest.mark.parametrize("api_version", exclude_2016_10_01)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_backup_restore(self, client, **kwargs):
         policy = CertificatePolicy.get_default()
         policy._san_user_principal_names = ["john.doe@domain.com"]
@@ -500,8 +503,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         restored_certificate = self._poll_until_no_exception(restore_function, ResourceExistsError)
         self._validate_certificate_bundle(cert=restored_certificate, cert_name=cert_name, cert_policy=policy)
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_crud_issuer(self, client, **kwargs):
         issuer_name = self.get_resource_name("issuer")
         admin_contacts = [
@@ -552,7 +556,7 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             if exp_issuer:
                 self._validate_certificate_issuer_properties(exp_issuer, issuer)
                 expected_issuers.remove(exp_issuer)
-        self.assertEqual(len(expected_issuers), 0)
+        assert len(expected_issuers) == 0
 
         # update certificate issuer
         admin_contacts = [
@@ -579,8 +583,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             if not hasattr(ex, "message") or "not found" not in ex.message.lower():
                 raise ex
 
-    @logging_enabled()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer(logging_enable = True)
+    @recorded_by_proxy
     def test_logging_enabled(self, client, **kwargs):
         mock_handler = MockHandler()
 
@@ -612,8 +617,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         mock_handler.close()
         assert False, "Expected request body wasn't logged"
 
-    @logging_disabled()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer(logging_enable = False)
+    @recorded_by_proxy
     def test_logging_disabled(self, client, **kwargs):
         mock_handler = MockHandler()
 
@@ -644,8 +650,10 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         mock_handler.close()
 
-    @only_2016_10_01()
-    @client_setup
+    
+    @pytest.mark.parametrize("api_version", only_2016_10_01)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_models(self, client, **kwargs):
         """The client should correctly deserialize version 2016-10-01 models"""
 
@@ -656,11 +664,12 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
         assert cert.policy.key_curve_name is None
         assert cert.policy.certificate_transparency is None
 
-    @all_api_versions()
-    @client_setup
+    @pytest.mark.parametrize("api_version", all_api_versions)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_get_certificate_version(self, client, **kwargs):
         cert_name = self.get_resource_name("cert")
-        for _ in range(self.list_test_size):
+        for _ in range(LIST_TEST_SIZE):
             client.begin_create_certificate(cert_name, CertificatePolicy.get_default()).wait()
 
         for version_properties in client.list_properties_of_certificate_versions(cert_name):
@@ -681,8 +690,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             assert version_properties.version == cert.properties.version
             assert version_properties.x509_thumbprint == cert.properties.x509_thumbprint
 
-    @only_2016_10_01()
-    @client_setup
+    @pytest.mark.parametrize("api_version", only_2016_10_01)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_list_properties_of_certificates(self, client, **kwargs):
         """Tests API version v2016_10_01"""
 
@@ -693,8 +703,9 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
 
         assert "The 'include_pending' parameter to `list_properties_of_certificates` is only available for API versions v7.0 and up" in str(excinfo.value)
 
-    @only_2016_10_01()
-    @client_setup
+    @pytest.mark.parametrize("api_version", only_2016_10_01)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
     def test_list_deleted_certificates(self, client, **kwargs):
         """Tests API version v2016_10_01"""
         
@@ -704,6 +715,23 @@ class CertificateClientTests(CertificatesTestCase, KeyVaultTestCase):
             [_ for _ in client.list_deleted_certificates(include_pending=True)]
 
         assert "The 'include_pending' parameter to `list_deleted_certificates` is only available for API versions v7.0 and up" in str(excinfo.value)
+
+    @pytest.mark.parametrize("api_version", only_latest)
+    @CertificatesClientPreparer()
+    @recorded_by_proxy
+    def test_40x_handling(self, client, **kwargs):
+        """Ensure 404 and 409 responses are raised with azure-core exceptions instead of generated KV ones"""
+
+        # Test that 404 is raised correctly by fetching a nonexistent cert
+        with pytest.raises(ResourceNotFoundError):
+            client.get_certificate("cert-that-does-not-exist")
+
+        # 409 is raised correctly (`begin_create_certificate` shouldn't actually trigger this, but for raising behavior)
+        def run(*_, **__):
+            return Mock(http_response=Mock(status_code=409))
+        with patch.object(client._client._client._pipeline, "run", run):
+            with pytest.raises(ResourceExistsError):
+                client.begin_create_certificate("...", CertificatePolicy.get_default())
 
 
 def test_policy_expected_errors_for_create_cert():
@@ -743,3 +771,12 @@ def test_case_insensitive_key_type():
     assert KeyType("OCT") == KeyType.oct
     # KeyType with mixed-case value
     assert KeyType("oct-hsm") == KeyType.oct_hsm
+
+
+def test_thumbprint_hex():
+    """Ensure `CertificateProperties.__repr__()` correctly displays the cert's thumbprint as hex."""
+    properties = CertificateProperties(
+        cert_id="https://vaultname.vault.azure.net/certificates/certname/version",
+        x509_thumbprint=b"v\xe1\x81\x9f\xad\xf0jU\xefK\x12j.\xf7C\xc2\xba\xe8\xa1Q",
+    )
+    assert "76E1819FADF06A55EF4B126A2EF743C2BAE8A151" in str(properties)

@@ -1,6 +1,3 @@
-## _Disclaimer_
-_Azure SDK Python packages support for Python 2.7 has ended 01 January 2022. For more information and questions, please refer to https://github.com/Azure/azure-sdk-for-python/issues/20691_
-
 # Azure DataLake service client library for Python
 Overview
 
@@ -9,13 +6,18 @@ This preview package for Python includes ADLS Gen2 specific API support made ava
 2. Permission related operations (Get/Set ACLs) for hierarchical namespace enabled (HNS) accounts.
 
 
-[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake/azure/storage/filedatalake) | [Package (PyPi)](https://pypi.org/project/azure-storage-file-datalake/) | [API reference documentation](https://aka.ms/azsdk-python-storage-filedatalake-ref) | [Product documentation](https://docs.microsoft.com/azure/storage/) | [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake/samples)
+[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake/azure/storage/filedatalake)
+| [Package (PyPi)](https://pypi.org/project/azure-storage-file-datalake/)
+| [Package (Conda)](https://anaconda.org/microsoft/azure-storage/)
+| [API reference documentation](https://aka.ms/azsdk-python-storage-filedatalake-ref)
+| [Product documentation](https://docs.microsoft.com/azure/storage/)
+| [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake/samples)
 
 
 ## Getting started
 
 ### Prerequisites
-* Python 3.6 or later is required to use this package.
+* Python 3.8 or later is required to use this package. For more details, please read our page on [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
 * You must have an [Azure subscription](https://azure.microsoft.com/free/) and an
 [Azure storage account](https://docs.microsoft.com/azure/storage/blobs/data-lake-storage-quickstart-create-account) to use this package.
 
@@ -90,12 +92,14 @@ objects are async context managers and define async `close` methods.
 #### Clients
 
 The DataLake Storage SDK provides four different clients to interact with the DataLake Service:
-1. **DataLakeServiceClient** - this client interacts with the DataLake Service at the account level.
+1. [DataLakeServiceClient](https://learn.microsoft.com/python/api/azure-storage-file-datalake/azure.storage.filedatalake.datalakeserviceclient?view=azure-python) -
+    this client interacts with the DataLake Service at the account level.
     It provides operations to retrieve and configure the account properties
     as well as list, create, and delete file systems within the account.
     For operations relating to a specific file system, directory or file, clients for those entities
     can also be retrieved using the `get_file_client`, `get_directory_client` or `get_file_system_client` functions.
-2. **FileSystemClient** - this client represents interaction with a specific
+2. [FileSystemClient](https://learn.microsoft.com/python/api/azure-storage-file-datalake/azure.storage.filedatalake.filesystemclient?view=azure-python) -
+    this client represents interaction with a specific
     file system, even if that file system does not exist yet. It provides operations to create, delete, or
     configure file systems and includes operations to list paths under file system, upload, and delete file or
     directory in the file system.
@@ -103,13 +107,16 @@ The DataLake Storage SDK provides four different clients to interact with the Da
     the `get_file_client` function.
     For operations relating to a specific directory, the client can be retrieved using
     the `get_directory_client` function.
-3. **DataLakeDirectoryClient** - this client represents interaction with a specific
+3. [DatalakeDirectoryClient](https://learn.microsoft.com/python/api/azure-storage-file-datalake/azure.storage.filedatalake.datalakedirectoryclient?view=azure-python) -
+    this client represents interaction with a specific
     directory, even if that directory does not exist yet. It provides directory operations create, delete, rename,
     get properties and set properties operations.
-3. **DataLakeFileClient** - this client represents interaction with a specific
+4. [DatalakeFileClient](https://learn.microsoft.com/python/api/azure-storage-file-datalake/azure.storage.filedatalake.datalakefileclient?view=azure-python) -
+    this client represents interaction with a specific
     file, even if that file does not exist yet. It provides file operations to append data, flush data, delete,
     create, and read file.
-4. **DataLakeLeaseClient** - this client represents lease interactions with a FileSystemClient, DataLakeDirectoryClient
+5. [DatalakeLeaseClient](https://learn.microsoft.com/python/api/azure-storage-file-datalake/azure.storage.filedatalake.datalakeleaseclient?view=azure-python) -
+    this client represents lease interactions with a FileSystemClient, DataLakeDirectoryClient
     or DataLakeFileClient. It provides operations to acquire, renew, release, change, and break leases on the resources.
 
 ## Examples
@@ -195,7 +202,11 @@ Other optional configuration keyword arguments that can be specified on the clie
 
 **Client keyword arguments:**
 
-* __connection_timeout__ (int): Optionally sets the connect and read timeout value, in seconds.
+* __connection_timeout__ (int): The number of seconds the client will wait to establish a connection to the server.
+Defaults to 20 seconds.
+* __read_timeout__ (int): The number of seconds the client will wait, between consecutive read operations, for a
+response from the server. This is a socket level timeout and is not affected by overall data size. Client-side read 
+timeouts will be automatically retried. Defaults to 60 seconds.
 * __transport__ (Any): User-provided transport to send the HTTP request.
 
 **Per-operation keyword arguments:**
@@ -243,7 +254,7 @@ service_client = DataLakeServiceClient.from_connection_string("your_connection_s
 
 Similarly, `logging_enable` can enable detailed logging for a single operation,
 even when it isn't enabled for the client:
-```py
+```python
 service_client.list_file_systems(logging_enable=True)
 ```
 

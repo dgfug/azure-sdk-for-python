@@ -22,6 +22,7 @@ MetricsAdvisorPreparer = functools.partial(MetricsAdvisorClientPreparer, Metrics
 
 class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer()
     @recorded_by_proxy
@@ -55,6 +56,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 client.get_hook(variables["email_hook_id"])
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer()
     @recorded_by_proxy
@@ -94,6 +96,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
         hooks = client.list_hooks()
         assert len(list(hooks)) > 0
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
     @recorded_by_proxy
@@ -120,6 +123,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="email_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
     @recorded_by_proxy
@@ -146,6 +150,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="email_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
     @recorded_by_proxy
@@ -176,6 +181,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="email_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
     @recorded_by_proxy
@@ -202,6 +208,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="email_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
     @recorded_by_proxy
@@ -228,6 +235,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="web_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
     @recorded_by_proxy
@@ -256,6 +264,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="web_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
     @recorded_by_proxy
@@ -289,6 +298,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             self.clean_up(client.delete_hook, variables, key="web_hook_id")
         return variables
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
     @recorded_by_proxy

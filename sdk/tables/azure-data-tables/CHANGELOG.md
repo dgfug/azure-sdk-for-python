@@ -1,5 +1,83 @@
 # Release History
 
+## 12.6.0b1 (Unreleased)
+
+### Features Added
+* Added to support custom encoder in entity CRUD operations.
+* Added to support custom Entity type.
+* Added to support Entity property in Tuple and Enum types.
+
+### Bugs Fixed
+* Fixed a bug in encoder when Entity property has "@odata.type" provided.
+* Fixed a bug in encoder that int32 and int64 are mapped to int32 when no "@odata.type" provided.
+
+### Other Changes
+* Removed value range validation for Entity property in int32 and int64.
+
+## 12.5.0 (2024-01-10)
+
+### Bugs Fixed
+* Fixed issue in serializing EntityProperty tuples where a value of None could be serialized as the string "None".
+
+### Other Changes
+* Refactored batching code to use latest Core models and improve typing.
+* Added a public type `EntityMetadata`, it is used in `TableEntity`'s metadata.
+* Added support for Python 3.12.
+* Python 3.7 is no longer supported. Please use Python version 3.8 or later.
+
+## 12.4.4 (2023-09-14)
+
+### Features Added
+* Enabled to specify resource type `container` in account SAS access.
+
+### Bugs Fixed
+* Fixed a bug when submitting transactions with an empty operation list. ([#31471](https://github.com/Azure/azure-sdk-for-python/issues/31471))
+* Fixed a bug when decoding response body in string type. Thanks @kldtz for the contribution! ([#31265](https://github.com/Azure/azure-sdk-for-python/pull/31265))
+* Fixed a bug when retrieving an entity with partition key and/or row key in empty string, the empty string values were disappeared in result. ([#31920](https://github.com/Azure/azure-sdk-for-python/issues/31920))
+
+### Other Changes
+* Bumped minimum dependency on `azure-core` to `>=1.29.4`. ([#28918](https://github.com/Azure/azure-sdk-for-python/issues/28918) [#31471](https://github.com/Azure/azure-sdk-for-python/issues/31471))
+
+## 12.4.3 (2023-06-13)
+
+### Bugs Fixed
+* Fixed a bug in getting error attribute values when operations failed. ([#27410](https://github.com/Azure/azure-sdk-for-python/issues/27410))
+
+### Other Changes
+* Adjusted dependency on `isodate` to `<1.0.0,>=0.6.1`.
+
+## 12.4.2 (2023-02-07)
+
+### Bugs Fixed
+* Fixed a bug when deleting an entity with partition key or row key in empty string.([#24480](https://github.com/Azure/azure-sdk-for-python/issues/24480))
+
+### Other Changes
+* Added support for Python 3.11.
+* Dropped `msrest` requirement.
+* Added dependency `isodate` with version range `>=0.6.0`(`isodate` was required by `msrest`).
+* Added dependency `typing-extensions` with version range `>=4.3.0`.
+
+## 12.4.1 (2022-10-11)
+
+### Bugs Fixed
+* Fix handling of client-side exceptions that get raised during service requests (such as [#21416](https://github.com/Azure/azure-sdk-for-python/issues/21416)) ([#24788](https://github.com/Azure/azure-sdk-for-python/pull/24788))
+
+### Other Changes
+* Python 3.6 is no longer supported. Please use Python version 3.7 or later.
+* Bumped minimum dependency on `azure-core` to `>=1.24.0`.
+* Bumped minimum dependency on `msrest` to `>=0.7.1`.
+* Added dependency `yarl` with version range `<2.0,>=1.0`.
+
+## 12.4.0 (2022-05-10)
+
+### Features Added
+* Support for multitenant authentication ([#24278](https://github.com/Azure/azure-sdk-for-python/pull/24278))
+
+### Bugs Fixed
+* Fixed bug where odmtype tag was not being included for boolean and int32 types even when a full EdmProperty tuple was passed in. This is needed for CLI compatibility.
+
+[comment]: # ( cspell:ignore odmtype )
+
 ## 12.3.0 (2022-03-10)
 
 ### Bugs Fixed
@@ -22,6 +100,8 @@
 
 ### Features Added
 * Added support for async iterators in `aio.TableClient.submit_transaction (#21083, thank you yashbhutoria).
+
+[comment]: # ( cspell:ignore yashbhutoria )
 
 ### Other Changes
 * Bumped dependency on `msrest` to `>=0.6.21`

@@ -20,8 +20,9 @@ import pytest
 import azure.mgmt.compute
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer, recorded_by_proxy
 
-AZURE_LOCATION = 'eastus'
+AZURE_LOCATION = 'eastus2'
 
+@pytest.mark.live_test_only
 class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
     def setup_method(self, method):
@@ -38,7 +39,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
     def create_snapshot(self, group_name, disk_name, snapshot_name):
         # Create an empty managed disk.[put]
         BODY = {
-          "location": "eastus",
+          "location": AZURE_LOCATION,
           "creation_data": {
             "create_option": "Empty"
           },
@@ -49,7 +50,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
       # Create a snapshot by copying a disk.
         BODY = {
-          "location": "eastus",
+          "location": AZURE_LOCATION,
           "creation_data": {
             "create_option": "Copy",
             # "source_uri": "/subscriptions/" + SUBSCRIPTION_ID + "/resourceGroups/" + RESOURCE_GROUP + "/providers/Microsoft.Compute/disks/" + DISK_NAME
@@ -69,7 +70,6 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         result = self.mgmt_client.snapshots.begin_delete(group_name, snapshot_name)
         result = result.result()
 
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_galleries(self, resource_group):
@@ -87,7 +87,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create or update a simple gallery.[put]
         BODY = {
-          "location": "eastus",
+          "location": AZURE_LOCATION,
           "description": "This is the gallery description."
         }
         result = self.mgmt_client.galleries.begin_create_or_update(resource_group.name, GALLERY_NAME, BODY)
@@ -95,7 +95,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create or update a simple gallery Application.[put]
         BODY = {
-          "location": "eastus",
+          "location": AZURE_LOCATION,
           "description": "This is the gallery application description.",
           "eula": "This is the gallery application EULA.",
           # "privacy_statement_uri": "myPrivacyStatementUri}",
@@ -131,10 +131,10 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create or update a simple gallery image.[put]
         BODY = {
-          "location": "eastus",
+          "location": AZURE_LOCATION,
           "os_type": "Windows",
           "os_state": "Generalized",
-          "hyper_vgeneration": "V1",
+          "hyper_v_generation": "V1",
           "identifier": {
             "publisher": "myPublisherName",
             "offer": "myOfferName",
@@ -146,11 +146,11 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create or update a simple Gallery Image Version using snapshots as a source.[put]
         BODY = {
-          "location": "eastus",
+          "location": AZURE_LOCATION,
           "publishing_profile": {
             "target_regions": [
               {
-                "name": "East US",
+                "name": AZURE_LOCATION,
                 "regional_replica_count": "2",
                 "storage_account_type": "Standard_ZRS"
               }
@@ -212,7 +212,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
               #   "regional_replica_count": "1"
               # },
               {
-                "name": "East US",
+                "name": AZURE_LOCATION,
                 "regional_replica_count": "2",
                 "storage_account_type": "Standard_ZRS"
               }
@@ -238,7 +238,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         BODY = {
           "os_type": "Windows",
           "os_state": "Generalized",
-          "hyper_vgeneration": "V1",
+          "hyper_v_generation": "V1",
           "identifier": {
             "publisher": "myPublisherName",
             "offer": "myOfferName",
@@ -308,6 +308,10 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         # Delete a gallery image.[delete]
         result = self.mgmt_client.gallery_images.begin_delete(resource_group.name, GALLERY_NAME, IMAGE_NAME)
         result = result.result()
+
+        if self.is_live:
+          import time
+          time.sleep(180)
 
         # TODO: need finish
         # # Delete a gallery Application Version.[delete]

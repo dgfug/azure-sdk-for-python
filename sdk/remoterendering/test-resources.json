@@ -30,7 +30,7 @@
   },
   "variables": {
     "apiVersion": "2020-05-01",
-    "arrApiVersion": "2020-04-06-preview",
+    "arrApiVersion": "2021-03-01-preview",
     "arrAccountName": "[concat(parameters('baseName'), '-arr-account')]",
     "storageApiVersion": "2019-06-01",
     "storageAccountName": "[parameters('baseName')]",
@@ -62,7 +62,7 @@
                 "tier": "Standard"
             },
             "kind": "StorageV2",
-            "properties": { 
+            "properties": {
                 "supportsHttpsTrafficOnly": true,
                 "encryption": {
                     "keySource": "Microsoft.Storage",
@@ -70,9 +70,9 @@
                         "blob": {
                             "enabled": true
                         }
-                    },
+                    }
                 },
-                "accessTier": "Hot" 
+                "accessTier": "Hot"
             }
         },
         {
@@ -116,6 +116,10 @@
       "REMOTERENDERING_ARR_SERVICE_ENDPOINT": {
         "type": "string",
         "value": "[concat('https://remoterendering.', parameters('location'), '.mixedreality.azure.com')]"
+      },
+      "REMOTERENDERING_STORAGE_ENDPOINT_SUFFIX": {
+        "type": "string",
+        "value": "core.windows.net"
       }
     }
 }

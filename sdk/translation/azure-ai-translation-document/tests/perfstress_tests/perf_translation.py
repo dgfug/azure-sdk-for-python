@@ -5,8 +5,8 @@
 import os
 import uuid
 import datetime
-from azure_devtools.perfstress_tests import PerfStressTest
-from azure.core.credentials import AzureKeyCredential
+from devtools_testutils.perfstress_tests import PerfStressTest
+from devtools_testutils import get_credential
 from azure.ai.translation.document import DocumentTranslationClient
 from azure.ai.translation.document.aio import DocumentTranslationClient as AsyncDocumentTranslationClient
 from azure.storage.blob.aio import ContainerClient, BlobServiceClient
@@ -15,11 +15,12 @@ from azure.storage.blob import generate_container_sas
 
 class Document:
     """Represents a document to be uploaded to source/target container"""
+
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", str(uuid.uuid4()))
         self.suffix = kwargs.get("suffix", ".txt")
         self.prefix = kwargs.get("prefix", "")
-        self.data = kwargs.get("data", b'This is written in english.')
+        self.data = kwargs.get("data", b"This is written in english.")
 
     @classmethod
     def create_docs(cls, docs_count):
@@ -34,28 +35,18 @@ class TranslationPerfStressTest(PerfStressTest):
         super().__init__(arguments)
 
         # test related env vars
-        endpoint = os.environ["TRANSLATION_DOCUMENT_TEST_ENDPOINT"]
-        key = os.environ["TRANSLATION_DOCUMENT_TEST_API_KEY"]
-        self.storage_name = os.environ["TRANSLATION_DOCUMENT_STORAGE_NAME"]
-        self.storage_key = os.environ["TRANSLATION_DOCUMENT_STORAGE_KEY"]
+        endpoint = os.environ["DOCUMENT_TRANSLATION_ENDPOINT"]
+        self.storage_name = os.environ["DOCUMENT_TRANSLATION_STORAGE_NAME"]
+        self.storage_key = os.environ["DOCUMENT_TRANSLATION_STORAGE_KEY"]
         self.storage_endpoint = "https://" + self.storage_name + ".blob.core.windows.net/"
         self.source_container_name = "source-perf-" + str(uuid.uuid4())
         self.target_container_name = "target-perf-" + str(uuid.uuid4())
 
-        self.service_client = DocumentTranslationClient(
-            endpoint,
-            AzureKeyCredential(key),
-            **self._client_kwargs
-        )
-        self.async_service_client = AsyncDocumentTranslationClient(
-            endpoint,
-            AzureKeyCredential(key),
-            **self._client_kwargs
-        )
+        self.service_client = DocumentTranslationClient(endpoint, get_credential(), **self._client_kwargs)
+        self.async_service_client = AsyncDocumentTranslationClient(endpoint, get_credential(), **self._client_kwargs)
 
     async def create_source_container(self):
-        container_client = ContainerClient(self.storage_endpoint, self.source_container_name,
-                                           self.storage_key)
+        container_client = ContainerClient(self.storage_endpoint, self.source_container_name, self.storage_key)
         async with container_client:
             await container_client.create_container()
             docs = Document.create_docs(10)
@@ -64,8 +55,7 @@ class TranslationPerfStressTest(PerfStressTest):
             return self.generate_sas_url(self.source_container_name, "rl")
 
     async def create_target_container(self):
-        container_client = ContainerClient(self.storage_endpoint, self.target_container_name,
-                                           self.storage_key)
+        container_client = ContainerClient(self.storage_endpoint, self.target_container_name, self.storage_key)
         async with container_client:
             await container_client.create_container()
 
@@ -77,7 +67,7 @@ class TranslationPerfStressTest(PerfStressTest):
             container_name=container_name,
             account_key=self.storage_key,
             permission=permission,
-            expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+            expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=2),
         )
 
         container_sas_url = self.storage_endpoint + container_name + "?" + sas_token
@@ -107,16 +97,12 @@ class TranslationPerfStressTest(PerfStressTest):
 
     def run_sync(self):
         """The synchronous perf test."""
-        statuses = self.service_client.list_document_statuses(
-            self.translation_id
-        )
+        statuses = self.service_client.list_document_statuses(self.translation_id)
         for doc in statuses:
             pass
 
     async def run_async(self):
         """The asynchronous perf test."""
-        statuses = self.async_service_client.list_document_statuses(
-            self.translation_id
-        )
+        statuses = self.async_service_client.list_document_statuses(self.translation_id)
         async for doc in statuses:
             pass

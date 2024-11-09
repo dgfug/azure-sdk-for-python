@@ -44,7 +44,6 @@ class _QueryExecutionContextBase(object):
         """
         self._client = client
         self._options = options
-        self._is_change_feed = "changeFeed" in options and options["changeFeed"] is True
         self._continuation = self._get_initial_continuation()
         self._has_started = False
         self._has_finished = False
@@ -52,13 +51,22 @@ class _QueryExecutionContextBase(object):
 
     def _get_initial_continuation(self):
         if "continuation" in self._options:
-            if "enableCrossPartitionQuery" in self._options:
-                raise ValueError("continuation tokens are not supported for cross-partition queries.")
             return self._options["continuation"]
         return None
 
     def _has_more_pages(self):
-        return not self._has_started or self._continuation
+        return not self._has_finished
+
+    async def _ensure(self):
+        if not self._has_more_pages():
+            return
+
+        if not self._buffer:
+            results = await self._fetch_next_block()
+            self._buffer.extend(results)
+
+        if not self._buffer:
+            self._has_finished = True
 
     async def fetch_next_block(self):
         """Returns a block of results with respecting retry policy.
@@ -69,23 +77,19 @@ class _QueryExecutionContextBase(object):
         :return: List of results.
         :rtype: list
         """
-        if not self._has_more_pages():
-            return []
-
-        if self._buffer:
-            # if there is anything in the buffer returns that
-            res = list(self._buffer)
-            self._buffer.clear()
-            return res
-
-        # fetches the next block
-        return await self._fetch_next_block()
+        await self._ensure()
+        res = list(self._buffer)
+        self._buffer.clear()
+        return res
 
     async def _fetch_next_block(self):
         raise NotImplementedError
 
-    async def __aiter__(self):
-        """Returns itself as an iterator"""
+    def __aiter__(self):
+        """Returns itself as an iterator
+        :returns: Query as an iterator.
+        :rtype: Iterator
+        """
         return self
 
     async def __anext__(self):
@@ -95,13 +99,7 @@ class _QueryExecutionContextBase(object):
         :rtype: dict
         :raises StopAsyncIteration: If no more result is left.
         """
-        if self._has_finished:
-            raise StopAsyncIteration
-
-        if not self._buffer:
-
-            results = await self.fetch_next_block()
-            self._buffer.extend(results)
+        await self._ensure()
 
         if not self._buffer:
             raise StopAsyncIteration
@@ -111,28 +109,23 @@ class _QueryExecutionContextBase(object):
     async def _fetch_items_helper_no_retries(self, fetch_function):
         """Fetches more items and doesn't retry on failure
 
+        :param Callable fetch_function: The function that fetches the items.
         :return: List of fetched items.
         :rtype: list
         """
         fetched_items = []
-        # Continues pages till finds a non empty page or all results are exhausted
+        new_options = copy.deepcopy(self._options)
         while self._continuation or not self._has_started:
-            if not self._has_started:
-                self._has_started = True
-            new_options = copy.deepcopy(self._options)
             new_options["continuation"] = self._continuation
 
+            response_headers = {}
             (fetched_items, response_headers) = await fetch_function(new_options)
+            if not self._has_started:
+                self._has_started = True
+
             continuation_key = http_constants.HttpHeaders.Continuation
-            # Use Etag as continuation token for change feed queries.
-            if self._is_change_feed:
-                continuation_key = http_constants.HttpHeaders.ETag
-            # In change feed queries, the continuation token is always populated. The hasNext() test is whether
-            # there is any items in the response or not.
-            if not self._is_change_feed or fetched_items:
-                self._continuation = response_headers.get(continuation_key)
-            else:
-                self._continuation = None
+            self._continuation = response_headers.get(continuation_key)
+
             if fetched_items:
                 break
         return fetched_items

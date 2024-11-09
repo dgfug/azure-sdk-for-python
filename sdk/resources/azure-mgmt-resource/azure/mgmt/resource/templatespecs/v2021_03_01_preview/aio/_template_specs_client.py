@@ -7,13 +7,16 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Awaitable, Optional, TYPE_CHECKING
+from typing import Any, Awaitable, TYPE_CHECKING
+from typing_extensions import Self
 
+from azure.core.pipeline import policies
 from azure.core.rest import AsyncHttpResponse, HttpRequest
 from azure.mgmt.core import AsyncARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import AsyncARMAutoResourceProviderRegistrationPolicy
 
-from .. import models
+from .. import models as _models
+from ..._serialization import Deserializer, Serializer
 from ._configuration import TemplateSpecsClientConfiguration
 from .operations import TemplateSpecVersionsOperations, TemplateSpecsOperations
 
@@ -21,8 +24,10 @@ if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials_async import AsyncTokenCredential
 
-class TemplateSpecsClient:
-    """The APIs listed in this specification can be used to manage Template Spec resources through the Azure Resource Manager.
+
+class TemplateSpecsClient:  # pylint: disable=client-accepts-api-version-keyword
+    """The APIs listed in this specification can be used to manage Template Spec resources through the
+    Azure Resource Manager.
 
     :ivar template_specs: TemplateSpecsOperations operations
     :vartype template_specs:
@@ -30,12 +35,16 @@ class TemplateSpecsClient:
     :ivar template_spec_versions: TemplateSpecVersionsOperations operations
     :vartype template_spec_versions:
      azure.mgmt.resource.templatespecs.v2021_03_01_preview.aio.operations.TemplateSpecVersionsOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials_async.AsyncTokenCredential
     :param subscription_id: Subscription Id which forms part of the URI for every service call.
+     Required.
     :type subscription_id: str
-    :param base_url: Service URL. Default value is 'https://management.azure.com'.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
+    :keyword api_version: Api Version. Default value is "2021-03-01-preview". Note that overriding
+     this default value may result in unsupported behavior.
+    :paramtype api_version: str
     """
 
     def __init__(
@@ -45,21 +54,42 @@ class TemplateSpecsClient:
         base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        self._config = TemplateSpecsClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
-        self._client = AsyncARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = TemplateSpecsClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                AsyncARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: AsyncARMPipelineClient = AsyncARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
-        self.template_specs = TemplateSpecsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.template_spec_versions = TemplateSpecVersionsOperations(self._client, self._config, self._serialize, self._deserialize)
-
+        self.template_specs = TemplateSpecsOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-03-01-preview"
+        )
+        self.template_spec_versions = TemplateSpecVersionsOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-03-01-preview"
+        )
 
     def _send_request(
-        self,
-        request: HttpRequest,
-        **kwargs: Any
+        self, request: HttpRequest, *, stream: bool = False, **kwargs: Any
     ) -> Awaitable[AsyncHttpResponse]:
         """Runs the network request through the client's chained policies.
 
@@ -69,7 +99,7 @@ class TemplateSpecsClient:
         >>> response = await client._send_request(request)
         <AsyncHttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -80,14 +110,14 @@ class TemplateSpecsClient:
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
     async def close(self) -> None:
         await self._client.close()
 
-    async def __aenter__(self) -> "TemplateSpecsClient":
+    async def __aenter__(self) -> Self:
         await self._client.__aenter__()
         return self
 
-    async def __aexit__(self, *exc_details) -> None:
+    async def __aexit__(self, *exc_details: Any) -> None:
         await self._client.__aexit__(*exc_details)

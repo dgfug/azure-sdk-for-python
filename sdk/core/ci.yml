@@ -12,6 +12,8 @@ trigger:
     - sdk/core/
     - eng/
     - tools/
+    exclude:
+    - eng/common/
 
 pr:
   branches:
@@ -26,27 +28,28 @@ pr:
     - sdk/core/
     - eng/
     - tools/
+    exclude:
+    - eng/common/
 
 extends:
   template: ../../eng/pipelines/templates/stages/archetype-sdk-client.yml
   parameters:
     ServiceDirectory: core
+    BuildTargetingString: "*"
+    ValidateFormatting: true
+    TestProxy: false
+    TestTimeoutInMinutes: 120
     Artifacts:
     - name: azure-core
       safeName: azurecore
     - name: azure-mgmt-core
       safeName: azuremgmtcore
-    - name: azure-core-tracing-opencensus
-      safeName: azurecorecoretracingopencensus
     - name: azure-core-tracing-opentelemetry
       safeName: azurecorecoretracingtelemetry
     - name: azure-common
       safeName: azurecommon
-    CondaArtifacts:
-    - name: azure-core
-      meta_source: conda-recipe/meta.yaml
-      common_root: azure
-      checkout:
-        - package: azure-core
-          checkout_path: sdk/core
-          version: 1.12.0
+      skipPublishDocMs: true
+    - name: azure-core-experimental
+      safeName: azurecoreexperimental
+    - name: corehttp
+      safeName: corehttp

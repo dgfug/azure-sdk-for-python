@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 from ._version import VERSION
+from ._cosmos_responses import CosmosDict, CosmosList
 from ._retry_utility import ConnectionRetryPolicy
 from .container import ContainerProxy
 from .cosmos_client import CosmosClient
@@ -27,6 +28,7 @@ from .database import DatabaseProxy
 from .user import UserProxy
 from .scripts import ScriptsProxy
 from .offer import Offer
+from .offer import ThroughputProperties
 from .documents import (
     ConsistencyLevel,
     DataType,
@@ -62,5 +64,8 @@ __all__ = (
     "TriggerOperation",
     "TriggerType",
     "ConnectionRetryPolicy",
+    "ThroughputProperties",
+    "CosmosDict",
+    "CosmosList"
 )
 __version__ = VERSION

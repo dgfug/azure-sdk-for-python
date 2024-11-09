@@ -6,64 +6,88 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-try:
-    from ._models_py3 import AADBasedSecurityPrincipal
-    from ._models_py3 import CertBasedSecurityPrincipal
-    from ._models_py3 import ConfidentialLedger
-    from ._models_py3 import ConfidentialLedgerList
-    from ._models_py3 import ErrorAdditionalInfo
-    from ._models_py3 import ErrorDetail
-    from ._models_py3 import ErrorResponse
-    from ._models_py3 import LedgerProperties
-    from ._models_py3 import Location
-    from ._models_py3 import Resource
-    from ._models_py3 import ResourceProviderOperationDefinition
-    from ._models_py3 import ResourceProviderOperationDisplay
-    from ._models_py3 import ResourceProviderOperationList
-    from ._models_py3 import SystemData
-    from ._models_py3 import Tags
-except (SyntaxError, ImportError):
-    from ._models import AADBasedSecurityPrincipal  # type: ignore
-    from ._models import CertBasedSecurityPrincipal  # type: ignore
-    from ._models import ConfidentialLedger  # type: ignore
-    from ._models import ConfidentialLedgerList  # type: ignore
-    from ._models import ErrorAdditionalInfo  # type: ignore
-    from ._models import ErrorDetail  # type: ignore
-    from ._models import ErrorResponse  # type: ignore
-    from ._models import LedgerProperties  # type: ignore
-    from ._models import Location  # type: ignore
-    from ._models import Resource  # type: ignore
-    from ._models import ResourceProviderOperationDefinition  # type: ignore
-    from ._models import ResourceProviderOperationDisplay  # type: ignore
-    from ._models import ResourceProviderOperationList  # type: ignore
-    from ._models import SystemData  # type: ignore
-    from ._models import Tags  # type: ignore
+from ._models_py3 import AADBasedSecurityPrincipal
+from ._models_py3 import CertBasedSecurityPrincipal
+from ._models_py3 import CertificateTags
+from ._models_py3 import CheckNameAvailabilityRequest
+from ._models_py3 import CheckNameAvailabilityResponse
+from ._models_py3 import ConfidentialLedger
+from ._models_py3 import ConfidentialLedgerBackup
+from ._models_py3 import ConfidentialLedgerBackupResponse
+from ._models_py3 import ConfidentialLedgerList
+from ._models_py3 import ConfidentialLedgerRestore
+from ._models_py3 import ConfidentialLedgerRestoreResponse
+from ._models_py3 import DeploymentType
+from ._models_py3 import ErrorAdditionalInfo
+from ._models_py3 import ErrorDetail
+from ._models_py3 import ErrorResponse
+from ._models_py3 import LedgerProperties
+from ._models_py3 import ManagedCCF
+from ._models_py3 import ManagedCCFBackup
+from ._models_py3 import ManagedCCFBackupResponse
+from ._models_py3 import ManagedCCFList
+from ._models_py3 import ManagedCCFProperties
+from ._models_py3 import ManagedCCFRestore
+from ._models_py3 import ManagedCCFRestoreResponse
+from ._models_py3 import MemberIdentityCertificate
+from ._models_py3 import Resource
+from ._models_py3 import ResourceProviderOperationDefinition
+from ._models_py3 import ResourceProviderOperationDisplay
+from ._models_py3 import ResourceProviderOperationList
+from ._models_py3 import SystemData
+from ._models_py3 import TrackedResource
 
-from ._confidential_ledger_enums import (
-    CreatedByType,
-    LedgerRoleName,
-    LedgerType,
-    ProvisioningState,
-)
+from ._confidential_ledger_enums import CheckNameAvailabilityReason
+from ._confidential_ledger_enums import CreatedByType
+from ._confidential_ledger_enums import LanguageRuntime
+from ._confidential_ledger_enums import LedgerRoleName
+from ._confidential_ledger_enums import LedgerSku
+from ._confidential_ledger_enums import LedgerType
+from ._confidential_ledger_enums import ProvisioningState
+from ._confidential_ledger_enums import RunningState
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'AADBasedSecurityPrincipal',
-    'CertBasedSecurityPrincipal',
-    'ConfidentialLedger',
-    'ConfidentialLedgerList',
-    'ErrorAdditionalInfo',
-    'ErrorDetail',
-    'ErrorResponse',
-    'LedgerProperties',
-    'Location',
-    'Resource',
-    'ResourceProviderOperationDefinition',
-    'ResourceProviderOperationDisplay',
-    'ResourceProviderOperationList',
-    'SystemData',
-    'Tags',
-    'CreatedByType',
-    'LedgerRoleName',
-    'LedgerType',
-    'ProvisioningState',
+    "AADBasedSecurityPrincipal",
+    "CertBasedSecurityPrincipal",
+    "CertificateTags",
+    "CheckNameAvailabilityRequest",
+    "CheckNameAvailabilityResponse",
+    "ConfidentialLedger",
+    "ConfidentialLedgerBackup",
+    "ConfidentialLedgerBackupResponse",
+    "ConfidentialLedgerList",
+    "ConfidentialLedgerRestore",
+    "ConfidentialLedgerRestoreResponse",
+    "DeploymentType",
+    "ErrorAdditionalInfo",
+    "ErrorDetail",
+    "ErrorResponse",
+    "LedgerProperties",
+    "ManagedCCF",
+    "ManagedCCFBackup",
+    "ManagedCCFBackupResponse",
+    "ManagedCCFList",
+    "ManagedCCFProperties",
+    "ManagedCCFRestore",
+    "ManagedCCFRestoreResponse",
+    "MemberIdentityCertificate",
+    "Resource",
+    "ResourceProviderOperationDefinition",
+    "ResourceProviderOperationDisplay",
+    "ResourceProviderOperationList",
+    "SystemData",
+    "TrackedResource",
+    "CheckNameAvailabilityReason",
+    "CreatedByType",
+    "LanguageRuntime",
+    "LedgerRoleName",
+    "LedgerSku",
+    "LedgerType",
+    "ProvisioningState",
+    "RunningState",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

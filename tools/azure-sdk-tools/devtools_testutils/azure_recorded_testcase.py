@@ -4,41 +4,32 @@
 # license information.
 # --------------------------------------------------------------------------
 import functools
+import logging
 import os
 import os.path
+import re
 import six
 import sys
 import time
-from typing import TYPE_CHECKING
+from typing import Dict
 
 from dotenv import load_dotenv, find_dotenv
 
-from azure_devtools.scenario_tests.utilities import trim_kwargs_from_test_function
-
 from . import mgmt_settings_fake as fake_settings
-from .azure_testcase import _is_autorest_v3, get_resource_name, get_qualified_method_name
-from .helpers import is_live
-from .sanitizers import add_general_regex_sanitizer
+from .azure_testcase import (
+    _is_autorest_v3,
+    get_resource_name,
+    get_qualified_method_name,
+)
+from .fake_credentials import SANITIZED
+from .fake_credentials_async import AsyncFakeCredential
+from .helpers import is_live, trim_kwargs_from_test_function
+from .sanitizers import add_general_string_sanitizer
 
-try:
-    # Try to import the AsyncFakeCredential, if we cannot assume it is Python 2
-    from .fake_credentials_async import AsyncFakeCredential
-except SyntaxError:
-    pass
 
-if TYPE_CHECKING:
-    from typing import Any
-
+_LOGGER = logging.getLogger()
 
 load_dotenv(find_dotenv())
-
-
-def _sanitize_token(token, fake_token):
-    add_general_regex_sanitizer(value=fake_token, regex=token)
-    url_safe_token = token.replace("/", u"%2F")
-    add_general_regex_sanitizer(value=fake_token, regex=url_safe_token)
-    async_token = token.replace(u"%3A", ":")
-    add_general_regex_sanitizer(value=fake_token, regex=async_token)
 
 
 class AzureRecordedTestCase(object):
@@ -90,39 +81,26 @@ class AzureRecordedTestCase(object):
         return key_value
 
     def get_credential(self, client_class, **kwargs):
+        if _is_autorest_v3(client_class):
+            return get_credential(**kwargs)
         tenant_id = os.environ.get("AZURE_TENANT_ID", getattr(os.environ, "TENANT_ID", None))
         client_id = os.environ.get("AZURE_CLIENT_ID", getattr(os.environ, "CLIENT_ID", None))
         secret = os.environ.get("AZURE_CLIENT_SECRET", getattr(os.environ, "CLIENT_SECRET", None))
-        is_async = kwargs.pop("is_async", False)
 
-        if tenant_id and client_id and secret and self.is_live:
-            if _is_autorest_v3(client_class):
-                # Create azure-identity class
-                from azure.identity import ClientSecretCredential
-
-                if is_async:
-                    from azure.identity.aio import ClientSecretCredential
-                return ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=secret)
-            else:
+        # Return live credentials only in live mode
+        if self.is_live:
+            # Service principal authentication
+            if tenant_id and client_id and secret:
                 # Create msrestazure class
                 from msrestazure.azure_active_directory import (
                     ServicePrincipalCredentials,
                 )
 
                 return ServicePrincipalCredentials(tenant=tenant_id, client_id=client_id, secret=secret)
+
+        # For playback tests, return credentials that will accept playback `get_token` calls
         else:
-            if _is_autorest_v3(client_class):
-                if is_async:
-                    if self.is_live:
-                        raise ValueError(
-                            "Async live doesn't support mgmt_setting_real, please set AZURE_TENANT_ID, "
-                            "AZURE_CLIENT_ID, AZURE_CLIENT_SECRET"
-                        )
-                    return AsyncFakeCredential()
-                else:
-                    return self.settings.get_azure_core_credentials()
-            else:
-                return self.settings.get_credentials()
+            return self.settings.get_credentials()
 
     def create_client_from_credential(self, client_class, credential, **kwargs):
 
@@ -198,34 +176,121 @@ class AzureRecordedTestCase(object):
             time.sleep(seconds)
 
     def generate_sas(self, *args, **kwargs):
+        """This is a deprecated method that just returns the token from the passed-in function as-is.
+
+        SAS token sanitization is now handled by test proxy centrally.
+
+        :keyword fake_parameters: A dictionary with token parameter names as keys, and the values to sanitize these keys
+            with as values. For example: {"sktid": "00000000-0000-0000-0000-000000000000", "sig": "Sanitized"}
+        :paramtype fake_parameters: Dict[str, str]
+        :keyword str fake_value: The value used to sanitize `sig`. Defaults to "Sanitized".
+        """
         sas_func = args[0]
         sas_func_pos_args = args[1:]
-
-        fake_value = kwargs.pop("fake_value", "fake_token_value")
         token = sas_func(*sas_func_pos_args, **kwargs)
+        return token
 
-        fake_token = self._create_fake_token(token, fake_value)
-        _sanitize_token(token, fake_token)
 
-        if self.is_live:
-            return token
-        return fake_token
+def get_credential(**kwargs):
+    tenant_id = os.environ.get("AZURE_TENANT_ID", getattr(os.environ, "TENANT_ID", None))
+    client_id = os.environ.get("AZURE_CLIENT_ID", getattr(os.environ, "CLIENT_ID", None))
+    secret = os.environ.get("AZURE_CLIENT_SECRET", getattr(os.environ, "CLIENT_SECRET", None))
 
-    def _create_fake_token(self, token, fake_value):
-        parts = token.split("&")
+    use_pwsh = os.environ.get("AZURE_TEST_USE_PWSH_AUTH", "false")
+    use_cli = os.environ.get("AZURE_TEST_USE_CLI_AUTH", "false")
+    use_vscode = os.environ.get("AZURE_TEST_USE_VSCODE_AUTH", "false")
+    use_azd = os.environ.get("AZURE_TEST_USE_AZD_AUTH", "false")
+    is_async = kwargs.pop("is_async", False)
 
-        for idx, part in enumerate(parts):
-            if part.startswith("sig"):
-                key = part.split("=")
-                key[1] = fake_value
-                parts[idx] = "=".join(key)
-            elif part.startswith("st"):
-                key = part.split("=")
-                key[1] = "start"
-                parts[idx] = "=".join(key)
-            elif part.startswith("se"):
-                key = part.split("=")
-                key[1] = "end"
-                parts[idx] = "=".join(key)
+    # Return live credentials only in live mode
+    if is_live():
+        # User-based authentication through Azure PowerShell, if requested
+        if use_pwsh.lower() == "true":
+            _LOGGER.info(
+                "Environment variable AZURE_TEST_USE_PWSH_AUTH set to 'true'. Using AzurePowerShellCredential."
+            )
+            from azure.identity import AzurePowerShellCredential
 
-        return "&".join(parts)
+            if is_async:
+                from azure.identity.aio import AzurePowerShellCredential
+            return AzurePowerShellCredential(**kwargs)
+        # User-based authentication through Azure CLI (az), if requested
+        if use_cli.lower() == "true":
+            _LOGGER.info("Environment variable AZURE_TEST_USE_CLI_AUTH set to 'true'. Using AzureCliCredential.")
+            from azure.identity import AzureCliCredential
+
+            if is_async:
+                from azure.identity.aio import AzureCliCredential
+            return AzureCliCredential(**kwargs)
+        # User-based authentication through Visual Studio Code, if requested
+        if use_vscode.lower() == "true":
+            _LOGGER.info(
+                "Environment variable AZURE_TEST_USE_VSCODE_AUTH set to 'true'. Using VisualStudioCodeCredential."
+            )
+            from azure.identity import VisualStudioCodeCredential
+
+            if is_async:
+                from azure.identity.aio import VisualStudioCodeCredential
+            return VisualStudioCodeCredential(**kwargs)
+        # User-based authentication through Azure Developer CLI (azd), if requested
+        if use_azd.lower() == "true":
+            _LOGGER.info(
+                "Environment variable AZURE_TEST_USE_AZD_AUTH set to 'true'. Using AzureDeveloperCliCredential."
+            )
+            from azure.identity import AzureDeveloperCliCredential
+
+            if is_async:
+                from azure.identity.aio import AzureDeveloperCliCredential
+            return AzureDeveloperCliCredential(**kwargs)
+
+        # Service principal authentication
+        if tenant_id and client_id and secret:
+            _LOGGER.info(
+                "Service principal client ID, secret, and tenant ID detected. Using ClientSecretCredential.\n"
+                "For user-based auth, set AZURE_TEST_USE_PWSH_AUTH or AZURE_TEST_USE_CLI_AUTH to 'true'."
+            )
+            from azure.identity import ClientSecretCredential
+
+            if is_async:
+                from azure.identity.aio import ClientSecretCredential
+            return ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=secret, **kwargs)
+
+        # If AzurePipelinesCredential is detected, use it.
+        service_connection_id = os.environ.get("AZURESUBSCRIPTION_SERVICE_CONNECTION_ID")
+        client_id = os.environ.get("AZURESUBSCRIPTION_CLIENT_ID")
+        tenant_id = os.environ.get("AZURESUBSCRIPTION_TENANT_ID")
+        system_access_token = os.environ.get("SYSTEM_ACCESSTOKEN")
+        if service_connection_id and client_id and tenant_id and system_access_token:
+            from azure.identity import AzurePipelinesCredential
+
+            if is_async:
+                from azure.identity.aio import AzurePipelinesCredential
+            return AzurePipelinesCredential(
+                tenant_id=tenant_id,
+                client_id=client_id,
+                service_connection_id=service_connection_id,
+                system_access_token=system_access_token,
+                **kwargs,
+            )
+        # This is for testing purposes only, to ensure that the AzurePipelinesCredential is used when available
+        else:
+            force_fallback_dac = os.environ.get("AZURE_TEST_FORCE_FALLBACK_DAC", "false")
+            if service_connection_id and not (force_fallback_dac):
+                # if service_connection_id is set, we believe it is running in CI
+                system_access_token = SANITIZED if system_access_token else None
+                raise ValueError(
+                    "Running in Azure Pipelines. Environment variables not set for service principal authentication. "
+                    f"service_connection_id: {service_connection_id}, client_id: {client_id}, tenant_id: {tenant_id}, system_access_token: {system_access_token}"
+                )
+        # Fall back to DefaultAzureCredential
+        from azure.identity import DefaultAzureCredential
+
+        if is_async:
+            from azure.identity.aio import DefaultAzureCredential
+        return DefaultAzureCredential(exclude_managed_identity_credential=True, **kwargs)
+
+    # For playback tests, return credentials that will accept playback `get_token` calls
+    if is_async:
+        return AsyncFakeCredential()
+    else:
+        return fake_settings.get_azure_core_credentials()

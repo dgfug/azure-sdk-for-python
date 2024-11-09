@@ -60,8 +60,9 @@ setup(
     author='Microsoft Corporation',
     author_email='azpysdkhelp@microsoft.com',
     url='https://github.com/Azure/azure-sdk-for-python',
+    keywords="azure, azure sdk",
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 7 - Inactive',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
@@ -86,6 +87,10 @@ setup(
         'azure-common~=1.1',
         'azure-mgmt-core>=1.2.0,<2.0.0',
     ],
+    include_package_data=True,
+    package_data={
+        'pytyped': ['py.typed'],
+    },
     extras_require={
         ":python_version<'3.0'": ['azure-cognitiveservices-search-nspkg'],
     }

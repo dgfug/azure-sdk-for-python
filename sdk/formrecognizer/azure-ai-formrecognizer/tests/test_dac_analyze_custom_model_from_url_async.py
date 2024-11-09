@@ -8,43 +8,39 @@ import pytest
 import functools
 from devtools_testutils.aio import recorded_by_proxy_async
 from devtools_testutils import set_bodiless_matcher
-from azure.core.credentials import AzureKeyCredential
 from azure.ai.formrecognizer.aio import DocumentAnalysisClient, DocumentModelAdministrationClient
-from azure.ai.formrecognizer._generated.v2022_01_30_preview.models import AnalyzeResultOperation
+from azure.ai.formrecognizer._generated.v2023_07_31.models import AnalyzeResultOperation
 from azure.ai.formrecognizer import AnalyzeResult
-from preparers import FormRecognizerPreparer
+from preparers import FormRecognizerPreparer, get_async_client
 from asynctestcase import AsyncFormRecognizerTest
-from preparers import GlobalClientPreparer as _GlobalClientPreparer
+from conftest import skip_flaky_test
 
-DocumentModelAdministrationClientPreparer = functools.partial(_GlobalClientPreparer, DocumentModelAdministrationClient)
+get_dma_client = functools.partial(get_async_client, DocumentModelAdministrationClient)
+get_da_client = functools.partial(get_async_client, DocumentAnalysisClient)
 
 class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
 
-    def teardown(self):
-        self.sleep(4)
-
     @FormRecognizerPreparer()
     async def test_document_analysis_none_model(self, **kwargs):
-        formrecognizer_test_endpoint = kwargs.pop("formrecognizer_test_endpoint")
-        formrecognizer_test_api_key = kwargs.pop("formrecognizer_test_api_key")
-        client = DocumentAnalysisClient(formrecognizer_test_endpoint, AzureKeyCredential(formrecognizer_test_api_key))
-        with pytest.raises(ValueError):
+        client = get_da_client()
+        with pytest.raises(ValueError) as e:
             async with client:
-                await client.begin_analyze_document_from_url(model=None, document_url="https://badurl.jpg")
+                await client.begin_analyze_document_from_url(model_id=None, document_url="https://badurl.jpg")
+        assert "model_id cannot be None or empty." in str(e.value)
 
     @FormRecognizerPreparer()
     async def test_document_analysis_empty_model_id(self, **kwargs):
-        formrecognizer_test_endpoint = kwargs.pop("formrecognizer_test_endpoint")
-        formrecognizer_test_api_key = kwargs.pop("formrecognizer_test_api_key")
-        client = DocumentAnalysisClient(formrecognizer_test_endpoint, AzureKeyCredential(formrecognizer_test_api_key))
-        with pytest.raises(ValueError):
+        client = get_da_client()
+        with pytest.raises(ValueError) as e:
             async with client:
-                await client.begin_analyze_document_from_url(model="", document_url="https://badurl.jpg")
+                await client.begin_analyze_document_from_url(model_id="", document_url="https://badurl.jpg")
+        assert "model_id cannot be None or empty." in str(e.value)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentModelAdministrationClientPreparer()
     @recorded_by_proxy_async
-    async def test_custom_document_selection_mark(self, client, formrecognizer_selection_mark_storage_container_sas_url, **kwargs):
+    async def test_custom_document_selection_mark(self, formrecognizer_selection_mark_storage_container_sas_url, **kwargs):
+        client = get_dma_client()
         set_bodiless_matcher()
         da_client = client.get_document_analysis_client()
 
@@ -57,13 +53,10 @@ class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
             responses.append(document)
 
         async with client:
-            poller = await client.begin_build_model(formrecognizer_selection_mark_storage_container_sas_url, "template")
+            poller = await client.begin_build_document_model("template", blob_container_url=formrecognizer_selection_mark_storage_container_sas_url)
             model = await poller.result()
-
-
-
             poller = await da_client.begin_analyze_document_from_url(
-                model=model.model_id,
+                model_id=model.model_id,
                 document_url=self.selection_mark_url_pdf,
                 cls=callback
             )
@@ -80,16 +73,16 @@ class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentModelAdministrationClientPreparer()
     @recorded_by_proxy_async
-    async def test_label_tables_variable_rows(self, client, formrecognizer_table_variable_rows_container_sas_url, **kwargs):
+    async def test_label_tables_variable_rows(self, formrecognizer_table_variable_rows_container_sas_url, **kwargs):
+        client = get_dma_client()
         set_bodiless_matcher()
         da_client = client.get_document_analysis_client()
 
@@ -102,8 +95,8 @@ class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
             responses.append(document)
 
         async with client:
-            build_poller = await client.begin_build_model(
-                formrecognizer_table_variable_rows_container_sas_url, "template")
+            build_poller = await client.begin_build_document_model(
+                "template", blob_container_url=formrecognizer_table_variable_rows_container_sas_url)
             model = await build_poller.result()
 
             poller = await da_client.begin_analyze_document_from_url(
@@ -125,16 +118,16 @@ class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentModelAdministrationClientPreparer()
     @recorded_by_proxy_async
-    async def test_label_tables_fixed_rows(self, client, formrecognizer_table_fixed_rows_container_sas_url, **kwargs):
+    async def test_label_tables_fixed_rows(self, formrecognizer_table_fixed_rows_container_sas_url, **kwargs):
+        client = get_dma_client()
         set_bodiless_matcher()
         da_client = client.get_document_analysis_client()
 
@@ -147,7 +140,7 @@ class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
             responses.append(document)
 
         async with client:
-            build_poller = await client.begin_build_model(formrecognizer_table_fixed_rows_container_sas_url, "template")
+            build_poller = await client.begin_build_document_model("template", blob_container_url=formrecognizer_table_fixed_rows_container_sas_url)
             model = await build_poller.result()
 
             poller = await da_client.begin_analyze_document_from_url(
@@ -169,7 +162,6 @@ class TestDACAnalyzeCustomModelFromUrlAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range

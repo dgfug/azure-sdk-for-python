@@ -1,8 +1,14 @@
 # Release History
 
+## 0.9.1 (2024-11-01)
+
+### Other Changes
+
+- This package has been deprecated and will no longer be maintained after 11-01-2024. This package will only receive security fixes until 11-01-2024. To receive updates on new features and non-security bug fixes, upgrade to the replacement package, [azure-ai-vision-imageanalysis](https://pypi.org/project/azure-ai-vision-imageanalysis/).
+
 ## 0.9.0 (2021-05-31)
 
-**Breaking changes**
+### Breaking Changes
 
   - Operation ComputerVisionClientOperationsMixin.read has a new signature
   - Operation ComputerVisionClientOperationsMixin.read_in_stream has a new signature

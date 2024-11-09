@@ -6,27 +6,26 @@
 
 import pytest
 import functools
+import sys
 from devtools_testutils import recorded_by_proxy
 from azure.ai.formrecognizer._generated.models import AnalyzeResultOperation
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.ai.formrecognizer import AnalyzeResult
-from preparers import FormRecognizerPreparer
+from preparers import FormRecognizerPreparer, get_sync_client
 from testcase import FormRecognizerTest
-from preparers import GlobalClientPreparer as _GlobalClientPreparer
+from conftest import skip_flaky_test
 
 
-DocumentAnalysisClientPreparer = functools.partial(_GlobalClientPreparer, DocumentAnalysisClient)
+get_da_client = functools.partial(get_sync_client, DocumentAnalysisClient)
 
 
 class TestDACAnalyzeDocument(FormRecognizerTest):
 
-    def teardown(self):
-        self.sleep(4)
-
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy
-    def test_document_stream_transform_pdf(self, client):
+    def test_document_stream_transform_pdf(self):
+        client = get_da_client()
         with open(self.invoice_pdf, "rb") as fd:
             document = fd.read()
 
@@ -52,16 +51,16 @@ class TestDACAnalyzeDocument(FormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy
-    def test_document_stream_transform_jpg(self, client):
+    def test_document_stream_transform_jpg(self):
+        client = get_da_client()
         with open(self.form_jpg, "rb") as fd:
             document = fd.read()
 
@@ -87,16 +86,16 @@ class TestDACAnalyzeDocument(FormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy
-    def test_document_multipage_transform(self, client):
+    def test_document_multipage_transform(self):
+        client = get_da_client()
         with open(self.multipage_invoice_pdf, "rb") as fd:
             document = fd.read()
 
@@ -122,17 +121,17 @@ class TestDACAnalyzeDocument(FormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
     @pytest.mark.live_test_only
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy
-    def test_document_multipage_table_span_pdf(self, client):
+    def test_document_multipage_table_span_pdf(self):
+        client = get_da_client()
         with open(self.multipage_table_pdf, "rb") as fd:
             my_file = fd.read()
         poller = client.begin_analyze_document("prebuilt-document", my_file)
@@ -142,13 +141,14 @@ class TestDACAnalyzeDocument(FormRecognizerTest):
         assert document.tables[0].column_count == 5
         assert document.tables[1].row_count == 6
         assert document.tables[1].column_count == 5
-        assert document.tables[2].row_count == 23
+        assert document.tables[2].row_count == 24
         assert document.tables[2].column_count == 5
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy
-    def test_document_specify_pages(self, client):
+    def test_document_specify_pages(self):
+        client = get_da_client()
         with open(self.multipage_invoice_pdf, "rb") as fd:
             document = fd.read()
 

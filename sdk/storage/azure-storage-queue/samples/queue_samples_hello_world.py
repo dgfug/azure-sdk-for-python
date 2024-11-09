@@ -22,6 +22,7 @@ USAGE:
 
 
 import os
+import sys
 
 
 class QueueHelloWorldSamples(object):
@@ -29,6 +30,11 @@ class QueueHelloWorldSamples(object):
     connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
     def create_client_with_connection_string(self):
+        if self.connection_string is None:
+            print("Missing required environment variable(s). Please see specific test for more details." + '\n' +
+                  "Test: create_client_with_connection_string")
+            sys.exit(1)
+
         # Instantiate the QueueServiceClient from a connection string
         from azure.storage.queue import QueueServiceClient
         queue_service = QueueServiceClient.from_connection_string(conn_str=self.connection_string)
@@ -37,6 +43,11 @@ class QueueHelloWorldSamples(object):
         properties = queue_service.get_service_properties()
 
     def queue_and_messages_example(self):
+        if self.connection_string is None:
+            print("Missing required environment variable(s). Please see specific test for more details." + '\n' +
+                  "Test: queue_and_messages_example")
+            sys.exit(1)
+
         # Instantiate the QueueClient from a connection string
         from azure.storage.queue import QueueClient
         queue = QueueClient.from_connection_string(conn_str=self.connection_string, queue_name="myqueue")
@@ -48,8 +59,8 @@ class QueueHelloWorldSamples(object):
 
         try:
             # Send messages
-            queue.send_message(u"I'm using queues!")
-            queue.send_message(u"This is my second message")
+            queue.send_message("I'm using queues!")
+            queue.send_message("This is my second message")
 
             # Receive the messages
             response = queue.receive_messages(messages_per_page=2)

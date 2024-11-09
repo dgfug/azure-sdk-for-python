@@ -1,1 +1,1 @@
--e ../azure-devtools
+-e .[ghtools]

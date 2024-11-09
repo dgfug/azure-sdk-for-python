@@ -33,13 +33,10 @@ USAGE:
 
 
 def sample_multiple_translation():
+    # [START multiple_translation]
     import os
     from azure.core.credentials import AzureKeyCredential
-    from azure.ai.translation.document import (
-        DocumentTranslationClient,
-        DocumentTranslationInput,
-        TranslationTarget
-    )
+    from azure.ai.translation.document import DocumentTranslationClient, DocumentTranslationInput, TranslationTarget
 
     endpoint = os.environ["AZURE_DOCUMENT_TRANSLATION_ENDPOINT"]
     key = os.environ["AZURE_DOCUMENT_TRANSLATION_KEY"]
@@ -51,29 +48,19 @@ def sample_multiple_translation():
 
     client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
 
-    poller = client.begin_translation(inputs=[
+    poller = client.begin_translation(
+        inputs=[
             DocumentTranslationInput(
                 source_url=source_container_url_1,
                 targets=[
-                    TranslationTarget(
-                        target_url=target_container_url_fr,
-                        language_code="fr"
-                    ),
-                    TranslationTarget(
-                        target_url=target_container_url_ar,
-                        language_code="ar"
-                    )
-                ]
+                    TranslationTarget(target_url=target_container_url_fr, language="fr"),
+                    TranslationTarget(target_url=target_container_url_ar, language="ar"),
+                ],
             ),
             DocumentTranslationInput(
                 source_url=source_container_url_2,
-                targets=[
-                    TranslationTarget(
-                        target_url=target_container_url_es,
-                        language_code="es"
-                    )
-                ]
-            )
+                targets=[TranslationTarget(target_url=target_container_url_es, language="es")],
+            ),
         ]
     )
     result = poller.result()
@@ -94,9 +81,10 @@ def sample_multiple_translation():
             print(f"Source document location: {document.source_document_url}")
             print(f"Translated document location: {document.translated_document_url}")
             print(f"Translated to language: {document.translated_to}\n")
-        else:
+        elif document.error:
             print(f"Error Code: {document.error.code}, Message: {document.error.message}\n")
+    # [END multiple_translation]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sample_multiple_translation()

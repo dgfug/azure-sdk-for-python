@@ -7,37 +7,63 @@
 # --------------------------------------------------------------------------
 
 from enum import Enum
-from six import with_metaclass
 from azure.core import CaseInsensitiveEnumMeta
 
 
-class CopyStatusType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+class AccessRight(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Access rights of the access policy."""
+
+    READ = "Read"
+    WRITE = "Write"
+    DELETE = "Delete"
+
+
+class CopyStatusType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """CopyStatusType."""
 
     PENDING = "pending"
     SUCCESS = "success"
     ABORTED = "aborted"
     FAILED = "failed"
 
-class DeleteSnapshotsOptionType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class DeleteSnapshotsOptionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """DeleteSnapshotsOptionType."""
 
     INCLUDE = "include"
     INCLUDE_LEASED = "include-leased"
 
-class FileRangeWriteType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class FileLastWrittenMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """FileLastWrittenMode."""
+
+    NOW = "Now"
+    PRESERVE = "Preserve"
+
+
+class FilePermissionFormat(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """FilePermissionFormat."""
+
+    SDDL = "Sddl"
+    BINARY = "Binary"
+
+
+class FileRangeWriteType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """FileRangeWriteType."""
 
     UPDATE = "update"
     CLEAR = "clear"
 
-class LeaseDurationType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """When a share is leased, specifies whether the lease is of infinite or fixed duration.
-    """
+
+class LeaseDurationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """When a share is leased, specifies whether the lease is of infinite or fixed duration."""
 
     INFINITE = "infinite"
     FIXED = "fixed"
 
-class LeaseStateType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Lease state of the share.
-    """
+
+class LeaseStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Lease state of the share."""
 
     AVAILABLE = "available"
     LEASED = "leased"
@@ -45,46 +71,63 @@ class LeaseStateType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     BREAKING = "breaking"
     BROKEN = "broken"
 
-class LeaseStatusType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The current lease status of the share.
-    """
+
+class LeaseStatusType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current lease status of the share."""
 
     LOCKED = "locked"
     UNLOCKED = "unlocked"
 
-class ListFilesIncludeType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class ListFilesIncludeType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ListFilesIncludeType."""
 
     TIMESTAMPS = "Timestamps"
     ETAG = "Etag"
     ATTRIBUTES = "Attributes"
     PERMISSION_KEY = "PermissionKey"
 
-class ListSharesIncludeType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class ListSharesIncludeType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ListSharesIncludeType."""
 
     SNAPSHOTS = "snapshots"
     METADATA = "metadata"
     DELETED = "deleted"
 
-class PermissionCopyModeType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class PermissionCopyModeType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """PermissionCopyModeType."""
 
     SOURCE = "source"
     OVERRIDE = "override"
 
-class ShareAccessTier(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class ShareAccessTier(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ShareAccessTier."""
 
     TRANSACTION_OPTIMIZED = "TransactionOptimized"
     HOT = "Hot"
     COOL = "Cool"
+    PREMIUM = "Premium"
 
-class ShareRootSquash(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class ShareRootSquash(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ShareRootSquash."""
 
     NO_ROOT_SQUASH = "NoRootSquash"
     ROOT_SQUASH = "RootSquash"
     ALL_SQUASH = "AllSquash"
 
-class StorageErrorCode(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Error codes returned by the service
-    """
+
+class ShareTokenIntent(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ShareTokenIntent."""
+
+    BACKUP = "backup"
+
+
+class StorageErrorCode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Error codes returned by the service."""
 
     ACCOUNT_ALREADY_EXISTS = "AccountAlreadyExists"
     ACCOUNT_BEING_CREATED = "AccountBeingCreated"
@@ -94,6 +137,8 @@ class StorageErrorCode(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     CONDITION_HEADERS_NOT_SUPPORTED = "ConditionHeadersNotSupported"
     CONDITION_NOT_MET = "ConditionNotMet"
     EMPTY_METADATA_KEY = "EmptyMetadataKey"
+    FILE_SHARE_PROVISIONED_BANDWIDTH_DOWNGRADE_NOT_ALLOWED = "FileShareProvisionedBandwidthDowngradeNotAllowed"
+    FILE_SHARE_PROVISIONED_IOPS_DOWNGRADE_NOT_ALLOWED = "FileShareProvisionedIopsDowngradeNotAllowed"
     INSUFFICIENT_ACCOUNT_PERMISSIONS = "InsufficientAccountPermissions"
     INTERNAL_ERROR = "InternalError"
     INVALID_AUTHENTICATION_INFO = "InvalidAuthenticationInfo"
@@ -145,6 +190,7 @@ class StorageErrorCode(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     SHARE_SNAPSHOT_COUNT_EXCEEDED = "ShareSnapshotCountExceeded"
     SHARE_SNAPSHOT_OPERATION_NOT_SUPPORTED = "ShareSnapshotOperationNotSupported"
     SHARE_HAS_SNAPSHOTS = "ShareHasSnapshots"
+    PREVIOUS_SNAPSHOT_NOT_FOUND = "PreviousSnapshotNotFound"
     CONTAINER_QUOTA_DOWNGRADE_NOT_ALLOWED = "ContainerQuotaDowngradeNotAllowed"
     AUTHORIZATION_SOURCE_IP_MISMATCH = "AuthorizationSourceIPMismatch"
     AUTHORIZATION_PROTOCOL_MISMATCH = "AuthorizationProtocolMismatch"

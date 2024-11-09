@@ -1,5 +1,51 @@
 # Release History
 
+## 11.1.0 (2024-09-02)
+
+### Features Added
+
+  - Model Cluster has a new parameter provisioning_state
+  - Model Destination has a new parameter identity
+  - Model Eventhub has a new parameter user_metadata
+  - Model NetworkSecurityPerimeterConfiguration has a new parameter applicable_features
+  - Model NetworkSecurityPerimeterConfiguration has a new parameter is_backing_resource
+  - Model NetworkSecurityPerimeterConfiguration has a new parameter location
+  - Model NetworkSecurityPerimeterConfiguration has a new parameter parent_association_name
+  - Model NetworkSecurityPerimeterConfiguration has a new parameter source_resource_id
+
+## 11.0.0 (2023-04-14)
+
+### Features Added
+
+  - Model Eventhub has a new parameter retention_description
+
+### Breaking Changes
+
+  - Model NetworkSecurityPerimeterConfiguration no longer has parameter location
+  - Model NetworkSecurityPerimeterConfiguration no longer has parameter tags
+
+## 11.0.0b1 (2023-02-14)
+
+### Features Added
+
+  - Model Eventhub has a new parameter retention_description
+
+### Breaking Changes
+
+  - Model NetworkSecurityPerimeterConfiguration no longer has parameter location
+  - Model NetworkSecurityPerimeterConfiguration no longer has parameter tags
+
+## 10.1.0 (2022-06-22)
+
+**Features**
+
+  - Added operation group ApplicationGroupOperations
+  - Added operation group NetworkSecurityPerimeterConfigurationOperations
+  - Added operation group NetworkSecurityPerimeterConfigurationsOperations
+  - Model Cluster has a new parameter supports_scaling
+  - Model EHNamespace has a new parameter minimum_tls_version
+  - Model EHNamespace has a new parameter public_network_access
+
 ## 10.0.0 (2021-11-01)
 
 **Features**

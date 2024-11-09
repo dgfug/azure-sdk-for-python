@@ -11,9 +11,10 @@ Example to show sending message(s) to a Service Bus Topic.
 
 import os
 from azure.servicebus import ServiceBusClient, ServiceBusMessage
+from azure.identity import DefaultAzureCredential
 
-CONNECTION_STR = os.environ['SERVICE_BUS_CONNECTION_STR']
-TOPIC_NAME = os.environ["SERVICE_BUS_TOPIC_NAME"]
+FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
+TOPIC_NAME = os.environ["SERVICEBUS_TOPIC_NAME"]
 
 
 def send_single_message(sender):
@@ -38,7 +39,8 @@ def send_batch_message(sender):
     sender.send_messages(batch_message)
 
 
-servicebus_client = ServiceBusClient.from_connection_string(conn_str=CONNECTION_STR, logging_enable=True)
+credential = DefaultAzureCredential()
+servicebus_client = ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential, logging_enable=True)
 with servicebus_client:
     sender = servicebus_client.get_topic_sender(topic_name=TOPIC_NAME)
     with sender:

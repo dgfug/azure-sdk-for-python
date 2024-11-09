@@ -36,6 +36,8 @@ os.environ['VERSIONED_STORAGE_ACCOUNT_NAME'] = os.environ.get('VERSIONED_STORAGE
 os.environ['VERSIONED_STORAGE_ACCOUNT_KEY'] = os.environ.get('VERSIONED_STORAGE_ACCOUNT_KEY', None) or VERSIONED_STORAGE_ACCOUNT_KEY
 os.environ['PREMIUM_STORAGE_ACCOUNT_NAME'] = os.environ.get('PREMIUM_STORAGE_ACCOUNT_NAME', None) or PREMIUM_STORAGE_ACCOUNT_NAME
 os.environ['PREMIUM_STORAGE_ACCOUNT_KEY'] = os.environ.get('PREMIUM_STORAGE_ACCOUNT_KEY', None) or PREMIUM_STORAGE_ACCOUNT_KEY
+os.environ['SOFT_DELETE_STORAGE_ACCOUNT_NAME'] = os.environ.get('SOFT_DELETE_STORAGE_ACCOUNT_NAME', None) or SOFT_DELETE_STORAGE_ACCOUNT_NAME
+os.environ['SOFT_DELETE_STORAGE_ACCOUNT_KEY'] = os.environ.get('SOFT_DELETE_STORAGE_ACCOUNT_KEY', None) or SOFT_DELETE_STORAGE_ACCOUNT_KEY
 os.environ['STORAGE_RESOURCE_GROUP_NAME'] = os.environ.get('STORAGE_RESOURCE_GROUP_NAME', None) or STORAGE_RESOURCE_GROUP_NAME
 
 
@@ -43,10 +45,6 @@ os.environ['AZURE_TEST_RUN_LIVE'] = os.environ.get('AZURE_TEST_RUN_LIVE', None) 
 os.environ['AZURE_SKIP_LIVE_RECORDING'] = os.environ.get('AZURE_SKIP_LIVE_RECORDING', None) or SKIP_LIVE_RECORDING
 os.environ['PROTOCOL'] = PROTOCOL
 os.environ['ACCOUNT_URL_SUFFIX'] = ACCOUNT_URL_SUFFIX
-
-os.environ['STORAGE_TENANT_ID'] = os.environ.get('STORAGE_TENANT_ID', None) or TENANT_ID
-os.environ['STORAGE_CLIENT_ID'] = os.environ.get('STORAGE_CLIENT_ID', None) or CLIENT_ID
-os.environ['STORAGE_CLIENT_SECRET'] = os.environ.get('STORAGE_CLIENT_SECRET', None) or CLIENT_SECRET
 
 BlobPreparer = functools.partial(
     PowerShellPreparer, "storage",
@@ -60,8 +58,9 @@ BlobPreparer = functools.partial(
     versioned_storage_account_key=STORAGE_ACCOUNT_FAKE_KEY,
     premium_storage_account_name='pyacrstoragestorname',
     premium_storage_account_key=STORAGE_ACCOUNT_FAKE_KEY,
-    storage_resource_group_name="rgname",
-
+    soft_delete_storage_account_name="storagesoftdelname",
+    soft_delete_storage_account_key=STORAGE_ACCOUNT_FAKE_KEY,
+    storage_resource_group_name="rgname"
 )
 
 

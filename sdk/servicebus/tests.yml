@@ -1,25 +1,23 @@
 trigger: none
 
-stages:
-  - template: ../../eng/pipelines/templates/stages/archetype-sdk-tests.yml
+extends:
+    template: ../../eng/pipelines/templates/stages/archetype-sdk-tests.yml
     parameters:
       ServiceDirectory: servicebus
-      TestTimeoutInMinutes: 300
-      MatrixReplace:
-        - TestSamples=.*/true
+      TestTimeoutInMinutes: 960
       BuildTargetingString: azure-servicebus*
       EnvVars:
-        AZURE_SUBSCRIPTION_ID: $(azure-subscription-id)
-        AZURE_TENANT_ID: $(aad-azure-sdk-test-tenant-id)
-        AZURE_CLIENT_ID: $(aad-azure-sdk-test-client-id)
-        AZURE_CLIENT_SECRET: $(aad-azure-sdk-test-client-secret)
+        AZURE_SUBSCRIPTION_ID: $(SERVICEBUS_SUBSCRIPTION_ID)
         AZURE_TEST_RUN_LIVE: 'true'
+        AZURE_SKIP_LIVE_RECORDING: 'True'
+        # Set fake authority host to ensure Managed Identity fail for Default Azure Credential
+        # so "execute samples" step correctly picks up Powershell credential.
+        AZURE_POD_IDENTITY_AUTHORITY_HOST: "FakeAuthorityHost"
       MatrixFilters:
         - PythonVersion=^(?!pypy3).*
-      Clouds: 'Public,Canary'
+      Clouds: 'Public'
+      SupportedClouds: 'Public,UsGov'
       CloudConfig:
         Public:
-          SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
-        Canary:
-          SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
-          Location: 'centraluseuap'
+        UsGov:
+          Location: 'usgovarizona'

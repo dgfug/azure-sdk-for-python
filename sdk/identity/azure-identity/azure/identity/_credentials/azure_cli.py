@@ -5,107 +5,209 @@
 from datetime import datetime
 import json
 import os
-import platform
 import re
+import shutil
 import subprocess
 import sys
-import time
-from typing import TYPE_CHECKING
+from typing import List, Optional, Any, Dict
 
-import six
-
-from azure.core.credentials import AccessToken
+from azure.core.credentials import AccessToken, AccessTokenInfo, TokenRequestOptions
 from azure.core.exceptions import ClientAuthenticationError
 
 from .. import CredentialUnavailableError
-from .._internal import _scopes_to_resource, resolve_tenant
+from .._internal import (
+    _scopes_to_resource,
+    resolve_tenant,
+    within_dac,
+    validate_tenant_id,
+    validate_scope,
+    validate_subscription,
+)
 from .._internal.decorators import log_get_token
-
-if TYPE_CHECKING:
-    # pylint:disable=ungrouped-imports
-    from typing import Any
 
 
 CLI_NOT_FOUND = "Azure CLI not found on path"
 COMMAND_LINE = "az account get-access-token --output json --resource {}"
+EXECUTABLE_NAME = "az"
 NOT_LOGGED_IN = "Please run 'az login' to set up an account"
 
 
-class AzureCliCredential(object):
+class AzureCliCredential:
     """Authenticates by requesting a token from the Azure CLI.
 
     This requires previously logging in to Azure via "az login", and will use the CLI's currently logged in identity.
+
+    :keyword str tenant_id: Optional tenant to include in the token request.
+    :keyword str subscription: The name or ID of a subscription. Set this to acquire tokens for an account other
+        than the Azure CLI's current account.
+    :keyword List[str] additionally_allowed_tenants: Specifies tenants in addition to the specified "tenant_id"
+        for which the credential may acquire tokens. Add the wildcard value "*" to allow the credential to
+        acquire tokens for any tenant the application can access.
+    :keyword int process_timeout: Seconds to wait for the Azure CLI process to respond. Defaults to 10 seconds.
+
+    .. admonition:: Example:
+
+        .. literalinclude:: ../samples/credential_creation_code_snippets.py
+            :start-after: [START create_azure_cli_credential]
+            :end-before: [END create_azure_cli_credential]
+            :language: python
+            :dedent: 4
+            :caption: Create an AzureCliCredential.
     """
 
-    def __enter__(self):
+    def __init__(
+        self,
+        *,
+        tenant_id: str = "",
+        subscription: Optional[str] = None,
+        additionally_allowed_tenants: Optional[List[str]] = None,
+        process_timeout: int = 10,
+    ) -> None:
+        if tenant_id:
+            validate_tenant_id(tenant_id)
+        if subscription:
+            validate_subscription(subscription)
+
+        self.tenant_id = tenant_id
+        self.subscription = subscription
+        self._additionally_allowed_tenants = additionally_allowed_tenants or []
+        self._process_timeout = process_timeout
+
+    def __enter__(self) -> "AzureCliCredential":
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any) -> None:
         pass
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         """Calling this method is unnecessary."""
 
-    @log_get_token("AzureCliCredential")
-    def get_token(self, *scopes, **kwargs): # pylint: disable=no-self-use
-        # type: (*str, **Any) -> AccessToken
+    @log_get_token
+    def get_token(
+        self,
+        *scopes: str,
+        claims: Optional[str] = None,  # pylint:disable=unused-argument
+        tenant_id: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AccessToken:
         """Request an access token for `scopes`.
 
         This method is called automatically by Azure SDK clients. Applications calling this method directly must
         also handle token caching because this credential doesn't cache the tokens it acquires.
 
         :param str scopes: desired scope for the access token. This credential allows only one scope per request.
+            For more information about scopes, see
+            https://learn.microsoft.com/entra/identity-platform/scopes-oidc.
+        :keyword str claims: not used by this credential; any value provided will be ignored.
         :keyword str tenant_id: optional tenant to include in the token request.
 
-        :rtype: :class:`azure.core.credentials.AccessToken`
+        :return: An access token with the desired scopes.
+        :rtype: ~azure.core.credentials.AccessToken
 
         :raises ~azure.identity.CredentialUnavailableError: the credential was unable to invoke the Azure CLI.
         :raises ~azure.core.exceptions.ClientAuthenticationError: the credential invoked the Azure CLI but didn't
           receive an access token.
         """
 
+        options: TokenRequestOptions = {}
+        if tenant_id:
+            options["tenant_id"] = tenant_id
+
+        token_info = self._get_token_base(*scopes, options=options, **kwargs)
+        return AccessToken(token_info.token, token_info.expires_on)
+
+    @log_get_token
+    def get_token_info(self, *scopes: str, options: Optional[TokenRequestOptions] = None) -> AccessTokenInfo:
+        """Request an access token for `scopes`.
+
+        This is an alternative to `get_token` to enable certain scenarios that require additional properties
+        on the token. This method is called automatically by Azure SDK clients. Applications calling this method
+        directly must also handle token caching because this credential doesn't cache the tokens it acquires.
+
+        :param str scopes: desired scopes for the access token. This credential allows only one scope per request.
+            For more information about scopes, see https://learn.microsoft.com/entra/identity-platform/scopes-oidc.
+        :keyword options: A dictionary of options for the token request. Unknown options will be ignored. Optional.
+        :paramtype options: ~azure.core.credentials.TokenRequestOptions
+
+        :rtype: AccessTokenInfo
+        :return: An AccessTokenInfo instance containing information about the token.
+
+        :raises ~azure.identity.CredentialUnavailableError: the credential was unable to invoke the Azure CLI.
+        :raises ~azure.core.exceptions.ClientAuthenticationError: the credential invoked the Azure CLI but didn't
+          receive an access token.
+        """
+        return self._get_token_base(*scopes, options=options)
+
+    def _get_token_base(
+        self, *scopes: str, options: Optional[TokenRequestOptions] = None, **kwargs: Any
+    ) -> AccessTokenInfo:
+
+        tenant_id = options.get("tenant_id") if options else None
+        if tenant_id:
+            validate_tenant_id(tenant_id)
+        for scope in scopes:
+            validate_scope(scope)
+
         resource = _scopes_to_resource(*scopes)
         command = COMMAND_LINE.format(resource)
-        tenant = resolve_tenant("", **kwargs)
+        tenant = resolve_tenant(
+            default_tenant=self.tenant_id,
+            tenant_id=tenant_id,
+            additionally_allowed_tenants=self._additionally_allowed_tenants,
+            **kwargs,
+        )
         if tenant:
             command += " --tenant " + tenant
-        output = _run_command(command)
+
+        if self.subscription:
+            command += f' --subscription "{self.subscription}"'
+        output = _run_command(command, self._process_timeout)
 
         token = parse_token(output)
         if not token:
             sanitized_output = sanitize_output(output)
-            raise ClientAuthenticationError(
-                message="Unexpected output from Azure CLI: '{}'. \n"
-                        "To mitigate this issue, please refer to the troubleshooting guidelines here at "
-                        "https://aka.ms/azsdk/python/identity/azclicredential/troubleshoot.".format(sanitized_output))
+            message = (
+                f"Unexpected output from Azure CLI: '{sanitized_output}'. \n"
+                f"To mitigate this issue, please refer to the troubleshooting guidelines here at "
+                f"https://aka.ms/azsdk/python/identity/azclicredential/troubleshoot."
+            )
+            if within_dac.get():
+                raise CredentialUnavailableError(message=message)
+            raise ClientAuthenticationError(message=message)
 
         return token
 
 
-def parse_token(output):
+def parse_token(output) -> Optional[AccessTokenInfo]:
     """Parse output of 'az account get-access-token' to an AccessToken.
 
     In particular, convert the "expiresOn" value to epoch seconds. This value is a naive local datetime as returned by
     datetime.fromtimestamp.
+
+    :param str output: Output of 'az' command.
+    :return: An AccessToken or None if the output isn't valid.
+    :rtype: azure.core.credentials.AccessToken or None
     """
     try:
         token = json.loads(output)
-        dt = datetime.strptime(token["expiresOn"], "%Y-%m-%d %H:%M:%S.%f")
-        if hasattr(dt, "timestamp"):
-            # Python >= 3.3
-            expires_on = dt.timestamp()
-        else:
-            # taken from Python 3.5's datetime.timestamp()
-            expires_on = time.mktime((dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, -1, -1, -1))
 
-        return AccessToken(token["accessToken"], int(expires_on))
+        # Use "expires_on" if it's present, otherwise use "expiresOn".
+        if "expires_on" in token:
+            return AccessTokenInfo(token["accessToken"], int(token["expires_on"]))
+
+        dt = datetime.strptime(token["expiresOn"], "%Y-%m-%d %H:%M:%S.%f")
+        expires_on = dt.timestamp()
+        return AccessTokenInfo(token["accessToken"], int(expires_on))
     except (KeyError, ValueError):
         return None
 
 
-def get_safe_working_dir():
-    """Invoke 'az' from a directory controlled by the OS, not the executing program's directory"""
+def get_safe_working_dir() -> str:
+    """Invoke 'az' from a directory controlled by the OS, not the executing program's directory.
+
+    :return: The path to the directory.
+    :rtype: str
+    """
 
     if sys.platform.startswith("win"):
         path = os.environ.get("SYSTEMROOT")
@@ -116,12 +218,21 @@ def get_safe_working_dir():
     return "/bin"
 
 
-def sanitize_output(output):
-    """Redact access tokens from CLI output to prevent error messages revealing them"""
+def sanitize_output(output: str) -> str:
+    """Redact access tokens from CLI output to prevent error messages revealing them.
+
+    :param str output: The output of the Azure CLI.
+    :return: The output with access tokens redacted.
+    :rtype: str
+    """
     return re.sub(r"\"accessToken\": \"(.*?)(\"|$)", "****", output)
 
 
-def _run_command(command):
+def _run_command(command: str, timeout: int) -> str:
+    # Ensure executable exists in PATH first. This avoids a subprocess call that would fail anyway.
+    if shutil.which(EXECUTABLE_NAME) is None:
+        raise CredentialUnavailableError(message=CLI_NOT_FOUND)
+
     if sys.platform.startswith("win"):
         args = ["cmd", "/c", command]
     else:
@@ -129,34 +240,36 @@ def _run_command(command):
     try:
         working_directory = get_safe_working_dir()
 
-        kwargs = {
-            "stderr": subprocess.STDOUT,
+        kwargs: Dict[str, Any] = {
+            "stderr": subprocess.PIPE,
+            "stdin": subprocess.DEVNULL,
             "cwd": working_directory,
             "universal_newlines": True,
+            "timeout": timeout,
             "env": dict(os.environ, AZURE_CORE_NO_COLOR="true"),
         }
-        if platform.python_version() >= "3.3":
-            kwargs["timeout"] = 10
-
         return subprocess.check_output(args, **kwargs)
     except subprocess.CalledProcessError as ex:
         # non-zero return from shell
-        if ex.returncode == 127 or ex.output.startswith("'az' is not recognized"):
-            raise CredentialUnavailableError(message=CLI_NOT_FOUND)
-        if "az login" in ex.output or "az account set" in ex.output:
-            raise CredentialUnavailableError(message=NOT_LOGGED_IN)
+        # Fallback check in case the executable is not found while executing subprocess.
+        if ex.returncode == 127 or ex.stderr.startswith("'az' is not recognized"):
+            raise CredentialUnavailableError(message=CLI_NOT_FOUND) from ex
+        if ("az login" in ex.stderr or "az account set" in ex.stderr) and "AADSTS" not in ex.stderr:
+            raise CredentialUnavailableError(message=NOT_LOGGED_IN) from ex
 
         # return code is from the CLI -> propagate its output
-        if ex.output:
-            message = sanitize_output(ex.output)
+        if ex.stderr:
+            message = sanitize_output(ex.stderr)
         else:
             message = "Failed to invoke Azure CLI"
-        raise ClientAuthenticationError(message=message)
+        if within_dac.get():
+            raise CredentialUnavailableError(message=message) from ex
+        raise ClientAuthenticationError(message=message) from ex
     except OSError as ex:
-        # failed to execute 'cmd' or '/bin/sh'; CLI may or may not be installed
+        # failed to execute 'cmd' or '/bin/sh'
         error = CredentialUnavailableError(message="Failed to execute '{}'".format(args[0]))
-        six.raise_from(error, ex)
+        raise error from ex
     except Exception as ex:  # pylint:disable=broad-except
         # could be a timeout, for example
         error = CredentialUnavailableError(message="Failed to invoke the Azure CLI")
-        six.raise_from(error, ex)
+        raise error from ex

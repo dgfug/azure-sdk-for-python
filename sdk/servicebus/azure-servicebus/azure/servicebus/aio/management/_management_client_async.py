@@ -5,12 +5,14 @@
 # pylint:disable=protected-access
 # pylint:disable=specify-parameter-names-in-call
 # pylint:disable=too-many-lines
+# pylint:disable=client-method-missing-tracing-decorator-async,client-method-missing-tracing-decorator
 import functools
 import datetime
 from copy import deepcopy
 from typing import Any, Union, cast, Mapping, Optional, List, TYPE_CHECKING
 from xml.etree.ElementTree import ElementTree
 
+from azure.core import MatchConditions
 from azure.core.async_paging import AsyncItemPaged
 from azure.core.exceptions import ResourceNotFoundError
 from azure.core.pipeline import AsyncPipeline
@@ -21,17 +23,24 @@ from azure.core.pipeline.policies import (
     RequestIdPolicy,
     AsyncBearerTokenCredentialPolicy,
 )
-from azure.core.pipeline.transport import AioHttpTransport
+from azure.core.pipeline.transport import (  # pylint:disable=non-abstract-transport-import,no-name-in-module
+    AioHttpTransport,
+)
 
 from ...management._generated.models import (
     QueueDescriptionFeed,
+    QueueDescriptionEntryContent,
     TopicDescriptionEntry,
+    TopicDescriptionEntryContent,
     QueueDescriptionEntry,
     SubscriptionDescriptionFeed,
     SubscriptionDescriptionEntry,
+    SubscriptionDescriptionEntryContent,
     RuleDescriptionEntry,
     RuleDescriptionFeed,
+    RuleDescriptionEntryContent,
     NamespacePropertiesEntry,
+    NamespacePropertiesEntryContent,
     CreateTopicBody,
     CreateTopicBodyContent,
     TopicDescriptionFeed,
@@ -53,14 +62,14 @@ from ...aio._base_handler_async import (
     ServiceBusSharedKeyCredential,
     ServiceBusSASTokenCredential,
 )
-from ...management._generated.aio._configuration_async import (
+from ...management._generated.aio._configuration import (
     ServiceBusManagementClientConfiguration,
 )
-from ...management._generated.aio._service_bus_management_client_async import (
+from ...management._generated.aio import (
     ServiceBusManagementClient as ServiceBusManagementClientImpl,
 )
 from ...management import _constants as constants
-from ...management._api_version import DEFAULT_VERSION
+from ...management._api_version import DEFAULT_VERSION, ApiVersion
 from ._shared_key_policy_async import AsyncServiceBusSharedKeyCredentialPolicy
 from ...management._models import (
     AuthorizationRule,
@@ -100,9 +109,10 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
     :param str fully_qualified_namespace: The fully qualified host name for the Service Bus namespace.
     :param credential: To authenticate to manage the entities of the ServiceBus namespace.
     :type credential: AsyncTokenCredential
-    :keyword str api_version: The Service Bus API version to use for requests. Default value is the most
+    :keyword api_version: The Service Bus API version to use for requests. Default value is the most
      recent service version that is compatible with the current SDK. Setting to an older version may result
      in reduced feature compatibility.
+    :paramtype api_version: str or ApiVersion
     """
 
     def __init__(
@@ -110,34 +120,37 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         fully_qualified_namespace: str,
         credential: "AsyncTokenCredential",
         *,
-        api_version: str = DEFAULT_VERSION,
+        api_version: Union[str, ApiVersion] = DEFAULT_VERSION,
         **kwargs: Any
     ) -> None:
-
         self.fully_qualified_namespace = fully_qualified_namespace
         self._api_version = api_version
         self._credential = credential
         self._endpoint = "https://" + fully_qualified_namespace
-        self._config = ServiceBusManagementClientConfiguration(self._endpoint, **kwargs)
+        self._config = ServiceBusManagementClientConfiguration(
+            self._endpoint, credential=self._credential, api_version=api_version, **kwargs
+        )
         self._pipeline = self._build_pipeline()
         self._impl = ServiceBusManagementClientImpl(
-            endpoint=fully_qualified_namespace, pipeline=self._pipeline
+            endpoint=fully_qualified_namespace,
+            credential=self._credential,
+            pipeline=self._pipeline,
+            api_version=api_version,
+            **kwargs
         )
 
     async def __aenter__(self) -> "ServiceBusAdministrationClient":
         await self._impl.__aenter__()
         return self
 
-    async def __aexit__(self, *exc_details) -> None:
+    async def __aexit__(self, *exc_details: Any) -> None:
         await self._impl.__aexit__(*exc_details)
 
-    def _build_pipeline(self, **kwargs):  # pylint: disable=no-self-use
+    def _build_pipeline(self, **kwargs: Any):
         transport = kwargs.get("transport")
         policies = kwargs.get("policies")
         credential_policy = (
-            AsyncServiceBusSharedKeyCredentialPolicy(
-                self._endpoint, self._credential, "Authorization"
-            )
+            AsyncServiceBusSharedKeyCredentialPolicy(self._endpoint, self._credential, "Authorization")
             if isinstance(self._credential, ServiceBusSharedKeyCredential)
             else AsyncBearerTokenCredentialPolicy(self._credential, JWT_TOKEN_SCOPE)
         )
@@ -160,66 +173,52 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
             transport = AioHttpTransport(**kwargs)
         return AsyncPipeline(transport, policies)
 
-    async def _get_entity_element(self, entity_name, enrich=False, **kwargs):
-        # type: (str, bool, Any) -> ElementTree
+    async def _get_entity_element(self, entity_name: str, enrich: bool = False, **kwargs: Any) -> ElementTree:
         _validate_entity_name_type(entity_name)
 
         with _handle_response_error():
             element = cast(
                 ElementTree,
-                await self._impl.entity.get(
-                    entity_name, enrich=enrich, api_version=self._api_version, **kwargs
-                ),
+                await self._impl.entity.get(entity_name, enrich=enrich, **kwargs),
             )
         return element
 
     async def _get_subscription_element(
-        self, topic_name, subscription_name, enrich=False, **kwargs
-    ):
-        # type: (str, str, bool, Any) -> ElementTree
+        self, topic_name: str, subscription_name: str, enrich: bool = False, **kwargs: Any
+    ) -> ElementTree:
         _validate_topic_and_subscription_types(topic_name, subscription_name)
 
         with _handle_response_error():
             element = cast(
                 ElementTree,
-                await self._impl.subscription.get(
-                    topic_name,
-                    subscription_name,
-                    enrich=enrich,
-                    api_version=self._api_version,
-                    **kwargs
-                ),
+                await self._impl.subscription.get(topic_name, subscription_name, enrich=enrich, **kwargs),
             )
         return element
 
     async def _get_rule_element(
-        self, topic_name, subscription_name, rule_name, **kwargs
-    ):
-        # type: (str, str, str, Any) -> ElementTree
-        _validate_topic_subscription_and_rule_types(
-            topic_name, subscription_name, rule_name
-        )
+        self, topic_name: str, subscription_name: str, rule_name: str, **kwargs: Any
+    ) -> ElementTree:
+        _validate_topic_subscription_and_rule_types(topic_name, subscription_name, rule_name)
 
         with _handle_response_error():
             element = cast(
                 ElementTree,
-                await self._impl.rule.get(
-                    topic_name,
-                    subscription_name,
-                    rule_name,
-                    enrich=False,
-                    api_version=self._api_version,
-                    **kwargs
-                ),
+                await self._impl.rule.get(topic_name, subscription_name, rule_name, enrich=False, **kwargs),
             )
         return element
 
     async def _create_forward_to_header_tokens(self, entity, kwargs):
-        """forward_to requires providing a bearer token in headers for the referenced entity."""
+        """forward_to requires providing a bearer token in headers for the referenced entity.
+
+        :param any entity: The entity to be created.
+        :param dict kwargs: The keyword arguments to be included in the request.
+        """
         kwargs["headers"] = kwargs.get("headers", {})
 
         async def _populate_header_within_kwargs(uri, header):
-            token = (await self._credential.get_token(uri)).token.decode()
+            if not isinstance(self._credential, (ServiceBusSASTokenCredential, ServiceBusSharedKeyCredential)):
+                uri = JWT_TOKEN_SCOPE
+            token = (await self._credential.get_token(uri)).token
             if not isinstance(
                 self._credential,
                 (ServiceBusSASTokenCredential, ServiceBusSharedKeyCredential),
@@ -228,9 +227,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
             kwargs["headers"][header] = token
 
         if entity.forward_to:
-            await _populate_header_within_kwargs(
-                entity.forward_to, SUPPLEMENTARY_AUTHORIZATION_HEADER
-            )
+            await _populate_header_within_kwargs(entity.forward_to, SUPPLEMENTARY_AUTHORIZATION_HEADER)
         if entity.forward_dead_lettered_messages_to:
             await _populate_header_within_kwargs(
                 entity.forward_dead_lettered_messages_to,
@@ -239,15 +236,17 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
 
     @classmethod
     def from_connection_string(
-        cls, conn_str: str, *, api_version: str = DEFAULT_VERSION, **kwargs: Any
+        cls, conn_str: str, *, api_version: Union[str, ApiVersion] = DEFAULT_VERSION, **kwargs: Any
     ) -> "ServiceBusAdministrationClient":
         """Create a client from connection string.
 
         :param str conn_str: The connection string of the Service Bus Namespace.
+        :return: A ServiceBusAdministrationClient.
         :rtype: ~azure.servicebus.management.aio.ServiceBusAdministrationClient
-        :keyword str api_version: The Service Bus API version to use for requests. Default value is the most
+        :keyword api_version: The Service Bus API version to use for requests. Default value is the most
          recent service version that is compatible with the current SDK. Setting to an older version may result
          in reduced feature compatibility.
+        :paramtype api_version: str or ApiVersion
         """
         (
             endpoint,
@@ -265,36 +264,32 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
             endpoint = endpoint[endpoint.index("//") + 2 :]
         return cls(endpoint, credential, api_version=api_version, **kwargs)  # type: ignore
 
-    async def get_queue(self, queue_name: str, **kwargs) -> QueueProperties:
+    async def get_queue(self, queue_name: str, **kwargs: Any) -> QueueProperties:
         """Get the properties of a queue.
 
         :param str queue_name: The name of the queue.
+        :return: The properties of the Queue.
         :rtype: ~azure.servicebus.management.QueueProperties
         """
         entry_ele = await self._get_entity_element(queue_name, **kwargs)
         entry = QueueDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError("Queue '{}' does not exist".format(queue_name))
-        queue_description = QueueProperties._from_internal_entity(
-            queue_name, entry.content.queue_description
-        )
+        queue_description = QueueProperties._from_internal_entity(queue_name, entry.content.queue_description)
         return queue_description
 
-    async def get_queue_runtime_properties(
-        self, queue_name: str, **kwargs
-    ) -> QueueRuntimeProperties:
+    async def get_queue_runtime_properties(self, queue_name: str, **kwargs: Any) -> QueueRuntimeProperties:
         """Get the runtime information of a queue.
 
         :param str queue_name: The name of the queue.
+        :return: The runtime information of the Queue.
         :rtype: ~azure.servicebus.management.QueueRuntimeProperties
         """
         entry_ele = await self._get_entity_element(queue_name, **kwargs)
         entry = QueueDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError("Queue {} does not exist".format(queue_name))
-        runtime_properties = QueueRuntimeProperties._from_internal_entity(
-            queue_name, entry.content.queue_description
-        )
+        runtime_properties = QueueRuntimeProperties._from_internal_entity(queue_name, entry.content.queue_description)
         return runtime_properties
 
     async def create_queue(  # pylint: disable=too-many-locals
@@ -305,9 +300,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         auto_delete_on_idle: Optional[Union[datetime.timedelta, str]] = None,
         dead_lettering_on_message_expiration: Optional[bool] = None,
         default_message_time_to_live: Optional[Union[datetime.timedelta, str]] = None,
-        duplicate_detection_history_time_window: Optional[
-            Union[datetime.timedelta, str]
-        ] = None,
+        duplicate_detection_history_time_window: Optional[Union[datetime.timedelta, str]] = None,
         enable_batched_operations: Optional[bool] = None,
         enable_express: Optional[bool] = None,
         enable_partitioning: Optional[bool] = None,
@@ -384,17 +377,13 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
          and Service Bus API version "2021-05" or higher.
          The minimum allowed value is 1024 while the maximum allowed value is 102400. Default value is 1024.
         :paramtype max_message_size_in_kilobytes: int
-
+        :returns: Returns the properties of the queue.
         :rtype: ~azure.servicebus.management.QueueProperties
         """
-        forward_to = _normalize_entity_path_to_full_path_if_needed(
-            forward_to, self.fully_qualified_namespace
-        )
-        forward_dead_lettered_messages_to = (
-            _normalize_entity_path_to_full_path_if_needed(
-                forward_dead_lettered_messages_to,
-                self.fully_qualified_namespace,
-            )
+        forward_to = _normalize_entity_path_to_full_path_if_needed(forward_to, self.fully_qualified_namespace)
+        forward_dead_lettered_messages_to = _normalize_entity_path_to_full_path_if_needed(
+            forward_dead_lettered_messages_to,
+            self.fully_qualified_namespace,
         )
         queue = QueueProperties(
             queue_name,
@@ -429,23 +418,17 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         with _handle_response_error():
             entry_ele = cast(
                 ElementTree,
-                await self._impl.entity.put(
-                    queue_name,  # type: ignore
-                    request_body,
-                    api_version=self._api_version,
-                    **kwargs
-                ),
+                await self._impl.entity.put(queue_name, request_body, **kwargs),  # type: ignore
             )
 
         entry = QueueDescriptionEntry.deserialize(entry_ele)
-        result = QueueProperties._from_internal_entity(
-            queue_name, entry.content.queue_description
-        )
+        # Need to cast from Optional[QueueDescriptionEntryContent] to QueueDescriptionEntryContent
+        # since we know for certain that `entry.content` will not be None here.
+        entry.content = cast(QueueDescriptionEntryContent, entry.content)
+        result = QueueProperties._from_internal_entity(queue_name, entry.content.queue_description)
         return result
 
-    async def update_queue(
-        self, queue: Union[QueueProperties, Mapping[str, Any]], **kwargs
-    ) -> None:
+    async def update_queue(self, queue: Union[QueueProperties, Mapping[str, Any]], **kwargs: Any) -> None:
         """Update a queue.
 
         Before calling this method, you should use `get_queue`, `create_queue` or `list_queues` to get a
@@ -473,14 +456,10 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         await self._create_forward_to_header_tokens(to_update, kwargs)
         with _handle_response_error():
             await self._impl.entity.put(
-                queue.name,  # type: ignore
-                request_body,
-                api_version=self._api_version,
-                if_match="*",
-                **kwargs
+                queue.name, request_body, match_condition=MatchConditions.IfPresent, **kwargs  # type: ignore
             )
 
-    async def delete_queue(self, queue_name: str, **kwargs) -> None:
+    async def delete_queue(self, queue_name: str, **kwargs: Any) -> None:
         """Delete a queue.
 
         :param str queue_name: The name of the queue or
@@ -492,9 +471,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         if not queue_name:
             raise ValueError("queue_name must not be None or empty")
         with _handle_response_error():
-            await self._impl.entity.delete(
-                queue_name, api_version=self._api_version, **kwargs
-            )
+            await self._impl.entity.delete(queue_name, **kwargs)
 
     def list_queues(self, **kwargs: Any) -> AsyncItemPaged[QueueProperties]:
         """List the queues of a ServiceBus namespace.
@@ -504,25 +481,16 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         """
 
         def entry_to_qd(entry):
-            qd = QueueProperties._from_internal_entity(
-                entry.title, entry.content.queue_description
-            )
+            qd = QueueProperties._from_internal_entity(entry.title, entry.content.queue_description)
             return qd
 
-        extract_data = functools.partial(
-            extract_data_template, QueueDescriptionFeed, entry_to_qd
-        )
+        extract_data = functools.partial(extract_data_template, QueueDescriptionFeed, entry_to_qd)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_QUEUES),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_QUEUES), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
-    def list_queues_runtime_properties(
-        self, **kwargs: Any
-    ) -> AsyncItemPaged[QueueRuntimeProperties]:
+    def list_queues_runtime_properties(self, **kwargs: Any) -> AsyncItemPaged[QueueRuntimeProperties]:
         """List the runtime information of the queues in a ServiceBus namespace.
 
         :returns: An iterable (auto-paging) response of QueueRuntimeProperties.
@@ -530,52 +498,41 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         """
 
         def entry_to_qr(entry):
-            qd = QueueRuntimeProperties._from_internal_entity(
-                entry.title, entry.content.queue_description
-            )
+            qd = QueueRuntimeProperties._from_internal_entity(entry.title, entry.content.queue_description)
             return qd
 
-        extract_data = functools.partial(
-            extract_data_template, QueueDescriptionFeed, entry_to_qr
-        )
+        extract_data = functools.partial(extract_data_template, QueueDescriptionFeed, entry_to_qr)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_QUEUES),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_QUEUES), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
-    async def get_topic(self, topic_name: str, **kwargs) -> TopicProperties:
+    async def get_topic(self, topic_name: str, **kwargs: Any) -> TopicProperties:
         """Get the properties of a topic.
 
         :param str topic_name: The name of the topic.
+        :return: The properties of the topic.
         :rtype: ~azure.servicebus.management.TopicDescription
         """
         entry_ele = await self._get_entity_element(topic_name, **kwargs)
         entry = TopicDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError("Topic '{}' does not exist".format(topic_name))
-        topic_description = TopicProperties._from_internal_entity(
-            topic_name, entry.content.topic_description
-        )
+        topic_description = TopicProperties._from_internal_entity(topic_name, entry.content.topic_description)
         return topic_description
 
-    async def get_topic_runtime_properties(
-        self, topic_name: str, **kwargs
-    ) -> TopicRuntimeProperties:
+    async def get_topic_runtime_properties(self, topic_name: str, **kwargs: Any) -> TopicRuntimeProperties:
         """Get the runtime information of a topic.
 
         :param str topic_name: The name of the topic.
+        :return: The runtime info of the topic.
         :rtype: ~azure.servicebus.management.TopicRuntimeProperties
         """
         entry_ele = await self._get_entity_element(topic_name, **kwargs)
         entry = TopicDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError("Topic {} does not exist".format(topic_name))
-        topic_description = TopicRuntimeProperties._from_internal_entity(
-            topic_name, entry.content.topic_description
-        )
+        topic_description = TopicRuntimeProperties._from_internal_entity(topic_name, entry.content.topic_description)
         return topic_description
 
     async def create_topic(
@@ -583,13 +540,9 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         topic_name: str,
         *,
         default_message_time_to_live: Optional[Union[datetime.timedelta, str]] = None,
-        max_size_in_megabytes: Optional[
-            int
-        ] = None,
+        max_size_in_megabytes: Optional[int] = None,
         requires_duplicate_detection: Optional[bool] = None,
-        duplicate_detection_history_time_window: Optional[
-            Union[datetime.timedelta, str]
-        ] = None,
+        duplicate_detection_history_time_window: Optional[Union[datetime.timedelta, str]] = None,
         enable_batched_operations: Optional[bool] = None,
         size_in_bytes: Optional[int] = None,
         filtering_messages_before_publishing: Optional[bool] = None,
@@ -650,7 +603,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
          and Service Bus API version "2021-05" or higher.
          The minimum allowed value is 1024 while the maximum allowed value is 102400. Default value is 1024.
         :paramtype max_message_size_in_kilobytes: int
-
+        :return: Returns the properties of the topic.
         :rtype: ~azure.servicebus.management.TopicProperties
         """
 
@@ -686,22 +639,16 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         with _handle_response_error():
             entry_ele = cast(
                 ElementTree,
-                await self._impl.entity.put(
-                    topic_name,  # type: ignore
-                    request_body,
-                    api_version=self._api_version,
-                    **kwargs
-                ),
+                await self._impl.entity.put(topic_name, request_body, **kwargs),  # type: ignore
             )
         entry = TopicDescriptionEntry.deserialize(entry_ele)
-        result = TopicProperties._from_internal_entity(
-            topic_name, entry.content.topic_description
-        )
+        # Need to cast from Optional[TopicDescriptionEntryContent] to TopicDescriptionEntryContent
+        # since we know for certain that `entry.content` will not be None here.
+        entry.content = cast(TopicDescriptionEntryContent, entry.content)
+        result = TopicProperties._from_internal_entity(topic_name, entry.content.topic_description)
         return result
 
-    async def update_topic(
-        self, topic: Union[TopicProperties, Mapping[str, Any]], **kwargs
-    ) -> None:
+    async def update_topic(self, topic: Union[TopicProperties, Mapping[str, Any]], **kwargs: Any) -> None:
         """Update a topic.
 
         Before calling this method, you should use `get_topic`, `create_topic` or `list_topics` to get a
@@ -728,14 +675,10 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         request_body = create_entity_body.serialize(is_xml=True)
         with _handle_response_error():
             await self._impl.entity.put(
-                topic.name,  # type: ignore
-                request_body,
-                api_version=self._api_version,
-                if_match="*",
-                **kwargs
+                topic.name, request_body, match_condition=MatchConditions.IfPresent, **kwargs  # type: ignore
             )
 
-    async def delete_topic(self, topic_name: str, **kwargs) -> None:
+    async def delete_topic(self, topic_name: str, **kwargs: Any) -> None:
         """Delete a topic.
 
         :param str topic_name: The topic to be deleted.
@@ -743,9 +686,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         """
         _validate_entity_name_type(topic_name)
 
-        await self._impl.entity.delete(
-            topic_name, api_version=self._api_version, **kwargs
-        )
+        await self._impl.entity.delete(topic_name, **kwargs)
 
     def list_topics(self, **kwargs: Any) -> AsyncItemPaged[TopicProperties]:
         """List the topics of a ServiceBus namespace.
@@ -755,93 +696,69 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         """
 
         def entry_to_topic(entry):
-            topic = TopicProperties._from_internal_entity(
-                entry.title, entry.content.topic_description
-            )
+            topic = TopicProperties._from_internal_entity(entry.title, entry.content.topic_description)
             return topic
 
-        extract_data = functools.partial(
-            extract_data_template, TopicDescriptionFeed, entry_to_topic
-        )
+        extract_data = functools.partial(extract_data_template, TopicDescriptionFeed, entry_to_topic)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_TOPICS),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_TOPICS), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
-    def list_topics_runtime_properties(
-        self, **kwargs: Any
-    ) -> AsyncItemPaged[TopicRuntimeProperties]:
+    def list_topics_runtime_properties(self, **kwargs: Any) -> AsyncItemPaged[TopicRuntimeProperties]:
         """List the topics runtime information of a ServiceBus namespace.
 
-        :returns: An iterable (auto-paging) response of TopicRuntimeProperties.
+        :return: An iterable (auto-paging) response of TopicRuntimeProperties.
         :rtype: ~azure.core.async_paging.AsyncItemPaged[~azure.servicebus.management.TopicRuntimeProperties]
         """
 
         def entry_to_topic(entry):
-            topic = TopicRuntimeProperties._from_internal_entity(
-                entry.title, entry.content.topic_description
-            )
+            topic = TopicRuntimeProperties._from_internal_entity(entry.title, entry.content.topic_description)
             return topic
 
-        extract_data = functools.partial(
-            extract_data_template, TopicDescriptionFeed, entry_to_topic
-        )
+        extract_data = functools.partial(extract_data_template, TopicDescriptionFeed, entry_to_topic)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_TOPICS),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_entities, constants.ENTITY_TYPE_TOPICS), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
-    async def get_subscription(
-        self, topic_name: str, subscription_name: str, **kwargs
-    ) -> SubscriptionProperties:
+    async def get_subscription(self, topic_name: str, subscription_name: str, **kwargs: Any) -> SubscriptionProperties:
         """Get the properties of a topic subscription.
 
         :param str topic_name: The topic that owns the subscription.
         :param str subscription_name: name of the subscription.
+        :return: An instance of SubscriptionProperties.
         :rtype: ~azure.servicebus.management.SubscriptionProperties
         """
-        entry_ele = await self._get_subscription_element(
-            topic_name, subscription_name, **kwargs
-        )
+        entry_ele = await self._get_subscription_element(topic_name, subscription_name, **kwargs)
         entry = SubscriptionDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError(
-                "Subscription('Topic: {}, Subscription: {}') does not exist".format(
-                    subscription_name, topic_name
-                )
+                "Subscription('Topic: {}, Subscription: {}') does not exist".format(subscription_name, topic_name)
             )
         subscription = SubscriptionProperties._from_internal_entity(
-            entry.title, entry.content.subscription_description
+            subscription_name, entry.content.subscription_description
         )
         return subscription
 
     async def get_subscription_runtime_properties(
-        self, topic_name: str, subscription_name: str, **kwargs
+        self, topic_name: str, subscription_name: str, **kwargs: Any
     ) -> SubscriptionRuntimeProperties:
         """Get a topic subscription runtime info.
 
         :param str topic_name: The topic that owns the subscription.
         :param str subscription_name: name of the subscription.
+        :return: An instance of SubscriptionRuntimeProperties.
         :rtype: ~azure.servicebus.management.SubscriptionRuntimeProperties
         """
-        entry_ele = await self._get_subscription_element(
-            topic_name, subscription_name, **kwargs
-        )
+        entry_ele = await self._get_subscription_element(topic_name, subscription_name, **kwargs)
         entry = SubscriptionDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError(
-                "Subscription('Topic: {}, Subscription: {}') does not exist".format(
-                    subscription_name, topic_name
-                )
+                "Subscription('Topic: {}, Subscription: {}') does not exist".format(subscription_name, topic_name)
             )
         subscription = SubscriptionRuntimeProperties._from_internal_entity(
-            entry.title, entry.content.subscription_description
+            subscription_name, entry.content.subscription_description
         )
         return subscription
 
@@ -907,18 +824,15 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
          automatically deleted. The minimum duration is 5 minutes.
          Input value of either type ~datetime.timedelta or string in ISO 8601 duration format like "PT300S" is accepted.
         :paramtype auto_delete_on_idle: Union[~datetime.timedelta, str]
+        :return: Returns the properties of the topic subscription that was created.
         :rtype:  ~azure.servicebus.management.SubscriptionProperties
         """
         # pylint:disable=protected-access
         _validate_entity_name_type(topic_name, display_name="topic_name")
-        forward_to = _normalize_entity_path_to_full_path_if_needed(
-            forward_to, self.fully_qualified_namespace
-        )
-        forward_dead_lettered_messages_to = (
-            _normalize_entity_path_to_full_path_if_needed(
-                forward_dead_lettered_messages_to,
-                self.fully_qualified_namespace,
-            )
+        forward_to = _normalize_entity_path_to_full_path_if_needed(forward_to, self.fully_qualified_namespace)
+        forward_dead_lettered_messages_to = _normalize_entity_path_to_full_path_if_needed(
+            forward_dead_lettered_messages_to,
+            self.fully_qualified_namespace,
         )
 
         subscription = SubscriptionProperties(
@@ -950,25 +864,19 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
             entry_ele = cast(
                 ElementTree,
                 await self._impl.subscription.put(
-                    topic_name,
-                    subscription_name,  # type: ignore
-                    request_body,
-                    api_version=self._api_version,
-                    **kwargs
+                    topic_name, subscription_name, request_body, **kwargs  # type: ignore
                 ),
             )
 
         entry = SubscriptionDescriptionEntry.deserialize(entry_ele)
-        result = SubscriptionProperties._from_internal_entity(
-            subscription_name, entry.content.subscription_description
-        )
+        # Need to cast from Optional[SubscriptionDescriptionEntryContent] to SubscriptionDescriptionEntryContent
+        # since we know for certain that `entry.content` will not be None here.
+        entry.content = cast(SubscriptionDescriptionEntryContent, entry.content)
+        result = SubscriptionProperties._from_internal_entity(subscription_name, entry.content.subscription_description)
         return result
 
     async def update_subscription(
-        self,
-        topic_name: str,
-        subscription: Union[SubscriptionProperties, Mapping[str, Any]],
-        **kwargs
+        self, topic_name: str, subscription: Union[SubscriptionProperties, Mapping[str, Any]], **kwargs: Any
     ) -> None:
         """Update a subscription.
 
@@ -987,12 +895,8 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
 
         _validate_entity_name_type(topic_name, display_name="topic_name")
         # we should not mutate the input, making a copy first for update
-        subscription = deepcopy(
-            create_properties_from_dict_if_needed(subscription, SubscriptionProperties)
-        )
-        to_update = subscription._to_internal_entity(
-            self.fully_qualified_namespace, kwargs
-        )
+        subscription = deepcopy(create_properties_from_dict_if_needed(subscription, SubscriptionProperties))
+        to_update = subscription._to_internal_entity(self.fully_qualified_namespace, kwargs)
 
         create_entity_body = CreateSubscriptionBody(
             content=CreateSubscriptionBodyContent(
@@ -1003,17 +907,10 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         await self._create_forward_to_header_tokens(to_update, kwargs)
         with _handle_response_error():
             await self._impl.subscription.put(
-                topic_name,
-                subscription.name,
-                request_body,
-                api_version=self._api_version,
-                if_match="*",
-                **kwargs
+                topic_name, subscription.name, request_body, match_condition=MatchConditions.IfPresent, **kwargs
             )
 
-    async def delete_subscription(
-        self, topic_name: str, subscription_name: str, **kwargs
-    ) -> None:
+    async def delete_subscription(self, topic_name: str, subscription_name: str, **kwargs: Any) -> None:
         """Delete a topic subscription.
 
         :param str topic_name: The topic that owns the subscription.
@@ -1023,13 +920,9 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         """
         _validate_topic_and_subscription_types(topic_name, subscription_name)
 
-        await self._impl.subscription.delete(
-            topic_name, subscription_name, api_version=self._api_version, **kwargs
-        )
+        await self._impl.subscription.delete(topic_name, subscription_name, **kwargs)
 
-    def list_subscriptions(
-        self, topic_name: str, **kwargs: Any
-    ) -> AsyncItemPaged[SubscriptionProperties]:
+    def list_subscriptions(self, topic_name: str, **kwargs: Any) -> AsyncItemPaged[SubscriptionProperties]:
         """List the subscriptions of a ServiceBus Topic.
 
         :param str topic_name: The topic that owns the subscription.
@@ -1044,14 +937,9 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
             )
             return subscription
 
-        extract_data = functools.partial(
-            extract_data_template, SubscriptionDescriptionFeed, entry_to_subscription
-        )
+        extract_data = functools.partial(extract_data_template, SubscriptionDescriptionFeed, entry_to_subscription)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_subscriptions, topic_name),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_subscriptions, topic_name), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
@@ -1072,31 +960,23 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
             )
             return subscription
 
-        extract_data = functools.partial(
-            extract_data_template, SubscriptionDescriptionFeed, entry_to_subscription
-        )
+        extract_data = functools.partial(extract_data_template, SubscriptionDescriptionFeed, entry_to_subscription)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_subscriptions, topic_name),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_subscriptions, topic_name), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
-    async def get_rule(
-        self, topic_name: str, subscription_name: str, rule_name: str, **kwargs
-    ) -> RuleProperties:
+    async def get_rule(self, topic_name: str, subscription_name: str, rule_name: str, **kwargs: Any) -> RuleProperties:
         """Get the properties of a topic subscription rule.
 
         :param str topic_name: The topic that owns the subscription.
         :param str subscription_name: The subscription that
          owns the rule.
         :param str rule_name: Name of the rule.
+        :return: The properties of the topic subscription rule.
         :rtype: ~azure.servicebus.management.RuleProperties
         """
-        entry_ele = await self._get_rule_element(
-            topic_name, subscription_name, rule_name, **kwargs
-        )
+        entry_ele = await self._get_rule_element(topic_name, subscription_name, rule_name, **kwargs)
         entry = RuleDescriptionEntry.deserialize(entry_ele)
         if not entry.content:
             raise ResourceNotFoundError(
@@ -1104,12 +984,8 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
                     subscription_name, topic_name, rule_name
                 )
             )
-        rule_description = RuleProperties._from_internal_entity(
-            rule_name, entry.content.rule_description
-        )
-        deserialize_rule_key_values(
-            entry_ele, rule_description
-        )  # to remove after #3535 is released.
+        rule_description = RuleProperties._from_internal_entity(rule_name, entry.content.rule_description)
+        deserialize_rule_key_values(entry_ele, rule_description)  # to remove after #3535 is released.
         return rule_description
 
     async def create_rule(
@@ -1118,9 +994,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         subscription_name: str,
         rule_name: str,
         *,
-        filter: Union[  # pylint: disable=redefined-builtin
-            CorrelationRuleFilter, SqlRuleFilter
-        ]=TrueRuleFilter(),
+        filter: Union[CorrelationRuleFilter, SqlRuleFilter] = TrueRuleFilter(),  # pylint: disable=redefined-builtin
         action: Optional[SqlRuleAction] = None,
         **kwargs: Any
     ) -> RuleProperties:
@@ -1137,7 +1011,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
          ~azure.servicebus.management.SqlRuleFilter]
         :keyword action: The action of the rule.
         :paramtype action: Optional[~azure.servicebus.management.SqlRuleAction]
-
+        :return: Returns the rules of the topic subscription.
         :rtype: ~azure.servicebus.management.RuleProperties
         """
         _validate_topic_and_subscription_types(topic_name, subscription_name)
@@ -1159,28 +1033,18 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         serialize_rule_key_values(request_body, rule)
         with _handle_response_error():
             entry_ele = await self._impl.rule.put(
-                topic_name,
-                subscription_name,  # type: ignore
-                rule_name,
-                request_body,
-                api_version=self._api_version,
-                **kwargs
+                topic_name, subscription_name, rule_name, request_body, **kwargs  # type: ignore
             )
         entry = RuleDescriptionEntry.deserialize(entry_ele)
-        result = RuleProperties._from_internal_entity(
-            rule_name, entry.content.rule_description
-        )
-        deserialize_rule_key_values(
-            entry_ele, result
-        )  # to remove after #3535 is released.
+        # Need to cast from Optional[RuleDescriptionEntryContent] to RuleDescriptionEntryContent
+        # since we know for certain that `entry.content` will not be None here.
+        entry.content = cast(RuleDescriptionEntryContent, entry.content)
+        result = RuleProperties._from_internal_entity(rule_name, entry.content.rule_description)
+        deserialize_rule_key_values(entry_ele, result)  # to remove after #3535 is released.
         return result
 
     async def update_rule(
-        self,
-        topic_name: str,
-        subscription_name: str,
-        rule: Union[RuleProperties, Mapping[str, Any]],
-        **kwargs
+        self, topic_name: str, subscription_name: str, rule: Union[RuleProperties, Mapping[str, Any]], **kwargs: Any
     ) -> None:
         """Update a rule.
 
@@ -1216,14 +1080,11 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
                 subscription_name,
                 rule.name,
                 request_body,
-                api_version=self._api_version,
-                if_match="*",
+                match_condition=MatchConditions.IfPresent,
                 **kwargs
             )
 
-    async def delete_rule(
-        self, topic_name: str, subscription_name: str, rule_name: str, **kwargs
-    ) -> None:
+    async def delete_rule(self, topic_name: str, subscription_name: str, rule_name: str, **kwargs: Any) -> None:
         """Delete a topic subscription rule.
 
         :param str topic_name: The topic that owns the subscription.
@@ -1232,21 +1093,11 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :param str rule_name: The to-be-deleted rule.
         :rtype: None
         """
-        _validate_topic_subscription_and_rule_types(
-            topic_name, subscription_name, rule_name
-        )
+        _validate_topic_subscription_and_rule_types(topic_name, subscription_name, rule_name)
 
-        await self._impl.rule.delete(
-            topic_name,
-            subscription_name,
-            rule_name,
-            api_version=self._api_version,
-            **kwargs
-        )
+        await self._impl.rule.delete(topic_name, subscription_name, rule_name, **kwargs)
 
-    def list_rules(
-        self, topic_name: str, subscription_name: str, **kwargs: Any
-    ) -> AsyncItemPaged[RuleProperties]:
+    def list_rules(self, topic_name: str, subscription_name: str, **kwargs: Any) -> AsyncItemPaged[RuleProperties]:
         """List the rules of a topic subscription.
 
         :param str topic_name: The topic that owns the subscription.
@@ -1260,34 +1111,32 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         def entry_to_rule(ele, entry):
             """
             `ele` will be removed after #3535 is released.
+
+            :param any ele: The xml element of the entry.
+            :param any entry: The entry to be converted.
+            :return: The converted entry.
+            :rtype: ~azure.servicebus.management.RuleProperties
             """
             rule = entry.content.rule_description
             rule_description = RuleProperties._from_internal_entity(entry.title, rule)
-            deserialize_rule_key_values(
-                ele, rule_description
-            )  # to remove after #3535 is released.
+            deserialize_rule_key_values(ele, rule_description)  # to remove after #3535 is released.
             return rule_description
 
-        extract_data = functools.partial(
-            extract_rule_data_template, RuleDescriptionFeed, entry_to_rule
-        )
+        extract_data = functools.partial(extract_rule_data_template, RuleDescriptionFeed, entry_to_rule)
         get_next = functools.partial(
-            get_next_template,
-            functools.partial(self._impl.list_rules, topic_name, subscription_name),
-            api_version=self._api_version,
-            **kwargs
+            get_next_template, functools.partial(self._impl.list_rules, topic_name, subscription_name), **kwargs
         )
         return AsyncItemPaged(get_next, extract_data)
 
-    async def get_namespace_properties(self, **kwargs) -> NamespaceProperties:
+    async def get_namespace_properties(self, **kwargs: Any) -> NamespaceProperties:
         """Get the namespace properties
 
+        :return: The namespace properties.
         :rtype: ~azure.servicebus.management.NamespaceProperties
         """
-        entry_el = await self._impl.namespace.get(
-            api_version=self._api_version, **kwargs
-        )
+        entry_el = await self._impl.namespace.get(**kwargs)
         namespace_entry = NamespacePropertiesEntry.deserialize(entry_el)
+        namespace_entry.content = cast(NamespacePropertiesEntryContent, namespace_entry.content)
         return NamespaceProperties._from_internal_entity(
             namespace_entry.title, namespace_entry.content.namespace_properties
         )

@@ -15,6 +15,12 @@ from ._generated.models import (
     PhoneNumberAssignmentType,
     PhoneNumberCapabilityType,
     PhoneNumberType,
+    PhoneNumberAreaCode,
+    PhoneNumberAdministrativeDivision,
+    PhoneNumberCountry,
+    PhoneNumberLocality,
+    PhoneNumberOffering,
+    OperatorInformationResult,
 )
 
 __all__ = [
@@ -26,5 +32,11 @@ __all__ = [
     'PhoneNumberAssignmentType',
     'PhoneNumberCapabilityType',
     'PhoneNumberType',
-    'PhoneNumbersClient',
+    'PhoneNumberAreaCode',
+    'PhoneNumberAdministrativeDivision',
+    'PhoneNumberCountry',
+    'PhoneNumberLocality',
+    'PhoneNumberOffering',
+    'OperatorInformationResult',
+    'PhoneNumbersClient'
 ]

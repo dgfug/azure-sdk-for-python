@@ -23,10 +23,19 @@
 # IN THE SOFTWARE.
 #
 # --------------------------------------------------------------------------
+import os
+
 import pytest
-from devtools_testutils import add_general_regex_sanitizer, test_proxy
+from devtools_testutils import (
+    add_general_regex_sanitizer,
+    add_body_key_sanitizer,
+    test_proxy,
+    add_oauth_response_sanitizer,
+    remove_batch_sanitizers,
+)
 
 # fixture needs to be visible from conftest
+
 
 @pytest.fixture(scope="session", autouse=True)
 def add_sanitizers(test_proxy):
@@ -34,7 +43,7 @@ def add_sanitizers(test_proxy):
     add_general_regex_sanitizer(
         value="fakeendpoint",
         regex="(?<=\\/\\/)[a-z]+(?=(?:|-secondary)\\.(?:table|blob|queue)\\.(?:cosmos|core)\\."
-              "(?:azure|windows)\\.(?:com|net))",
+        "(?:azure|windows)\\.(?:com|net))",
     )
     # sanitizes random UUIDs that are sent in batch request headers and bodies
     add_general_regex_sanitizer(
@@ -42,3 +51,15 @@ def add_sanitizers(test_proxy):
         regex="batch[a-z]*_([0-9a-f]{8}\\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\\b[0-9a-f]{12}\\b)",
         group_for_replace="1",
     )
+    # sanitizes tenant ID
+    tenant_id = os.environ.get("TABLES_TENANT_ID", "00000000-0000-0000-0000-000000000000")
+    add_general_regex_sanitizer(value="00000000-0000-0000-0000-000000000000", regex=tenant_id)
+    # sanitizes tenant ID used in test_challenge_auth(_async).py tests
+    challenge_tenant_id = os.environ.get("CHALLENGE_TABLES_TENANT_ID", "00000000-0000-0000-0000-000000000000")
+    add_general_regex_sanitizer(value="00000000-0000-0000-0000-000000000000", regex=challenge_tenant_id)
+    # sanitizes access tokens in response bodies
+    add_body_key_sanitizer(json_path="$..access_token", value="access_token")
+    add_oauth_response_sanitizer()
+    # Remove the following sanitizers since certain fields are needed in tests and are non-sensitive:
+    #  - AZSDK3490: $..etag
+    remove_batch_sanitizers(["AZSDK3490"])

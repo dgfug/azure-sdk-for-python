@@ -10,14 +10,14 @@ npm install -g autorest
 ### Generation
 ```ps
 cd <swagger-folder>
-autorest SWAGGER.md
+autorest SWAGGER.md --version-tolerant=false
 ```
 
 ### Settings
 
 ```yaml
-tag: package-chat-2021-09-07
-require: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/communication/data-plane/Chat/readme.md
+tag: package-chat-2024-03-07
+require: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/72d4c8cae964a12dc27ad4684b0bddf493225338/specification/communication/data-plane/Chat/readme.md
 output-folder: ../azure/communication/chat/_generated
 namespace: azure.communication.chat
 no-namespace-folders: true
@@ -30,6 +30,7 @@ no-async: false
 add-credential: false
 title: Azure Communication Chat Service
 disable-async-iterators: true
+security: Anonymous
 ```
 
 ### Rename CommunicationError to ChatError

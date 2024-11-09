@@ -1,6 +1,6 @@
 # Monitor Exporter Performance Tests
 
-In order to run the performance tests, the `azure-devtools` package must be installed. This is done as part of the `dev_requirements`.
+In order to run the performance tests, the `devtools_testutils` package must be installed. This is done as part of the `dev_requirements`.
 Start by creating a new virtual environment for your perf tests. This will need to be a Python 3 environment, preferably >=3.7.
 
 ### Setup for test resources
@@ -35,7 +35,7 @@ These options are available for all perf tests:
 
 ### MonitorExporter Test options
 These options are available for all monitor exporter perf tests:
-- `--num-spans` Number ofspans to be exported. Defaults to 10.
+- `--num-spans` Number of spans to be exported. Defaults to 10.
 
 ### T2 Tests
 The tests currently written for the T2 SDK:

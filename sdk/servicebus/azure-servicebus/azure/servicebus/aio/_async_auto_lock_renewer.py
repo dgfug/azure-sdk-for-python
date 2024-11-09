@@ -22,9 +22,7 @@ from ._async_utils import get_dict_with_loop_if_needed
 from ..exceptions import AutoLockRenewTimeout, AutoLockRenewFailed, ServiceBusError
 
 Renewable = Union[ServiceBusSession, ServiceBusReceivedMessage]
-AsyncLockRenewFailureCallback = Callable[
-    [Renewable, Optional[Exception]], Awaitable[None]
-]
+AsyncLockRenewFailureCallback = Callable[[Renewable, Optional[Exception]], Awaitable[None]]
 
 _log = logging.getLogger(__name__)
 
@@ -77,17 +75,14 @@ class AutoLockRenewer:
     async def __aenter__(self) -> "AutoLockRenewer":
         if self._shutdown.is_set():
             raise ServiceBusError(
-                "The AutoLockRenewer has already been shutdown. Please create a new instance for"
-                " auto lock renewing."
+                "The AutoLockRenewer has already been shutdown. Please create a new instance for auto lock renewing."
             )
         return self
 
     async def __aexit__(self, *args: Iterable[Any]) -> None:
         await self.close()
 
-    def _renewable(
-        self, renewable: Union[ServiceBusReceivedMessage, ServiceBusSession]
-    ) -> bool:
+    def _renewable(self, renewable: Union[ServiceBusReceivedMessage, ServiceBusSession]) -> bool:
         # pylint: disable=protected-access
         if self._shutdown.is_set():
             return False
@@ -102,7 +97,7 @@ class AutoLockRenewer:
             raise ServiceBusError(
                 "Cannot renew an entity without an associated receiver.  "
                 "ServiceBusReceivedMessage and active ServiceBusReceiver.Session objects are expected."
-            )
+            ) from None
         return True
 
     async def _auto_lock_renew(
@@ -112,31 +107,21 @@ class AutoLockRenewer:
         starttime: datetime.datetime,
         max_lock_renewal_duration: float,
         on_lock_renew_failure: Optional[AsyncLockRenewFailureCallback] = None,
-        renew_period_override: float = None,
+        renew_period_override: Optional[float] = None,
     ) -> None:
         # pylint: disable=protected-access
-        _log.debug(
-            "Running async lock auto-renew for %r seconds", max_lock_renewal_duration
-        )
+        _log.debug("Running async lock auto-renew for %r seconds", max_lock_renewal_duration)
         error = None  # type: Optional[Exception]
         clean_shutdown = False  # Only trigger the on_lock_renew_failure if halting was not expected (shutdown, etc)
         renew_period = renew_period_override or self._renew_period
         try:
             while self._renewable(renewable):
-                if (utc_now() - starttime) >= datetime.timedelta(
-                    seconds=max_lock_renewal_duration
-                ):
-                    _log.debug(
-                        "Reached max auto lock renew duration - letting lock expire."
-                    )
+                if (utc_now() - starttime) >= datetime.timedelta(seconds=max_lock_renewal_duration):
+                    _log.debug("Reached max auto lock renew duration - letting lock expire.")
                     raise AutoLockRenewTimeout(
-                        "Auto-renew period ({} seconds) elapsed.".format(
-                            max_lock_renewal_duration
-                        )
+                        "Auto-renew period ({} seconds) elapsed.".format(max_lock_renewal_duration)
                     )
-                if (renewable.locked_until_utc - utc_now()) <= datetime.timedelta(
-                    seconds=renew_period
-                ):
+                if (renewable.locked_until_utc - utc_now()) <= datetime.timedelta(seconds=renew_period):
                     _log.debug(
                         "%r seconds or less until lock expires - auto renewing.",
                         renew_period,
@@ -175,8 +160,8 @@ class AutoLockRenewer:
         :type receiver: ~azure.servicebus.aio.ServiceBusReceiver
         :param renewable: A locked entity that needs to be renewed.
         :type renewable: Union[~azure.servicebus.aio.ServiceBusReceivedMessage,~azure.servicebus.aio.ServiceBusSession]
-        :param max_lock_renewal_duration: A time in seconds that locks registered to this renewer
-          should be maintained for. Default value is 300 (5 minutes).
+        :param max_lock_renewal_duration: A time in seconds that the lock should be maintained for.
+         Default value is None. If specified, this value will override the default value specified at the constructor.
         :type max_lock_renewal_duration: Optional[float]
         :param Optional[AsyncLockRenewFailureCallback] on_lock_renew_failure:
          An async callback may be specified to be called when the lock is lost on the renewable being registered.
@@ -192,8 +177,7 @@ class AutoLockRenewer:
             )
         if self._shutdown.is_set():
             raise ServiceBusError(
-                "The AutoLockRenewer has already been shutdown. Please create a new instance for"
-                " auto lock renewing."
+                "The AutoLockRenewer has already been shutdown. Please create a new instance for auto lock renewing."
             )
         if renewable.locked_until_utc is None:
             raise ValueError(
@@ -208,12 +192,8 @@ class AutoLockRenewer:
         time_until_expiry = get_renewable_lock_duration(renewable)
         renew_period_override = None
         # Default is 10 seconds, but let's leave ourselves a small margin of error because clock skew is a real problem
-        if time_until_expiry <= datetime.timedelta(
-            seconds=self._renew_period + SHORT_RENEW_OFFSET
-        ):
-            renew_period_override = (
-                time_until_expiry.seconds * SHORT_RENEW_SCALING_FACTOR
-            )
+        if time_until_expiry <= datetime.timedelta(seconds=self._renew_period + SHORT_RENEW_OFFSET):
+            renew_period_override = time_until_expiry.seconds * SHORT_RENEW_SCALING_FACTOR
 
         renew_future = asyncio.ensure_future(
             self._auto_lock_renew(

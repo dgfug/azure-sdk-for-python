@@ -2,17 +2,13 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 # ------------------------------------
-
-import asyncio
 import logging
-from typing import TYPE_CHECKING
+from typing import Any, Callable, cast
 
-from azure.core.polling import AsyncPollingMethod
 from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
-
-if TYPE_CHECKING:
-    # pylint:disable=ungrouped-imports
-    from typing import Any, Callable, Union
+from azure.core.pipeline import PipelineResponse
+from azure.core.pipeline.transport import AsyncHttpTransport
+from azure.core.polling import AsyncPollingMethod
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +23,26 @@ class AsyncDeleteRecoverPollingMethod(AsyncPollingMethod):
 
     Similarly, while recovering a deleted resource, Key Vault will respond 404 to GET requests for the non-deleted
     resource; when it responds 2xx, the resource exists in the non-deleted collection, i.e. its recovery is complete.
+
+    :param pipeline_response: The operation's original pipeline response.
+    :type pipeline_response: PipelineResponse
+    :param command: An awaitable to invoke when polling.
+    :type command: Callable
+    :param final_resource: The final resource returned by the polling operation.
+    :type final_resource: Any
+    :param bool finished: Whether or not the polling operation is completed.
+    :param int interval: The polling interval, in seconds.
     """
 
-    def __init__(self, command, final_resource, finished, interval=2):
+    def __init__(
+            self,
+            pipeline_response: PipelineResponse,
+            command: Callable,
+            final_resource: Any,
+            finished: bool,
+            interval: int = 2
+        ) -> None:
+        self._pipeline_response = pipeline_response
         self._command = command
         self._resource = final_resource
         self._polling_interval = interval
@@ -57,7 +70,9 @@ class AsyncDeleteRecoverPollingMethod(AsyncPollingMethod):
             while not self.finished():
                 await self._update_status()
                 if not self.finished():
-                    await asyncio.sleep(self._polling_interval)
+                    # We should always ask the client's transport to sleep, instead of sleeping directly
+                    transport: AsyncHttpTransport = cast(AsyncHttpTransport, self._pipeline_response.context.transport)
+                    await transport.sleep(self._polling_interval)
         except Exception as e:
             logger.warning(str(e))
             raise
@@ -65,7 +80,7 @@ class AsyncDeleteRecoverPollingMethod(AsyncPollingMethod):
     def finished(self) -> bool:
         return self._finished
 
-    def resource(self) -> "Any":
+    def resource(self) -> Any:
         return self._resource
 
     def status(self) -> str:

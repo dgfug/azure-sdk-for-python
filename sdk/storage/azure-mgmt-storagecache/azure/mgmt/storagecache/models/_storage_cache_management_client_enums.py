@@ -6,54 +6,115 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class CacheIdentityType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity used for the cache
+class AmlFilesystemHealthStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """List of AML file system health states."""
+
+    UNAVAILABLE = "Unavailable"
+    AVAILABLE = "Available"
+    DEGRADED = "Degraded"
+    TRANSITIONING = "Transitioning"
+    MAINTENANCE = "Maintenance"
+
+
+class AmlFilesystemIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity used for the resource."""
+
+    USER_ASSIGNED = "UserAssigned"
+    NONE = "None"
+
+
+class AmlFilesystemProvisioningStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ARM provisioning state."""
+
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
+    CREATING = "Creating"
+    DELETING = "Deleting"
+    UPDATING = "Updating"
+    CANCELED = "Canceled"
+
+
+class AmlFilesystemSquashMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Squash mode of the AML file system. 'All': User and Group IDs on files will be squashed to the
+    provided values for all users on non-trusted systems. 'RootOnly': User and Group IDs on files
+    will be squashed to provided values for solely the root user on non-trusted systems. 'None': No
+    squashing of User and Group IDs is performed for any users on any systems.
     """
+
+    NONE = "None"
+    ROOT_ONLY = "RootOnly"
+    ALL = "All"
+
+
+class ArchiveStatusType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The state of the archive operation."""
+
+    NOT_CONFIGURED = "NotConfigured"
+    IDLE = "Idle"
+    IN_PROGRESS = "InProgress"
+    CANCELED = "Canceled"
+    COMPLETED = "Completed"
+    FAILED = "Failed"
+    CANCELLING = "Cancelling"
+    FS_SCAN_IN_PROGRESS = "FSScanInProgress"
+
+
+class CacheIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity used for the cache."""
 
     SYSTEM_ASSIGNED = "SystemAssigned"
     USER_ASSIGNED = "UserAssigned"
     SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned, UserAssigned"
     NONE = "None"
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
+
+class ConflictResolutionMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """How the import job will handle conflicts. For example, if the import job is trying to bring in
+    a directory, but a file is at that path, how it handles it. Fail indicates that the import job
+    should stop immediately and not do anything with the conflict. Skip indicates that it should
+    pass over the conflict. OverwriteIfDirty causes the import job to delete and re-import the file
+    or directory if it is a conflicting type, is dirty, or was not previously imported.
+    OverwriteAlways extends OverwriteIfDirty to include releasing files that had been restored but
+    were not dirty. Please reference https://learn.microsoft.com/en-us/azure/azure-managed-lustre/
+    for a thorough explanation of these resolution modes.
     """
+
+    FAIL = "Fail"
+    SKIP = "Skip"
+    OVERWRITE_IF_DIRTY = "OverwriteIfDirty"
+    OVERWRITE_ALWAYS = "OverwriteAlways"
+
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class DomainJoinedType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """True if the HPC Cache is joined to the Active Directory domain.
-    """
+
+class DomainJoinedType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """True if the HPC Cache is joined to the Active Directory domain."""
 
     YES = "Yes"
     NO = "No"
     ERROR = "Error"
 
-class FirmwareStatusType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """True if there is a firmware update ready to install on this Cache. The firmware will
+
+class FilesystemSubnetStatusType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The status of the AML file system subnet check."""
+
+    OK = "Ok"
+    INVALID = "Invalid"
+
+
+class FirmwareStatusType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """True if there is a firmware update ready to install on this cache. The firmware will
     automatically be installed after firmwareUpdateDeadline if not triggered earlier via the
     upgrade operation.
     """
@@ -61,8 +122,13 @@ class FirmwareStatusType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     AVAILABLE = "available"
     UNAVAILABLE = "unavailable"
 
-class HealthStateType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """List of Cache health states.
+
+class HealthStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """List of cache health states. Down is when the cluster is not responding.  Degraded is when its
+    functioning but has some alerts. Transitioning when it is creating or deleting. Unknown will be
+    returned in old api versions when a new value is added in future versions. WaitingForKey is
+    when the create is waiting for the system assigned identity to be given access to the
+    encryption key in the encryption settings.
     """
 
     UNKNOWN = "Unknown"
@@ -74,8 +140,52 @@ class HealthStateType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     STOPPED = "Stopped"
     UPGRADING = "Upgrading"
     FLUSHING = "Flushing"
+    WAITING_FOR_KEY = "WaitingForKey"
+    START_FAILED = "StartFailed"
+    UPGRADE_FAILED = "UpgradeFailed"
 
-class MetricAggregationType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class ImportJobProvisioningStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ARM provisioning state."""
+
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
+    CREATING = "Creating"
+    DELETING = "Deleting"
+    UPDATING = "Updating"
+    CANCELED = "Canceled"
+
+
+class ImportStatusType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The state of the import job. InProgress indicates the import is still running. Canceled
+    indicates it has been canceled by the user. Completed indicates import finished, successfully
+    importing all discovered blobs into the Lustre namespace. CompletedPartial indicates the import
+    finished but some blobs either were found to be conflicting and could not be imported or other
+    errors were encountered. Failed means the import was unable to complete due to a fatal error.
+    """
+
+    IN_PROGRESS = "InProgress"
+    CANCELLING = "Cancelling"
+    CANCELED = "Canceled"
+    COMPLETED = "Completed"
+    COMPLETED_PARTIAL = "CompletedPartial"
+    FAILED = "Failed"
+
+
+class MaintenanceDayOfWeekType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Day of the week on which the maintenance window will occur."""
+
+    MONDAY = "Monday"
+    TUESDAY = "Tuesday"
+    WEDNESDAY = "Wednesday"
+    THURSDAY = "Thursday"
+    FRIDAY = "Friday"
+    SATURDAY = "Saturday"
+    SUNDAY = "Sunday"
+
+
+class MetricAggregationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """MetricAggregationType."""
 
     NOT_SPECIFIED = "NotSpecified"
     NONE = "None"
@@ -85,44 +195,55 @@ class MetricAggregationType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum))
     TOTAL = "Total"
     COUNT = "Count"
 
-class NfsAccessRuleAccess(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Access allowed by this rule.
-    """
+
+class NfsAccessRuleAccess(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Access allowed by this rule."""
 
     NO = "no"
     RO = "ro"
     RW = "rw"
 
-class NfsAccessRuleScope(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Scope for this rule. The scope and filter determine which clients match the rule.
-    """
+
+class NfsAccessRuleScope(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Scope for this rule. The scope and filter determine which clients match the rule."""
 
     DEFAULT = "default"
     NETWORK = "network"
     HOST = "host"
 
-class OperationalStateType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Storage target operational state.
-    """
+
+class OperationalStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Storage target operational state."""
 
     READY = "Ready"
     BUSY = "Busy"
     SUSPENDED = "Suspended"
     FLUSHING = "Flushing"
 
-class ProvisioningStateType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class PrimingJobState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The state of the priming operation."""
+
+    QUEUED = "Queued"
+    RUNNING = "Running"
+    PAUSED = "Paused"
+    COMPLETE = "Complete"
+
+
+class ProvisioningStateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """ARM provisioning state, see
-    https://github.com/Azure/azure-resource-manager-rpc/blob/master/v1.0/Addendum.md#provisioningstate-property
+    https://github.com/Azure/azure-resource-manager-rpc/blob/master/v1.0/Addendum.md#provisioningstate-property.
     """
 
     SUCCEEDED = "Succeeded"
     FAILED = "Failed"
-    CANCELLED = "Cancelled"
+    CANCELED = "Canceled"
     CREATING = "Creating"
     DELETING = "Deleting"
     UPDATING = "Updating"
 
-class ReasonCode(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class ReasonCode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The reason for the restriction. As of now this can be "QuotaId" or
     "NotAvailableForSubscription". "QuotaId" is set when the SKU has requiredQuotas parameter as
     the subscription does not belong to that quota. "NotAvailableForSubscription" is related to
@@ -132,26 +253,26 @@ class ReasonCode(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     QUOTA_ID = "QuotaId"
     NOT_AVAILABLE_FOR_SUBSCRIPTION = "NotAvailableForSubscription"
 
-class StorageTargetType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of the Storage Target.
-    """
+
+class StorageTargetType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of the Storage Target."""
 
     NFS3 = "nfs3"
     CLFS = "clfs"
     UNKNOWN = "unknown"
     BLOB_NFS = "blobNfs"
 
-class UsernameDownloadedType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Indicates whether or not the HPC Cache has performed the username download successfully.
-    """
+
+class UsernameDownloadedType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Indicates whether or not the HPC Cache has performed the username download successfully."""
 
     YES = "Yes"
     NO = "No"
     ERROR = "Error"
 
-class UsernameSource(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """This setting determines how the cache gets username and group names for clients.
-    """
+
+class UsernameSource(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """This setting determines how the cache gets username and group names for clients."""
 
     AD = "AD"
     LDAP = "LDAP"

@@ -1,5 +1,46 @@
 # Release History
 
+## 11.0.0b1 (2022-12-07)
+
+### Features Added
+
+  - Model ChargeSummary has a new parameter etag
+  - Model ChargeSummary has a new parameter tags
+  - Model CreditSummary has a new parameter e_tag_properties_e_tag
+  - Model LegacyChargeSummary has a new parameter azure_marketplace_charges
+  - Model LegacyChargeSummary has a new parameter etag
+  - Model LegacyChargeSummary has a new parameter tags
+  - Model ModernChargeSummary has a new parameter etag
+  - Model ModernChargeSummary has a new parameter tags
+  - Model ModernReservationRecommendation has a new parameter resource_type
+  - Model ModernReservationRecommendation has a new parameter subscription_id
+
+### Breaking Changes
+
+  - Model ChargeSummary no longer has parameter e_tag
+  - Model CreditSummary no longer has parameter etag
+  - Model CreditSummary no longer has parameter tags
+  - Model LegacyChargeSummary no longer has parameter e_tag
+  - Model LegacyChargeSummary no longer has parameter marketplace_charges
+  - Model ModernChargeSummary no longer has parameter e_tag
+
+## 10.0.0 (2022-06-20)
+
+**Features**
+
+  - Added operation LotsOperations.list_by_customer
+
+**Breaking changes**
+
+  - Model BudgetFilter no longer has parameter not_property
+  - Operation ReservationRecommendationDetailsOperations.get has a new parameter resource_scope
+  - Operation ReservationRecommendationsOperations.list has a new parameter resource_scope
+  - Operation ReservationRecommendationsOperations.list no longer has parameter scope
+  - Operation ReservationsDetailsOperations.list has a new parameter resource_scope
+  - Operation ReservationsDetailsOperations.list no longer has parameter scope
+  - Operation ReservationsSummariesOperations.list has a new parameter resource_scope
+  - Operation ReservationsSummariesOperations.list no longer has parameter scope
+
 ## 9.0.0 (2022-01-06)
 
 **Features**

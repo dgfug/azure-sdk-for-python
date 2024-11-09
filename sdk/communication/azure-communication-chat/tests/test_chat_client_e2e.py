@@ -4,11 +4,9 @@
 # license information.
 # --------------------------------------------------------------------------
 import pytest
-import os
 import time
-from datetime import datetime
-from devtools_testutils import AzureTestCase
-from msrest.serialization import TZ_UTC
+from datetime import datetime, timezone
+from devtools_testutils import AzureRecordedTestCase, is_live, recorded_by_proxy
 from uuid import uuid4
 
 from azure.communication.identity import CommunicationIdentityClient
@@ -18,30 +16,16 @@ from azure.communication.chat import (
     ChatParticipant
 )
 from azure.communication.chat._shared.utils import parse_connection_str
-
-from azure_devtools.scenario_tests import RecordingProcessor
-from helper import URIIdentityReplacer
-from chat_e2e_helper import ChatURIReplacer
-from _shared.testcase import (
-    CommunicationTestCase,
-    BodyReplacerProcessor
-)
+from chat_e2e_helper import get_connection_str
 from _shared.utils import get_http_logging_policy
 
 
-class ChatClientTest(CommunicationTestCase):
-    def setUp(self):
-        super(ChatClientTest, self).setUp()
+class TestChatClient(AzureRecordedTestCase):
+    def setup_method(self):
+        connection_str = get_connection_str()
+        self.identity_client = CommunicationIdentityClient.from_connection_string(connection_str)
 
-        self.recording_processors.extend([
-            BodyReplacerProcessor(keys=["id", "token", "createdBy", "participants", "multipleStatus", "value"]),
-            URIIdentityReplacer(),
-            ChatURIReplacer()])
-
-        self.identity_client = CommunicationIdentityClient.from_connection_string(
-            self.connection_str)
-
-        endpoint, _ = parse_connection_str(self.connection_str)
+        endpoint, _ = parse_connection_str(connection_str)
         self.endpoint = endpoint
 
         # create user and issue token
@@ -56,11 +40,9 @@ class ChatClientTest(CommunicationTestCase):
             http_logging_policy=get_http_logging_policy()
         )
 
-    def tearDown(self):
-        super(ChatClientTest, self).tearDown()
-
+    def teardown_method(self):
         # delete created users and chat threads
-        if not self.is_playback():
+        if is_live():
             self.chat_client.delete_chat_thread(self.thread_id)
             self.identity_client.delete_user(self.user)
 
@@ -68,7 +50,7 @@ class ChatClientTest(CommunicationTestCase):
         # create chat thread
         topic = "test topic"
         share_history_time = datetime.utcnow()
-        share_history_time = share_history_time.replace(tzinfo=TZ_UTC)
+        share_history_time = share_history_time.replace(tzinfo=timezone.utc)
         participants = [ChatParticipant(
             identifier=self.user,
             display_name='name',
@@ -80,6 +62,7 @@ class ChatClientTest(CommunicationTestCase):
         self.thread_id = create_chat_thread_result.chat_thread.id
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_access_token_validation(self):
         """
         This is to make sure that consecutive calls made using the same chat_client or chat_thread_client
@@ -113,20 +96,23 @@ class ChatClientTest(CommunicationTestCase):
         assert raised is False
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_create_chat_thread(self):
         self._create_thread()
         assert self.thread_id is not None
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_create_chat_thread_w_no_participants(self):
         # create chat thread
         topic = "test topic"
         create_chat_thread_result = self.chat_client.create_chat_thread(topic)
         self.thread_id = create_chat_thread_result.chat_thread.id
         assert create_chat_thread_result.chat_thread is not None
-        assert create_chat_thread_result.errors is None
+        assert len(create_chat_thread_result.errors) == 0
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_create_chat_thread_w_repeatability_request_id(self):
         idempotency_token = str(uuid4())
         # create thread
@@ -140,6 +126,7 @@ class ChatClientTest(CommunicationTestCase):
         assert thread_id == self.thread_id
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_list_chat_threads(self):
         self._create_thread()
         if self.is_live:
@@ -151,12 +138,14 @@ class ChatClientTest(CommunicationTestCase):
             assert len(li) <= 1
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_get_thread_client(self):
         self._create_thread()
         chat_thread_client = self.chat_client.get_chat_thread_client(self.thread_id)
         assert chat_thread_client.thread_id == self.thread_id
 
     @pytest.mark.live_test_only
+    @recorded_by_proxy
     def test_delete_chat_thread(self):
         self._create_thread()
         self.chat_client.delete_chat_thread(self.thread_id)

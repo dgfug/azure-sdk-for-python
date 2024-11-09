@@ -10,29 +10,30 @@
 
 import argparse
 import glob
+import pdb
 import sys
 import os
 import logging
 from common_tasks import (
-    process_glob_string,
-    parse_setup,
     run_check_call,
-    parse_require,
     install_package_from_whl,
     filter_dev_requirements,
     find_packages_missing_on_pypi,
-    find_whl,
     find_tools_packages,
     get_installed_packages,
-    extend_dev_requirements,
-    str_to_bool,
+    extend_dev_requirements
 )
+
 from git_helper import (
     get_release_tag,
     git_checkout_tag,
     git_checkout_branch,
     clone_repo,
 )
+
+from ci_tools.functions import discover_targeted_packages, find_whl
+from ci_tools.parsing import ParsedSetup, parse_require
+from ci_tools.variables import str_to_bool
 
 AZURE_GLOB_STRING = "azure*"
 
@@ -95,7 +96,11 @@ class RegressionContext:
     def init_for_pkg(self, pkg_root):
         # This method is called each time context is switched to test regression for new package
         self.package_root_path = pkg_root
-        self.package_name, self.pkg_version, _, _ = parse_setup(self.package_root_path)
+
+        parsed = ParsedSetup.from_path(self.package_root_path)
+        self.package_name = parsed.name
+        self.pkg_version = parsed.version
+
 
     def initialize(self, dep_pkg_root_path):
         self.dep_pkg_root_path = dep_pkg_root_path
@@ -120,7 +125,7 @@ class RegressionTest:
 
             self.whl_path = os.path.join(
                 self.context.whl_directory,
-                find_whl(pkg_name, self.context.pkg_version, self.context.whl_directory),
+                find_whl(self.context.whl_directory, pkg_name, self.context.pkg_version),
             )
             if find_packages_missing_on_pypi(self.whl_path):
                 logging.error("Required packages are not available on PyPI. Skipping regression test")
@@ -129,7 +134,8 @@ class RegressionTest:
             dep_packages = self.package_dependency_dict[pkg_name]
             logging.info("Dependent packages for [{0}]: {1}".format(pkg_name, dep_packages))
             for dep_pkg_path in dep_packages:
-                dep_pkg_name, _, _, _ = parse_setup(dep_pkg_path)
+
+                dep_pkg_name = ParsedSetup.from_path(dep_pkg_path).name
 
                 logging.info("Starting regression test of {0} against released {1}".format(pkg_name, dep_pkg_name))
                 self._run_test(dep_pkg_path)
@@ -143,7 +149,7 @@ class RegressionTest:
         self.context.initialize(dep_pkg_path)
 
         # find GA released tags for package and run test using that code base
-        dep_pkg_name, version, _, _ = parse_setup(dep_pkg_path)
+        dep_pkg_name = ParsedSetup.from_path(dep_pkg_path).name
         release_tag = get_release_tag(dep_pkg_name, self.context.is_latest_depend_test)
         if not release_tag:
             logging.error("Release tag is not available. Skipping package {} from test".format(dep_pkg_name))
@@ -246,7 +252,7 @@ class RegressionTest:
         working_dir = self.context.package_root_path
         temp_dir = self.context.temp_path
 
-        list_to_exclude = [pkg_to_exclude, "azure-sdk-tools", "azure-devtools"]
+        list_to_exclude = [pkg_to_exclude, "azure-sdk-tools"]
         installed_pkgs = [
             p.split("==")[0] for p in get_installed_packages(self.context.venv.lib_paths) if p.startswith("azure-")
         ]
@@ -275,7 +281,7 @@ class RegressionTest:
             logging.info("Extending dev requirement to include azure-sdk-tools")
             extend_dev_requirements(
                 filtered_dev_req_path,
-                ["../../../tools/azure-sdk-tools", "../../../tools/azure-devtools"],
+                ["../../../tools/azure-sdk-tools"],
             )
             logging.info("Installing filtered dev requirements from {}".format(filtered_dev_req_path))
             run_check_call(
@@ -312,22 +318,24 @@ class RegressionTest:
 
 
 # This method identifies package dependency map for all packages in azure sdk
-def find_package_dependency(glob_string, repo_root_dir):
-    package_paths = process_glob_string(glob_string, repo_root_dir, "", "Regression")
+def find_package_dependency(glob_string, repo_root_dir, dependent_service):
+    package_paths = discover_targeted_packages(glob_string, repo_root_dir, "", "Regression")
+    dependent_service_filter = os.path.join('sdk', dependent_service.lower())
+
     dependency_map = {}
     for pkg_root in package_paths:
-        _, _, _, requires = parse_setup(pkg_root)
+        if dependent_service_filter in pkg_root:
+            parsed = ParsedSetup.from_path(pkg_root)
 
-        # Get a list of package names from install requires
-        required_pkgs = [parse_require(r)[0] for r in requires]
-        required_pkgs = [p for p in required_pkgs if p.startswith("azure")]
+            # Get a list of package names from install requires
+            required_pkgs = [parse_require(r).key for r in parsed.requires]
+            required_pkgs = [p for p in required_pkgs if p.startswith("azure")]
 
-        for req_pkg in required_pkgs:
-            if req_pkg not in dependency_map:
-                dependency_map[req_pkg] = []
-            dependency_map[req_pkg].append(pkg_root)
+            for req_pkg in required_pkgs:
+                if req_pkg not in dependency_map:
+                    dependency_map[req_pkg] = []
+                dependency_map[req_pkg].append(pkg_root)
 
-    logging.info("Package dependency: {}".format(dependency_map))
     return dependency_map
 
 
@@ -357,7 +365,7 @@ def run_main(args):
     else:
         target_dir = root_dir
 
-    targeted_packages = process_glob_string(args.glob_string, target_dir, "", "Regression")
+    targeted_packages = discover_targeted_packages(args.glob_string, target_dir, "", "Regression")
     if len(targeted_packages) == 0:
         exit(0)
 
@@ -368,7 +376,9 @@ def run_main(args):
         logging.info("Path {} already exists. Skipping step to clone github repo".format(code_repo_root))
 
     # find package dependency map for azure sdk
-    pkg_dependency = find_package_dependency(AZURE_GLOB_STRING, code_repo_root)
+    pkg_dependency = find_package_dependency(AZURE_GLOB_STRING, code_repo_root, args.dependent_service)
+
+    logging.info("Package dependency: {}".format(pkg_dependency))
 
     # Create regression text context. One context object will be reused for all packages
     context = RegressionContext(args.whl_dir, temp_dir, str_to_bool(args.verify_latest), args.mark_arg)
@@ -396,6 +406,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--service",
         help=("Name of service directory (under sdk/) to test." "Example: --service applicationinsights"),
+    )
+
+    parser.add_argument(
+        "--dependent-service",
+        dest="dependent_service",
+        default="",
+        help=("Optional filter to force regression testing of only dependent packages of service X."),
     )
 
     parser.add_argument(

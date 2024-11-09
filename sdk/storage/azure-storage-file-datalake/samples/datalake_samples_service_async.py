@@ -20,9 +20,6 @@ USAGE:
     Set the environment variables with your own values before running the sample:
     1) AZURE_STORAGE_CONNECTION_STRING
     2) STORAGE_ACCOUNT_NAME
-    3) ACTIVE_DIRECTORY_APPLICATION_ID
-    4) ACTIVE_DIRECTORY_APPLICATION_SECRET
-    5) ACTIVE_DIRECTORY_TENANT_ID
 """
 
 import asyncio
@@ -31,13 +28,10 @@ import os
 
 connection_string = os.environ['AZURE_STORAGE_CONNECTION_STRING']
 account_name = os.getenv('STORAGE_ACCOUNT_NAME', "")
-active_directory_application_id = os.getenv("ACTIVE_DIRECTORY_APPLICATION_ID")
-active_directory_application_secret = os.getenv("ACTIVE_DIRECTORY_APPLICATION_SECRET")
-active_directory_tenant_id = os.getenv("ACTIVE_DIRECTORY_TENANT_ID")
 
 #--Begin DataLake Service Samples-----------------------------------------------------------------
 
-async def data_lake_service_sample():
+async def main():
 
     # Instantiate a DataLakeServiceClient using a connection string
     # [START create_datalake_service_client]
@@ -47,12 +41,8 @@ async def data_lake_service_sample():
 
     # Instantiate a DataLakeServiceClient Azure Identity credentials.
     # [START create_datalake_service_client_oauth]
-    from azure.identity.aio import ClientSecretCredential
-    token_credential = ClientSecretCredential(
-        active_directory_tenant_id,
-        active_directory_application_id,
-        active_directory_application_secret,
-    )
+    from azure.identity.aio import DefaultAzureCredential
+    token_credential = DefaultAzureCredential()
     datalake_service_client = DataLakeServiceClient("https://{}.dfs.core.windows.net".format(account_name),
                                                     credential=token_credential)
     # [END create_datalake_service_client_oauth]
@@ -113,6 +103,4 @@ async def data_lake_service_sample():
     await token_credential.close()
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(data_lake_service_sample())
-
+    asyncio.run(main())

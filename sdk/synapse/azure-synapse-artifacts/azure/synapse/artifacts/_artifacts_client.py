@@ -10,20 +10,51 @@ from copy import deepcopy
 from typing import Any, TYPE_CHECKING
 
 from azure.core import PipelineClient
+from azure.core.pipeline import policies
 from azure.core.rest import HttpRequest, HttpResponse
-from msrest import Deserializer, Serializer
 
-from . import models
+from . import models as _models
 from ._configuration import ArtifactsClientConfiguration
-from .operations import BigDataPoolsOperations, DataFlowDebugSessionOperations, DataFlowOperations, DatasetOperations, IntegrationRuntimesOperations, KqlScriptOperations, KqlScriptsOperations, LibraryOperations, LinkedServiceOperations, MetastoreOperations, NotebookOperationResultOperations, NotebookOperations, PipelineOperations, PipelineRunOperations, SparkConfigurationOperations, SparkJobDefinitionOperations, SqlPoolsOperations, SqlScriptOperations, TriggerOperations, TriggerRunOperations, WorkspaceGitRepoManagementOperations, WorkspaceOperations
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    BigDataPoolsOperations,
+    DataFlowDebugSessionOperations,
+    DataFlowOperations,
+    DatasetOperations,
+    IntegrationRuntimesOperations,
+    KqlScriptOperations,
+    KqlScriptsOperations,
+    LibraryOperations,
+    LinkConnectionOperations,
+    LinkedServiceOperations,
+    MetastoreOperations,
+    NotebookOperationResultOperations,
+    NotebookOperations,
+    PipelineOperations,
+    PipelineRunOperations,
+    RunNotebookOperations,
+    SparkConfigurationOperations,
+    SparkJobDefinitionOperations,
+    SqlPoolsOperations,
+    SqlScriptOperations,
+    TriggerOperations,
+    TriggerRunOperations,
+    WorkspaceGitRepoManagementOperations,
+    WorkspaceOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials import TokenCredential
 
-class ArtifactsClient:
+
+class ArtifactsClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """ArtifactsClient.
 
+    :ivar link_connection: LinkConnectionOperations operations
+    :vartype link_connection: azure.synapse.artifacts.operations.LinkConnectionOperations
+    :ivar run_notebook: RunNotebookOperations operations
+    :vartype run_notebook: azure.synapse.artifacts.operations.RunNotebookOperations
     :ivar kql_scripts: KqlScriptsOperations operations
     :vartype kql_scripts: azure.synapse.artifacts.operations.KqlScriptsOperations
     :ivar kql_script: KqlScriptOperations operations
@@ -71,58 +102,79 @@ class ArtifactsClient:
     :vartype trigger_run: azure.synapse.artifacts.operations.TriggerRunOperations
     :ivar workspace: WorkspaceOperations operations
     :vartype workspace: azure.synapse.artifacts.operations.WorkspaceOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
     :param endpoint: The workspace development endpoint, for example
-     https://myworkspace.dev.azuresynapse.net.
+     ``https://myworkspace.dev.azuresynapse.net``. Required.
     :type endpoint: str
     :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
      Retry-After header is present.
     """
 
-    def __init__(
-        self,
-        credential: "TokenCredential",
-        endpoint: str,
-        **kwargs: Any
-    ) -> None:
-        _base_url = '{endpoint}'
+    def __init__(self, credential: "TokenCredential", endpoint: str, **kwargs: Any) -> None:
+        _endpoint = "{endpoint}"
         self._config = ArtifactsClientConfiguration(credential=credential, endpoint=endpoint, **kwargs)
-        self._client = PipelineClient(base_url=_base_url, config=self._config, **kwargs)
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: PipelineClient = PipelineClient(base_url=_endpoint, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
+        self.link_connection = LinkConnectionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.run_notebook = RunNotebookOperations(self._client, self._config, self._serialize, self._deserialize)
         self.kql_scripts = KqlScriptsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.kql_script = KqlScriptOperations(self._client, self._config, self._serialize, self._deserialize)
         self.metastore = MetastoreOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.spark_configuration = SparkConfigurationOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.spark_configuration = SparkConfigurationOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.big_data_pools = BigDataPoolsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.data_flow = DataFlowOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.data_flow_debug_session = DataFlowDebugSessionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.data_flow_debug_session = DataFlowDebugSessionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.dataset = DatasetOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.workspace_git_repo_management = WorkspaceGitRepoManagementOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.integration_runtimes = IntegrationRuntimesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.workspace_git_repo_management = WorkspaceGitRepoManagementOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.integration_runtimes = IntegrationRuntimesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.library = LibraryOperations(self._client, self._config, self._serialize, self._deserialize)
         self.linked_service = LinkedServiceOperations(self._client, self._config, self._serialize, self._deserialize)
         self.notebook = NotebookOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.notebook_operation_result = NotebookOperationResultOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.notebook_operation_result = NotebookOperationResultOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.pipeline = PipelineOperations(self._client, self._config, self._serialize, self._deserialize)
         self.pipeline_run = PipelineRunOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.spark_job_definition = SparkJobDefinitionOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.spark_job_definition = SparkJobDefinitionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.sql_pools = SqlPoolsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.sql_script = SqlScriptOperations(self._client, self._config, self._serialize, self._deserialize)
         self.trigger = TriggerOperations(self._client, self._config, self._serialize, self._deserialize)
         self.trigger_run = TriggerRunOperations(self._client, self._config, self._serialize, self._deserialize)
         self.workspace = WorkspaceOperations(self._client, self._config, self._serialize, self._deserialize)
 
-
-    def _send_request(
-        self,
-        request,  # type: HttpRequest
-        **kwargs: Any
-    ) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
@@ -131,7 +183,7 @@ class ArtifactsClient:
         >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -142,21 +194,18 @@ class ArtifactsClient:
 
         request_copy = deepcopy(request)
         path_format_arguments = {
-            "endpoint": self._serialize.url("self._config.endpoint", self._config.endpoint, 'str', skip_quote=True),
+            "endpoint": self._serialize.url("self._config.endpoint", self._config.endpoint, "str", skip_quote=True),
         }
 
         request_copy.url = self._client.format_url(request_copy.url, **path_format_arguments)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> ArtifactsClient
+    def __enter__(self) -> "ArtifactsClient":
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

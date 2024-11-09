@@ -1,3 +1,4 @@
+import sys
 import json
 import logging
 import os.path
@@ -5,6 +6,11 @@ from pathlib import Path
 import shutil
 import subprocess
 
+logging.basicConfig(
+    stream=sys.stdout,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %X",
+)
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -19,7 +25,10 @@ def autorest_swagger_to_sdk_conf(readme, output_folder, config):
     autorest_bin = shutil.which("autorest")
     # --input-file=foo is to workaround a bug where the command is not executed at all if no input-file is found (even if we don't care about input-file here)
     cmd_line = "{} {} --perform-load=false --swagger-to-sdk --output-artifact=configuration.json --input-file=foo --output-folder={} --version={}".format(
-        autorest_bin, str(readme), str(output_folder), str(config["meta"]["autorest_options"]["version"])
+        autorest_bin,
+        str(readme),
+        str(output_folder),
+        str(config["meta"]["autorest_options"]["version"]),
     )
     execute_simple_command(cmd_line.split())
     conf_path = Path(output_folder, "configuration.json")
@@ -122,7 +131,7 @@ def generate_code(input_file, global_conf, local_conf, output_dir=None, autorest
 
 
 def execute_simple_command(cmd_line, cwd=None, shell=False, env=None):
-    try:
+    def run_command():
         process = subprocess.Popen(
             cmd_line,
             stderr=subprocess.STDOUT,
@@ -140,14 +149,17 @@ def execute_simple_command(cmd_line, cwd=None, shell=False, env=None):
         process.wait()
         output = "\n".join(output_buffer)
         if process.returncode:
-            # print necessary error info
-            for i in range(-min(len(output_buffer), 5), 0):
-                print(f"[Autorest] {output_buffer[i]}")
-
+            # print necessary error info which will be displayed in swagger pr
+            for i in range(-min(len(output_buffer), 20), 0):
+                _LOGGER.error(output_buffer[i])
             raise subprocess.CalledProcessError(process.returncode, cmd_line, output)
         return output
+
+    try:
+        return run_command()
+    except subprocess.CalledProcessError as ex:
+        # rerun to ensure the log contains error info
+        return run_command()
     except Exception as err:
         _LOGGER.error(err)
         raise
-    else:
-        _LOGGER.info("Return code: %s", process.returncode)

@@ -40,7 +40,7 @@ class _QueryExecutionEndpointComponent(object):
     def __init__(self, execution_context):
         self._execution_context = execution_context
 
-    async def __aiter__(self):
+    def __aiter__(self):
         return self
 
     async def __anext__(self):
@@ -57,6 +57,13 @@ class _QueryExecutionOrderByEndpointComponent(_QueryExecutionEndpointComponent):
         payload = await self._execution_context.__anext__()
         return payload["payload"]
 
+class _QueryExecutionNonStreamingEndpointComponent(_QueryExecutionEndpointComponent):
+    """Represents an endpoint in handling a non-streaming order by query results.
+    For each processed orderby result it returns the item result.
+    """
+    async def __anext__(self):
+        payload = await self._execution_context.__anext__()
+        return payload._item_result["payload"]
 
 class _QueryExecutionTopEndpointComponent(_QueryExecutionEndpointComponent):
     """Represents an endpoint in handling top query.
@@ -104,7 +111,7 @@ class _QueryExecutionDistinctUnorderedEndpointComponent(_QueryExecutionEndpointC
 
     def make_hash(self, value):
         if isinstance(value, (set, tuple, list)):
-            return tuple([self.make_hash(v) for v in value])
+            return tuple([self.make_hash(v) for v in value])  # pylint: disable=consider-using-generator
         if not isinstance(value, dict):
             if isinstance(value, numbers.Number):
                 return float(value)
@@ -155,7 +162,7 @@ class _QueryExecutionOffsetEndpointComponent(_QueryExecutionEndpointComponent):
 class _QueryExecutionAggregateEndpointComponent(_QueryExecutionEndpointComponent):
     """Represents an endpoint in handling aggregate query.
 
-    It returns only aggreated values.
+    It returns only aggregated values.
     """
 
     def __init__(self, execution_context, aggregate_operators):
@@ -180,7 +187,10 @@ class _QueryExecutionAggregateEndpointComponent(_QueryExecutionEndpointComponent
             for item in res: #TODO check on this being an async loop
                 for operator in self._local_aggregators:
                     if isinstance(item, dict) and item:
-                        operator.aggregate(item["item"])
+                        try:
+                            operator.aggregate(item["item"])
+                        except KeyError:
+                            pass
                     elif isinstance(item, numbers.Number):
                         operator.aggregate(item)
         if self._results is None:

@@ -11,11 +11,21 @@ from ._operations import Operations
 from ._private_endpoint_connections_operations import PrivateEndpointConnectionsOperations
 from ._private_link_resources_operations import PrivateLinkResourcesOperations
 from ._key_values_operations import KeyValuesOperations
+from ._replicas_operations import ReplicasOperations
+from ._snapshots_operations import SnapshotsOperations
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'ConfigurationStoresOperations',
-    'Operations',
-    'PrivateEndpointConnectionsOperations',
-    'PrivateLinkResourcesOperations',
-    'KeyValuesOperations',
+    "ConfigurationStoresOperations",
+    "Operations",
+    "PrivateEndpointConnectionsOperations",
+    "PrivateLinkResourcesOperations",
+    "KeyValuesOperations",
+    "ReplicasOperations",
+    "SnapshotsOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

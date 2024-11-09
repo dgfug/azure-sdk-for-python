@@ -27,6 +27,13 @@ extends:
   template: ../../eng/pipelines/templates/stages/archetype-sdk-client.yml
   parameters:
     ServiceDirectory: maps
+    TestProxy: true
     Artifacts:
-    - name: azure-mgmt-maps
-      safeName: azuremgmtmaps
+    - name: azure-maps-search
+      safeName: azuremapssearch
+    - name: azure-maps-render
+      safeName: azuremapsrender
+    - name: azure-maps-route
+      safeName: azuremapsroute
+    - name: azure-maps-weather
+      safeName: azuremapsweather

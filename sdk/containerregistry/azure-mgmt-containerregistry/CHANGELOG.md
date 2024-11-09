@@ -1,5 +1,37 @@
 # Release History
 
+## 10.3.0 (2023-11-20)
+
+### Features Added
+
+  - Model Registry has a new parameter metadata_search
+  - Model RegistryUpdateParameters has a new parameter metadata_search
+
+## 10.2.0 (2023-09-21)
+
+### Features Added
+
+  - Added operation group ArchiveVersionsOperations
+  - Added operation group ArchivesOperations
+
+## 10.1.0 (2023-02-15)
+
+### Features Added
+
+  - Added operation group CacheRulesOperations
+  - Added operation group CredentialSetsOperations
+
+## 10.0.0 (2022-05-26)
+
+**Features**
+
+  - Model Policies has a new parameter azure_ad_authentication_as_arm_policy
+  - Model Policies has a new parameter soft_delete_policy
+
+**Breaking changes**
+
+  - Model NetworkRuleSet no longer has parameter virtual_network_rules
+
 ## 9.1.0 (2022-03-03)
 
 **Features**

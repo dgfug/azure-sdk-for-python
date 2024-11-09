@@ -1,5 +1,23 @@
 # Release History
 
+## 10.1.0b1 (2022-11-03)
+
+### Other Changes
+
+  - Added generated samples in github repo
+  - Drop support for python<3.7.0
+
+## 10.0.0 (2022-06-06)
+
+**Features**
+
+  - Model IntegrationServiceEnvironment has a new parameter identity
+  - Model Workflow has a new parameter identity
+
+**Breaking changes**
+
+  - Operation IntegrationServiceEnvironmentManagedApisOperations.begin_put has a new parameter integration_service_environment_managed_api
+
 ## 9.0.0 (2020-12-18)
 
 **Features**

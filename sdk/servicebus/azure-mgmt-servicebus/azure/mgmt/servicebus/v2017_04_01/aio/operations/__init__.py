@@ -18,16 +18,22 @@ from ._rules_operations import RulesOperations
 from ._regions_operations import RegionsOperations
 from ._subscriptions_operations import SubscriptionsOperations
 
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
+
 __all__ = [
-    'NamespacesOperations',
-    'QueuesOperations',
-    'TopicsOperations',
-    'DisasterRecoveryConfigsOperations',
-    'EventHubsOperations',
-    'MigrationConfigsOperations',
-    'Operations',
-    'PremiumMessagingRegionsOperations',
-    'RulesOperations',
-    'RegionsOperations',
-    'SubscriptionsOperations',
+    "NamespacesOperations",
+    "QueuesOperations",
+    "TopicsOperations",
+    "DisasterRecoveryConfigsOperations",
+    "EventHubsOperations",
+    "MigrationConfigsOperations",
+    "Operations",
+    "PremiumMessagingRegionsOperations",
+    "RulesOperations",
+    "RegionsOperations",
+    "SubscriptionsOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

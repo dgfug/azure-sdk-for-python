@@ -3,7 +3,9 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # -----------------------------------------------------------------------------------
 from typing import Dict, Any, Iterable, Optional, Union
-from azure.eventhub._eventprocessor.in_memory_checkpoint_store import InMemoryCheckpointStore as CheckPointStoreImpl
+from azure.eventhub._eventprocessor.in_memory_checkpoint_store import (
+    InMemoryCheckpointStore as CheckPointStoreImpl,
+)
 from .checkpoint_store import CheckpointStore
 
 
@@ -21,9 +23,7 @@ class InMemoryCheckpointStore(CheckpointStore):
     ) -> Iterable[Dict[str, Any]]:
         return self._checkpoint_store_impl.claim_ownership(ownership_list)
 
-    async def update_checkpoint(
-        self, checkpoint: Dict[str, Optional[Union[str, int]]], **kwargs: Any
-    ) -> None:
+    async def update_checkpoint(self, checkpoint: Dict[str, Optional[Union[str, int]]], **kwargs: Any) -> None:
         self._checkpoint_store_impl.update_checkpoint(checkpoint)
 
     async def list_checkpoints(

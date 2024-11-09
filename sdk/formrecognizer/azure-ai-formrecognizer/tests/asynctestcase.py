@@ -6,6 +6,7 @@
 # license information.
 # --------------------------------------------------------------------------
 
+import pytest
 import os
 from azure.core.credentials import AccessToken
 from testcase import FormRecognizerTest
@@ -18,7 +19,7 @@ class AsyncFakeTokenCredential(object):
     def __init__(self):
         self.token = AccessToken("YOU SHALL NOT PASS", 0)
 
-    async def get_token(self, *args):
+    async def get_token(self, *args, **kwargs):
         return self.token
 
 

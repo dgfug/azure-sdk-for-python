@@ -62,7 +62,7 @@ async def sample_translation_async():
                 print(f"Source document location: {document.source_document_url}")
                 print(f"Translated document location: {document.translated_document_url}")
                 print(f"Translated to language: {document.translated_to}\n")
-            else:
+            elif document.error:
                 print(f"Error Code: {document.error.code}, Message: {document.error.message}\n")
     # [END begin_translation_async]
 
@@ -70,5 +70,6 @@ async def sample_translation_async():
 async def main():
     await sample_translation_async()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())

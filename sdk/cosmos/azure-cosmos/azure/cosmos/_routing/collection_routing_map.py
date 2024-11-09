@@ -24,9 +24,6 @@ database service.
 """
 
 import bisect
-
-from six.moves import xrange
-
 from azure.cosmos._routing import routing_range
 from azure.cosmos._routing.routing_range import PartitionKeyRange
 
@@ -54,12 +51,12 @@ class CollectionRoutingMap(object):
         self._collectionUniqueId = collection_unique_id
 
     @classmethod
-    def CompleteRoutingMap(cls, partition_key_range_info_tupple_list, collection_unique_id):
+    def CompleteRoutingMap(cls, partition_key_range_info_tuple_list, collection_unique_id):
         rangeById = {}
         rangeByInfo = {}
 
         sortedRanges = []
-        for r in partition_key_range_info_tupple_list:
+        for r in partition_key_range_info_tuple_list:
             rangeById[r[0][PartitionKeyRange.Id]] = r
             rangeByInfo[r[1]] = r[0]
             sortedRanges.append(r)
@@ -138,7 +135,7 @@ class CollectionRoutingMap(object):
             if maxIndex >= len(sortedHigh):
                 maxIndex = maxIndex - 1
 
-            for i in xrange(minIndex, maxIndex + 1):
+            for i in range(minIndex, maxIndex + 1):
                 if routing_range.Range.overlaps(self._orderedRanges[i], providedRange):
                     minToPartitionRange[
                         self._orderedPartitionKeyRanges[i][PartitionKeyRange.MinInclusive]

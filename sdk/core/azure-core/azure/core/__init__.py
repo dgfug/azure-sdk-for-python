@@ -25,21 +25,19 @@
 # --------------------------------------------------------------------------
 
 from ._version import VERSION
+
 __version__ = VERSION
 
 from ._pipeline_client import PipelineClient
 from ._match_conditions import MatchConditions
+from ._azure_clouds import AzureClouds
 from ._enum_meta import CaseInsensitiveEnumMeta
-
+from ._pipeline_client_async import AsyncPipelineClient
 
 __all__ = [
     "PipelineClient",
     "MatchConditions",
     "CaseInsensitiveEnumMeta",
+    "AsyncPipelineClient",
+    "AzureClouds",
 ]
-
-try:
-    from ._pipeline_client_async import AsyncPipelineClient #pylint: disable=unused-import
-    __all__.extend(["AsyncPipelineClient"])
-except (ImportError, SyntaxError): # Python <= 3.5
-    pass

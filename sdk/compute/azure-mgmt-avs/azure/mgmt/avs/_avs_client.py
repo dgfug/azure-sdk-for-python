@@ -6,39 +6,44 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import TYPE_CHECKING
+from copy import deepcopy
+from typing import Any, TYPE_CHECKING
+from typing_extensions import Self
 
+from azure.core.pipeline import policies
+from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
+
+from . import models as _models
+from ._configuration import AVSClientConfiguration
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    AddonsOperations,
+    AuthorizationsOperations,
+    CloudLinksOperations,
+    ClustersOperations,
+    DatastoresOperations,
+    GlobalReachConnectionsOperations,
+    HcxEnterpriseSitesOperations,
+    IscsiPathsOperations,
+    LocationsOperations,
+    Operations,
+    PlacementPoliciesOperations,
+    PrivateCloudsOperations,
+    ScriptCmdletsOperations,
+    ScriptExecutionsOperations,
+    ScriptPackagesOperations,
+    VirtualMachinesOperations,
+    WorkloadNetworksOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
-    from typing import Any, Optional
-
     from azure.core.credentials import TokenCredential
-    from azure.core.pipeline.transport import HttpRequest, HttpResponse
-
-from ._configuration import AVSClientConfiguration
-from .operations import Operations
-from .operations import LocationsOperations
-from .operations import PrivateCloudsOperations
-from .operations import ClustersOperations
-from .operations import DatastoresOperations
-from .operations import HcxEnterpriseSitesOperations
-from .operations import AuthorizationsOperations
-from .operations import GlobalReachConnectionsOperations
-from .operations import WorkloadNetworksOperations
-from .operations import CloudLinksOperations
-from .operations import AddonsOperations
-from .operations import VirtualMachinesOperations
-from .operations import PlacementPoliciesOperations
-from .operations import ScriptPackagesOperations
-from .operations import ScriptCmdletsOperations
-from .operations import ScriptExecutionsOperations
-from . import models
 
 
-class AVSClient(object):
+class AVSClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """Azure VMware Solution API.
 
     :ivar operations: Operations operations
@@ -47,118 +52,137 @@ class AVSClient(object):
     :vartype locations: azure.mgmt.avs.operations.LocationsOperations
     :ivar private_clouds: PrivateCloudsOperations operations
     :vartype private_clouds: azure.mgmt.avs.operations.PrivateCloudsOperations
+    :ivar addons: AddonsOperations operations
+    :vartype addons: azure.mgmt.avs.operations.AddonsOperations
+    :ivar authorizations: AuthorizationsOperations operations
+    :vartype authorizations: azure.mgmt.avs.operations.AuthorizationsOperations
+    :ivar cloud_links: CloudLinksOperations operations
+    :vartype cloud_links: azure.mgmt.avs.operations.CloudLinksOperations
     :ivar clusters: ClustersOperations operations
     :vartype clusters: azure.mgmt.avs.operations.ClustersOperations
     :ivar datastores: DatastoresOperations operations
     :vartype datastores: azure.mgmt.avs.operations.DatastoresOperations
-    :ivar hcx_enterprise_sites: HcxEnterpriseSitesOperations operations
-    :vartype hcx_enterprise_sites: azure.mgmt.avs.operations.HcxEnterpriseSitesOperations
-    :ivar authorizations: AuthorizationsOperations operations
-    :vartype authorizations: azure.mgmt.avs.operations.AuthorizationsOperations
-    :ivar global_reach_connections: GlobalReachConnectionsOperations operations
-    :vartype global_reach_connections: azure.mgmt.avs.operations.GlobalReachConnectionsOperations
-    :ivar workload_networks: WorkloadNetworksOperations operations
-    :vartype workload_networks: azure.mgmt.avs.operations.WorkloadNetworksOperations
-    :ivar cloud_links: CloudLinksOperations operations
-    :vartype cloud_links: azure.mgmt.avs.operations.CloudLinksOperations
-    :ivar addons: AddonsOperations operations
-    :vartype addons: azure.mgmt.avs.operations.AddonsOperations
-    :ivar virtual_machines: VirtualMachinesOperations operations
-    :vartype virtual_machines: azure.mgmt.avs.operations.VirtualMachinesOperations
     :ivar placement_policies: PlacementPoliciesOperations operations
     :vartype placement_policies: azure.mgmt.avs.operations.PlacementPoliciesOperations
+    :ivar virtual_machines: VirtualMachinesOperations operations
+    :vartype virtual_machines: azure.mgmt.avs.operations.VirtualMachinesOperations
+    :ivar global_reach_connections: GlobalReachConnectionsOperations operations
+    :vartype global_reach_connections: azure.mgmt.avs.operations.GlobalReachConnectionsOperations
+    :ivar hcx_enterprise_sites: HcxEnterpriseSitesOperations operations
+    :vartype hcx_enterprise_sites: azure.mgmt.avs.operations.HcxEnterpriseSitesOperations
+    :ivar iscsi_paths: IscsiPathsOperations operations
+    :vartype iscsi_paths: azure.mgmt.avs.operations.IscsiPathsOperations
+    :ivar script_executions: ScriptExecutionsOperations operations
+    :vartype script_executions: azure.mgmt.avs.operations.ScriptExecutionsOperations
     :ivar script_packages: ScriptPackagesOperations operations
     :vartype script_packages: azure.mgmt.avs.operations.ScriptPackagesOperations
     :ivar script_cmdlets: ScriptCmdletsOperations operations
     :vartype script_cmdlets: azure.mgmt.avs.operations.ScriptCmdletsOperations
-    :ivar script_executions: ScriptExecutionsOperations operations
-    :vartype script_executions: azure.mgmt.avs.operations.ScriptExecutionsOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :ivar workload_networks: WorkloadNetworksOperations operations
+    :vartype workload_networks: azure.mgmt.avs.operations.WorkloadNetworksOperations
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: The ID of the target subscription.
+    :param subscription_id: The ID of the target subscription. The value must be an UUID. Required.
     :type subscription_id: str
-    :param str base_url: Service URL
-    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no Retry-After header is present.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
+    :keyword api_version: Api Version. Default value is "2023-09-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
+    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
+     Retry-After header is present.
     """
 
     def __init__(
         self,
-        credential,  # type: "TokenCredential"
-        subscription_id,  # type: str
-        base_url=None,  # type: Optional[str]
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> None
-        if not base_url:
-            base_url = 'https://management.azure.com'
-        self._config = AVSClientConfiguration(credential, subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        credential: "TokenCredential",
+        subscription_id: str,
+        base_url: str = "https://management.azure.com",
+        **kwargs: Any
+    ) -> None:
+        self._config = AVSClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
-        self._serialize.client_side_validation = False
         self._deserialize = Deserializer(client_models)
-
-        self.operations = Operations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.locations = LocationsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.private_clouds = PrivateCloudsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.clusters = ClustersOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.datastores = DatastoresOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.hcx_enterprise_sites = HcxEnterpriseSitesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.authorizations = AuthorizationsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.global_reach_connections = GlobalReachConnectionsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.workload_networks = WorkloadNetworksOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.cloud_links = CloudLinksOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.addons = AddonsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.virtual_machines = VirtualMachinesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+        self._serialize.client_side_validation = False
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
+        self.locations = LocationsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.private_clouds = PrivateCloudsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.addons = AddonsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.authorizations = AuthorizationsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.cloud_links = CloudLinksOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.clusters = ClustersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.datastores = DatastoresOperations(self._client, self._config, self._serialize, self._deserialize)
         self.placement_policies = PlacementPoliciesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.script_packages = ScriptPackagesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.script_cmdlets = ScriptCmdletsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.virtual_machines = VirtualMachinesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.global_reach_connections = GlobalReachConnectionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.hcx_enterprise_sites = HcxEnterpriseSitesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.iscsi_paths = IscsiPathsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.script_executions = ScriptExecutionsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.script_packages = ScriptPackagesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.script_cmdlets = ScriptCmdletsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.workload_networks = WorkloadNetworksOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
 
-    def _send_request(self, http_request, **kwargs):
-        # type: (HttpRequest, Any) -> HttpResponse
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
-        :param http_request: The network request you want to make. Required.
-        :type http_request: ~azure.core.pipeline.transport.HttpRequest
-        :keyword bool stream: Whether the response payload will be streamed. Defaults to True.
-        :return: The response of your network call. Does not do error handling on your response.
-        :rtype: ~azure.core.pipeline.transport.HttpResponse
-        """
-        path_format_arguments = {
-            'subscriptionId': self._serialize.url("self._config.subscription_id", self._config.subscription_id, 'str', min_length=1),
-        }
-        http_request.url = self._client.format_url(http_request.url, **path_format_arguments)
-        stream = kwargs.pop("stream", True)
-        pipeline_response = self._client._pipeline.run(http_request, stream=stream, **kwargs)
-        return pipeline_response.http_response
+        >>> from azure.core.rest import HttpRequest
+        >>> request = HttpRequest("GET", "https://www.example.org/")
+        <HttpRequest [GET], url: 'https://www.example.org/'>
+        >>> response = client._send_request(request)
+        <HttpResponse: 200 OK>
 
-    def close(self):
-        # type: () -> None
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
+
+        :param request: The network request you want to make. Required.
+        :type request: ~azure.core.rest.HttpRequest
+        :keyword bool stream: Whether the response payload will be streamed. Defaults to False.
+        :return: The response of your network call. Does not do error handling on your response.
+        :rtype: ~azure.core.rest.HttpResponse
+        """
+
+        request_copy = deepcopy(request)
+        request_copy.url = self._client.format_url(request_copy.url)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
+
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> AVSClient
+    def __enter__(self) -> Self:
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

@@ -3,18 +3,18 @@
 # Licensed under the MIT License.
 # ------------------------------------
 import os
+
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import CertificateClient, CertificatePolicy, CertificateContentType, WellKnownIssuerNames
-from azure.core.exceptions import HttpResponseError
 
 # ----------------------------------------------------------------------------------------------------------
 # Prerequisites:
-# 1. An Azure Key Vault (https://docs.microsoft.com/en-us/azure/key-vault/quick-create-cli)
+# 1. An Azure Key Vault (https://docs.microsoft.com/azure/key-vault/quick-create-cli)
 #
 # 2. azure-keyvault-certificates and azure-identity packages (pip install these)
 #
-# 3. Set Environment variables AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_CLIENT_SECRET, VAULT_URL. (See
-#    https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-certificates#authenticate-the-client)
+# 3. Set up your environment to use azure-identity's DefaultAzureCredential. For more information about how to configure
+#    the DefaultAzureCredential, refer to https://aka.ms/azsdk/python/identity/docs#azure.identity.DefaultAzureCredential
 #
 # ----------------------------------------------------------------------------------------------------------
 # Sample - demonstrates the basic CRUD operations on a vault(certificate) resource for Azure Key Vault
@@ -30,14 +30,14 @@ from azure.core.exceptions import HttpResponseError
 # ----------------------------------------------------------------------------------------------------------
 
 # Instantiate a certificate client that will be used to call the service.
-# Notice that the client is using default Azure credentials.
-# To make default credentials work, ensure that environment variables 'AZURE_CLIENT_ID',
-# 'AZURE_CLIENT_SECRET' and 'AZURE_TENANT_ID' are set with the service principal credentials.
+# Here we use the DefaultAzureCredential, but any azure-identity credential can be used.
+# [START create_a_certificate_client]
 VAULT_URL = os.environ["VAULT_URL"]
 credential = DefaultAzureCredential()
 client = CertificateClient(vault_url=VAULT_URL, credential=credential)
+# [END create_a_certificate_client]
 
-# Let's create a certificate for holding bank account credentials valid for 1 year.
+# Let's create a certificate for holding account credentials valid for 1 year.
 # if the certificate already exists in the Key Vault, then a new version of the certificate is created.
 print("\n.. Create certificate")
 
@@ -63,36 +63,43 @@ cert_name = "HelloWorldCertificate"
 # begin_create_certificate returns a poller. Calling result() on the poller will return the certificate
 # as a KeyVaultCertificate if creation is successful, and the CertificateOperation if not. The wait()
 # call on the poller will wait until the long running operation is complete.
-certificate = client.begin_create_certificate(
+# [START create_a_certificate]
+new_certificate = client.begin_create_certificate(
     certificate_name=cert_name, policy=cert_policy
 ).result()
-print("Certificate with name '{0}' created".format(certificate.name))
+# [END create_a_certificate]
+print(f"Certificate with name '{new_certificate.name}' created")
 
-# Let's get the bank certificate using its name
+
+# Let's get the certificate using its name
 print("\n.. Get a certificate by name")
-bank_certificate = client.get_certificate(cert_name)
-print("Certificate with name '{0}' was found'.".format(bank_certificate.name))
+# [START get_certificate]
+certificate = client.get_certificate(cert_name)
+# [END get_certificate]
+assert certificate.name
+print(f"Certificate with name '{certificate.name}' was found'.")
 
-# After one year, the bank account is still active, and we have decided to update the tags.
+# After one year, the account is still active, and we have decided to update the tags.
 print("\n.. Update a certificate by name")
+# [START update_certificate]
 tags = {"a": "b"}
 updated_certificate = client.update_certificate_properties(
-    certificate_name=bank_certificate.name, tags=tags
+    certificate_name=certificate.name, tags=tags
+)
+# [END update_certificate]
+assert updated_certificate.properties
+print(
+    f"Certificate with name '{certificate.name}' was updated on date '{updated_certificate.properties.updated_on}'"
 )
 print(
-    "Certificate with name '{0}' was updated on date '{1}'".format(
-        bank_certificate.name, updated_certificate.properties.updated_on
-    )
-)
-print(
-    "Certificate with name '{0}' was updated with tags '{1}'".format(
-        bank_certificate.name, updated_certificate.properties.tags
-    )
+    f"Certificate with name '{certificate.name}' was updated with tags '{updated_certificate.properties.tags}'"
 )
 
-# The bank account was closed, need to delete its credentials from the Key Vault.
+# The account was closed, need to delete its credentials from the Key Vault.
 print("\n.. Delete certificate")
-deleted_certificate = client.begin_delete_certificate(bank_certificate.name).result()
-print("Certificate with name '{0}' was deleted.".format(deleted_certificate.name))
+# [START delete_certificate]
+deleted_certificate = client.begin_delete_certificate(certificate.name).result()
+# [END delete_certificate]
+print(f"Certificate with name '{deleted_certificate.name}' was deleted.")
 
 print("\nrun_sample done")

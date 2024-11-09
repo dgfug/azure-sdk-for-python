@@ -5,31 +5,33 @@
 import time
 
 import pytest
+from azure.keyvault.administration._internal.client_base import DEFAULT_VERSION
+from devtools_testutils import recorded_by_proxy, set_bodiless_matcher
 
 from _shared.test_case import KeyVaultTestCase
-from _test_case import AdministrationTestCase, backup_client_setup, get_decorator
-
+from _test_case import KeyVaultBackupClientPreparer, get_decorator
 
 all_api_versions = get_decorator()
+only_default = get_decorator(api_versions=[DEFAULT_VERSION])
 
 
-class TestExamplesTests(AdministrationTestCase, KeyVaultTestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestExamplesTests, self).__init__(*args, match_body=False, **kwargs)
+class TestExamplesTests(KeyVaultTestCase):
+    def create_key_client(self, vault_uri, **kwargs):
+        from azure.keyvault.keys import KeyClient
+        credential = self.get_credential(KeyClient)
+        return self.create_client_from_credential(KeyClient, credential=credential, vault_url=vault_uri, **kwargs )
 
-    @all_api_versions()
-    @backup_client_setup
-    def test_example_backup_and_restore(self, client):
-        if self.is_live:
-            pytest.skip("SAS token failures are causing sev2 alerts for service team")
-
+    @pytest.mark.parametrize("api_version", only_default)
+    @KeyVaultBackupClientPreparer()
+    @recorded_by_proxy
+    def test_example_backup_and_restore(self, client, **kwargs):
+        set_bodiless_matcher()
         backup_client = client
-        container_uri = self.container_uri
-        sas_token = self.sas_token
+        container_uri = kwargs.pop("container_uri")
 
         # [START begin_backup]
         # begin a vault backup
-        backup_poller = backup_client.begin_backup(container_uri, sas_token)
+        backup_poller = backup_client.begin_backup(container_uri, use_managed_identity=True)
 
         # check if the backup completed
         done = backup_poller.done()
@@ -43,7 +45,7 @@ class TestExamplesTests(AdministrationTestCase, KeyVaultTestCase):
 
         # [START begin_restore]
         # begin a full vault restore
-        restore_poller = backup_client.begin_restore(folder_url, sas_token)
+        restore_poller = backup_client.begin_restore(folder_url, use_managed_identity=True)
 
         # check if the restore completed
         done = restore_poller.done()
@@ -55,26 +57,26 @@ class TestExamplesTests(AdministrationTestCase, KeyVaultTestCase):
         if self.is_live:
             time.sleep(60)  # additional waiting to avoid conflicts with resources in other tests
 
-    @all_api_versions()
-    @backup_client_setup
-    def test_example_selective_key_restore(self, client):
-        if self.is_live:
-            pytest.skip("SAS token failures are causing sev2 alerts for service team")
-
+    @pytest.mark.parametrize("api_version", only_default)
+    @KeyVaultBackupClientPreparer()
+    @recorded_by_proxy
+    def test_example_selective_key_restore(self, client,**kwargs):
+        set_bodiless_matcher()
         # create a key to selectively restore
-        key_client = self.create_key_client(self.managed_hsm_url)
+        managed_hsm_url = kwargs.pop("managed_hsm_url")
+        key_client = self.create_key_client(managed_hsm_url)
         key_name = self.get_resource_name("selective-restore-test-key")
         key_client.create_rsa_key(key_name)
 
         backup_client = client
-        sas_token = self.sas_token
-        backup_poller = backup_client.begin_backup(self.container_uri, sas_token)
+        container_uri = kwargs.pop("container_uri")
+        backup_poller = backup_client.begin_backup(container_uri, use_managed_identity=True)
         backup_operation = backup_poller.result()
         folder_url = backup_operation.folder_url
 
         # [START begin_selective_restore]
         # begin a restore of a single key from a backed up vault
-        restore_poller = backup_client.begin_restore(folder_url, sas_token, key_name=key_name)
+        restore_poller = backup_client.begin_restore(folder_url, use_managed_identity=True, key_name=key_name)
 
         # check if the restore completed
         done = restore_poller.done()

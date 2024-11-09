@@ -11,10 +11,11 @@ Example to show sending message(s) to and receiving messages from a Service Bus 
 
 import os
 from azure.servicebus import ServiceBusClient, ServiceBusMessage
+from azure.identity import DefaultAzureCredential
 
-CONNECTION_STR = os.environ['SERVICE_BUS_CONNECTION_STR']
-SESSION_QUEUE_NAME = os.environ["SERVICE_BUS_SESSION_QUEUE_NAME"]
-SESSION_ID = os.environ['SERVICE_BUS_SESSION_ID']
+FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
+SESSION_QUEUE_NAME = os.environ["SERVICEBUS_SESSION_QUEUE_NAME"]
+SESSION_ID = os.environ["SERVICEBUS_SESSION_ID"]
 
 
 def send_single_message(sender):
@@ -31,7 +32,9 @@ def send_batch_message(sender):
     batch_message = sender.create_message_batch()
     for _ in range(10):
         try:
-            batch_message.add_message(ServiceBusMessage("Session Message inside a ServiceBusMessageBatch", session_id=SESSION_ID))
+            batch_message.add_message(
+                ServiceBusMessage("Session Message inside a ServiceBusMessageBatch", session_id=SESSION_ID)
+            )
         except ValueError:
             # ServiceBusMessageBatch object reaches max_size.
             # New ServiceBusMessageBatch object can be created here to send more data.
@@ -52,8 +55,9 @@ def receive_batch_message(receiver):
     print("Session state:", session.get_state())
 
 
-if __name__ == '__main__':
-    servicebus_client = ServiceBusClient.from_connection_string(conn_str=CONNECTION_STR, logging_enable=True)
+if __name__ == "__main__":
+    credential = DefaultAzureCredential()
+    servicebus_client = ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential, logging_enable=True)
     with servicebus_client:
         sender = servicebus_client.get_queue_sender(queue_name=SESSION_QUEUE_NAME)
         with sender:
@@ -68,5 +72,3 @@ if __name__ == '__main__':
             receive_batch_message(receiver)
 
         print("Receive is done.")
-
-

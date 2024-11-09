@@ -1,4 +1,4 @@
-# Azure Purview for Python
+# Azure WebPubsub for Python
 
 > see https://aka.ms/autorest
 
@@ -20,21 +20,19 @@ autorest
 ### Settings
 
 ```yaml
-input-file: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/73a0fa453a93bdbe8885f87b9e4e9fef4f0452d0/specification/webpubsub/data-plane/WebPubSub/stable/2021-10-01/webpubsub.json
-output-folder: ../azure/messaging/webpubsubservice
+input-file: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/webpubsub/data-plane/WebPubSub/stable/2024-01-01/webpubsub.json
+output-folder: ../
 namespace: azure.messaging.webpubsubservice
 package-name: azure-messaging-webpubsubservice
 license-header: MICROSOFT_MIT_NO_VERSION
-clear-output-folder: true
-no-namespace-folders: true
 python: true
 title: WebPubSubServiceClient
-version-tolerant: true
 head-as-boolean: true
-package-version: 1.0.1
+package-version: 1.1.0
 add-credential: true
 credential-scopes: https://webpubsub.azure.com/.default
-black: true
+package-mode: dataplane
+package-pprint-name: Azure WebPubSub Service
 ```
 
 
@@ -69,6 +67,10 @@ directive:
     where: $["paths"]["/api/hubs/{hub}/:generateToken"].post.parameters
     transform: >
         $[2]["x-ms-client-name"] = "roles"
+  - from: swagger-document
+    where: $["paths"]["/api/hubs/{hub}/:generateToken"].post.parameters
+    transform: >
+        $[5]["x-ms-client-name"] = "groups"
 ```
 
 ```yaml
@@ -156,6 +158,14 @@ directive:
 directive:
 - from: swagger-document
   where: $.paths["/api/hubs/{hub}/groups/{group}/connections/{connectionId}"].delete.parameters["0"]
+  transform: $["x-ms-parameter-location"] = "client"
+```
+
+### RemoveConnectionFromAllGroup
+``` yaml
+directive:
+- from: swagger-document
+  where: $.paths["/api/hubs/{hub}/connections/{connectionId}/groups"].delete.parameters["0"]
   transform: $["x-ms-parameter-location"] = "client"
 ```
 

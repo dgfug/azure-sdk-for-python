@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,15 +8,16 @@
 # --------------------------------------------------------------------------
 
 import datetime
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
-from azure.core.exceptions import HttpResponseError
-import msrest.serialization
+from .. import _serialization
 
-from ._appliances_enums import *
+if TYPE_CHECKING:
+    # pylint: disable=unused-import,ungrouped-imports
+    from .. import models as _models
 
 
-class Resource(msrest.serialization.Model):
+class Resource(_serialization.Model):
     """Common fields that are returned in the response for all Azure Resource Manager resources.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -28,32 +30,37 @@ class Resource(msrest.serialization.Model):
     :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
      "Microsoft.Storage/storageAccounts".
     :vartype type: str
+    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
+     information.
+    :vartype system_data: ~azure.mgmt.resourceconnector.models.SystemData
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(Resource, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.type = None
+        self.system_data = None
 
 
 class TrackedResource(Resource):
-    """The resource model definition for an Azure Resource Manager tracked top level resource which has 'tags' and a 'location'.
+    """The resource model definition for an Azure Resource Manager tracked top level resource which
+    has 'tags' and a 'location'.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
@@ -67,40 +74,45 @@ class TrackedResource(Resource):
     :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
      "Microsoft.Storage/storageAccounts".
     :vartype type: str
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
-    :param location: Required. The geo-location where the resource lives.
-    :type location: str
+    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
+     information.
+    :vartype system_data: ~azure.mgmt.resourceconnector.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives. Required.
+    :vartype location: str
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'location': {'required': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "location": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'location': {'key': 'location', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        location: str,
-        tags: Optional[Dict[str, str]] = None,
-        **kwargs
-    ):
-        super(TrackedResource, self).__init__(**kwargs)
+    def __init__(self, *, location: str, tags: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives. Required.
+        :paramtype location: str
+        """
+        super().__init__(**kwargs)
         self.tags = tags
         self.location = location
 
 
-class Appliance(TrackedResource):
+class Appliance(TrackedResource):  # pylint: disable=too-many-instance-attributes
     """Appliances definition.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -115,56 +127,67 @@ class Appliance(TrackedResource):
     :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
      "Microsoft.Storage/storageAccounts".
     :vartype type: str
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
-    :param location: Required. The geo-location where the resource lives.
-    :type location: str
-    :param identity: Identity for the resource.
-    :type identity: ~appliances.models.Identity
-    :ivar system_data: Metadata pertaining to creation and last modification of the resource.
-    :vartype system_data: ~appliances.models.SystemData
-    :param distro: Represents a supported Fabric/Infra. (AKSEdge etc...). Possible values include:
-     "AKSEdge". Default value: "AKSEdge".
-    :type distro: str or ~appliances.models.Distro
-    :param infrastructure_config: Contains infrastructure information about the Appliance.
-    :type infrastructure_config: ~appliances.models.AppliancePropertiesInfrastructureConfig
+    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
+     information.
+    :vartype system_data: ~azure.mgmt.resourceconnector.models.SystemData
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
+    :ivar location: The geo-location where the resource lives. Required.
+    :vartype location: str
+    :ivar identity: Identity for the resource.
+    :vartype identity: ~azure.mgmt.resourceconnector.models.Identity
+    :ivar distro: Represents a supported Fabric/Infra. (AKSEdge etc...). "AKSEdge"
+    :vartype distro: str or ~azure.mgmt.resourceconnector.models.Distro
+    :ivar infrastructure_config: Contains infrastructure information about the Appliance.
+    :vartype infrastructure_config:
+     ~azure.mgmt.resourceconnector.models.AppliancePropertiesInfrastructureConfig
     :ivar provisioning_state: The current deployment or provisioning state, which only appears in
      the response.
     :vartype provisioning_state: str
-    :param public_key: Certificates pair used to download MSI certificate from HIS.
-    :type public_key: str
-    :ivar status: Appliance’s health and state of connection to on-prem. Possible values include:
-     "WaitingForHeartbeat", "Validating", "Connected", "Running".
-    :vartype status: str or ~appliances.models.Status
+    :ivar public_key: Certificates pair used to download MSI certificate from HIS. Can only be set
+     once.
+    :vartype public_key: str
+    :ivar status: Appliance’s health and state of connection to on-prem. Known values are:
+     "WaitingForHeartbeat", "Validating", "Connecting", "Connected", "Running",
+     "PreparingForUpgrade", "ETCDSnapshotFailed", "UpgradePrerequisitesCompleted",
+     "ValidatingSFSConnectivity", "ValidatingImageDownload", "ValidatingImageUpload",
+     "ValidatingETCDHealth", "PreUpgrade", "UpgradingKVAIO", "WaitingForKVAIO", "ImagePending",
+     "ImageProvisioning", "ImageProvisioned", "ImageDownloading", "ImageDownloaded",
+     "ImageDeprovisioning", "ImageUnknown", "UpdatingCloudOperator", "WaitingForCloudOperator",
+     "UpdatingCAPI", "UpdatingCluster", "PostUpgrade", "UpgradeComplete",
+     "UpgradeClusterExtensionFailedToDelete", "UpgradeFailed", "Offline", and "None".
+    :vartype status: str or ~azure.mgmt.resourceconnector.models.Status
     :ivar version: Version of the Appliance.
     :vartype version: str
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True},
-        'type': {'readonly': True},
-        'location': {'required': True},
-        'system_data': {'readonly': True},
-        'provisioning_state': {'readonly': True},
-        'status': {'readonly': True},
-        'version': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+        "type": {"readonly": True},
+        "system_data": {"readonly": True},
+        "location": {"required": True},
+        "provisioning_state": {"readonly": True},
+        "status": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'location': {'key': 'location', 'type': 'str'},
-        'identity': {'key': 'identity', 'type': 'Identity'},
-        'system_data': {'key': 'systemData', 'type': 'SystemData'},
-        'distro': {'key': 'properties.distro', 'type': 'str'},
-        'infrastructure_config': {'key': 'properties.infrastructureConfig', 'type': 'AppliancePropertiesInfrastructureConfig'},
-        'provisioning_state': {'key': 'properties.provisioningState', 'type': 'str'},
-        'public_key': {'key': 'properties.publicKey', 'type': 'str'},
-        'status': {'key': 'properties.status', 'type': 'str'},
-        'version': {'key': 'properties.version', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "system_data": {"key": "systemData", "type": "SystemData"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "location": {"key": "location", "type": "str"},
+        "identity": {"key": "identity", "type": "Identity"},
+        "distro": {"key": "properties.distro", "type": "str"},
+        "infrastructure_config": {
+            "key": "properties.infrastructureConfig",
+            "type": "AppliancePropertiesInfrastructureConfig",
+        },
+        "provisioning_state": {"key": "properties.provisioningState", "type": "str"},
+        "public_key": {"key": "properties.publicKey", "type": "str"},
+        "status": {"key": "properties.status", "type": "str"},
+        "version": {"key": "properties.version", "type": "str"},
     }
 
     def __init__(
@@ -172,86 +195,157 @@ class Appliance(TrackedResource):
         *,
         location: str,
         tags: Optional[Dict[str, str]] = None,
-        identity: Optional["Identity"] = None,
-        distro: Optional[Union[str, "Distro"]] = "AKSEdge",
-        infrastructure_config: Optional["AppliancePropertiesInfrastructureConfig"] = None,
+        identity: Optional["_models.Identity"] = None,
+        distro: Union[str, "_models.Distro"] = "AKSEdge",
+        infrastructure_config: Optional["_models.AppliancePropertiesInfrastructureConfig"] = None,
         public_key: Optional[str] = None,
-        **kwargs
-    ):
-        super(Appliance, self).__init__(tags=tags, location=location, **kwargs)
+        version: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword location: The geo-location where the resource lives. Required.
+        :paramtype location: str
+        :keyword identity: Identity for the resource.
+        :paramtype identity: ~azure.mgmt.resourceconnector.models.Identity
+        :keyword distro: Represents a supported Fabric/Infra. (AKSEdge etc...). "AKSEdge"
+        :paramtype distro: str or ~azure.mgmt.resourceconnector.models.Distro
+        :keyword infrastructure_config: Contains infrastructure information about the Appliance.
+        :paramtype infrastructure_config:
+         ~azure.mgmt.resourceconnector.models.AppliancePropertiesInfrastructureConfig
+        :keyword public_key: Certificates pair used to download MSI certificate from HIS. Can only be
+         set once.
+        :paramtype public_key: str
+        :keyword version: Version of the Appliance.
+        :paramtype version: str
+        """
+        super().__init__(tags=tags, location=location, **kwargs)
         self.identity = identity
-        self.system_data = None
         self.distro = distro
         self.infrastructure_config = infrastructure_config
         self.provisioning_state = None
         self.public_key = public_key
         self.status = None
-        self.version = None
+        self.version = version
 
 
-class ApplianceCredentialKubeconfig(msrest.serialization.Model):
+class ApplianceCredentialKubeconfig(_serialization.Model):
     """Cluster User Credential appliance.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :ivar name: Name which contains the role of the kubeconfig. Possible values include:
-     "clusterUser".
-    :vartype name: str or ~appliances.models.AccessProfileType
+    :ivar name: Name which contains the role of the kubeconfig. Known values are: "clusterUser" and
+     "clusterCustomerUser".
+    :vartype name: str or ~azure.mgmt.resourceconnector.models.AccessProfileType
     :ivar value: Contains the kubeconfig value.
     :vartype value: str
     """
 
     _validation = {
-        'name': {'readonly': True},
-        'value': {'readonly': True},
+        "name": {"readonly": True},
+        "value": {"readonly": True},
     }
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'value': {'key': 'value', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
+        "value": {"key": "value", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ApplianceCredentialKubeconfig, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.name = None
         self.value = None
 
 
-class ApplianceListCredentialResults(msrest.serialization.Model):
+class ApplianceGetTelemetryConfigResult(_serialization.Model):
+    """The Get Telemetry Config Result appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar telemetry_instrumentation_key: Telemetry instrumentation key.
+    :vartype telemetry_instrumentation_key: str
+    """
+
+    _validation = {
+        "telemetry_instrumentation_key": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "telemetry_instrumentation_key": {"key": "telemetryInstrumentationKey", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.telemetry_instrumentation_key = None
+
+
+class ApplianceListCredentialResults(_serialization.Model):
     """The List Cluster User Credential appliance.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar hybrid_connection_config: Contains the REP (rendezvous endpoint) and “Listener” access
      token from notification service (NS).
-    :vartype hybrid_connection_config: ~appliances.models.HybridConnectionConfig
+    :vartype hybrid_connection_config: ~azure.mgmt.resourceconnector.models.HybridConnectionConfig
     :ivar kubeconfigs: The list of appliance kubeconfigs.
-    :vartype kubeconfigs: list[~appliances.models.ApplianceCredentialKubeconfig]
+    :vartype kubeconfigs: list[~azure.mgmt.resourceconnector.models.ApplianceCredentialKubeconfig]
     """
 
     _validation = {
-        'hybrid_connection_config': {'readonly': True},
-        'kubeconfigs': {'readonly': True},
+        "hybrid_connection_config": {"readonly": True},
+        "kubeconfigs": {"readonly": True},
     }
 
     _attribute_map = {
-        'hybrid_connection_config': {'key': 'hybridConnectionConfig', 'type': 'HybridConnectionConfig'},
-        'kubeconfigs': {'key': 'kubeconfigs', 'type': '[ApplianceCredentialKubeconfig]'},
+        "hybrid_connection_config": {"key": "hybridConnectionConfig", "type": "HybridConnectionConfig"},
+        "kubeconfigs": {"key": "kubeconfigs", "type": "[ApplianceCredentialKubeconfig]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ApplianceListCredentialResults, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.hybrid_connection_config = None
         self.kubeconfigs = None
 
 
-class ApplianceListResult(msrest.serialization.Model):
+class ApplianceListKeysResults(_serialization.Model):
+    """The List Cluster Keys Results appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar artifact_profiles: Map of artifacts that contains a list of ArtifactProfile used to
+     upload artifacts such as logs.
+    :vartype artifact_profiles: dict[str, ~azure.mgmt.resourceconnector.models.ArtifactProfile]
+    :ivar kubeconfigs: The list of appliance kubeconfigs.
+    :vartype kubeconfigs: list[~azure.mgmt.resourceconnector.models.ApplianceCredentialKubeconfig]
+    :ivar ssh_keys: Map of Customer User Public, Private SSH Keys and Certificate when available.
+    :vartype ssh_keys: dict[str, ~azure.mgmt.resourceconnector.models.SSHKey]
+    """
+
+    _validation = {
+        "artifact_profiles": {"readonly": True},
+        "kubeconfigs": {"readonly": True},
+        "ssh_keys": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "artifact_profiles": {"key": "artifactProfiles", "type": "{ArtifactProfile}"},
+        "kubeconfigs": {"key": "kubeconfigs", "type": "[ApplianceCredentialKubeconfig]"},
+        "ssh_keys": {"key": "sshKeys", "type": "{SSHKey}"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.artifact_profiles = None
+        self.kubeconfigs = None
+        self.ssh_keys = None
+
+
+class ApplianceListResult(_serialization.Model):
     """The List Appliances operation response.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -259,29 +353,27 @@ class ApplianceListResult(msrest.serialization.Model):
     :ivar next_link: The URL to use for getting the next set of results.
     :vartype next_link: str
     :ivar value: The list of Appliances.
-    :vartype value: list[~appliances.models.Appliance]
+    :vartype value: list[~azure.mgmt.resourceconnector.models.Appliance]
     """
 
     _validation = {
-        'next_link': {'readonly': True},
-        'value': {'readonly': True},
+        "next_link": {"readonly": True},
+        "value": {"readonly": True},
     }
 
     _attribute_map = {
-        'next_link': {'key': 'nextLink', 'type': 'str'},
-        'value': {'key': 'value', 'type': '[Appliance]'},
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[Appliance]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ApplianceListResult, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.next_link = None
         self.value = None
 
 
-class ApplianceOperation(msrest.serialization.Model):
+class ApplianceOperation(_serialization.Model):
     """Appliances operation.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -303,30 +395,28 @@ class ApplianceOperation(msrest.serialization.Model):
     """
 
     _validation = {
-        'is_data_action': {'readonly': True},
-        'name': {'readonly': True},
-        'origin': {'readonly': True},
-        'description': {'readonly': True},
-        'operation': {'readonly': True},
-        'provider': {'readonly': True},
-        'resource': {'readonly': True},
+        "is_data_action": {"readonly": True},
+        "name": {"readonly": True},
+        "origin": {"readonly": True},
+        "description": {"readonly": True},
+        "operation": {"readonly": True},
+        "provider": {"readonly": True},
+        "resource": {"readonly": True},
     }
 
     _attribute_map = {
-        'is_data_action': {'key': 'isDataAction', 'type': 'bool'},
-        'name': {'key': 'name', 'type': 'str'},
-        'origin': {'key': 'origin', 'type': 'str'},
-        'description': {'key': 'display.description', 'type': 'str'},
-        'operation': {'key': 'display.operation', 'type': 'str'},
-        'provider': {'key': 'display.provider', 'type': 'str'},
-        'resource': {'key': 'display.resource', 'type': 'str'},
+        "is_data_action": {"key": "isDataAction", "type": "bool"},
+        "name": {"key": "name", "type": "str"},
+        "origin": {"key": "origin", "type": "str"},
+        "description": {"key": "display.description", "type": "str"},
+        "operation": {"key": "display.operation", "type": "str"},
+        "provider": {"key": "display.provider", "type": "str"},
+        "resource": {"key": "display.resource", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ApplianceOperation, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.is_data_action = None
         self.name = None
         self.origin = None
@@ -336,61 +426,86 @@ class ApplianceOperation(msrest.serialization.Model):
         self.resource = None
 
 
-class ApplianceOperationsList(msrest.serialization.Model):
+class ApplianceOperationsList(_serialization.Model):
     """Lists of Appliances operations.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param next_link: Next page of operations.
-    :type next_link: str
-    :param value: Required. Array of applianceOperation.
-    :type value: list[~appliances.models.ApplianceOperation]
+    :ivar next_link: Next page of operations.
+    :vartype next_link: str
+    :ivar value: Array of applianceOperation. Required.
+    :vartype value: list[~azure.mgmt.resourceconnector.models.ApplianceOperation]
     """
 
     _validation = {
-        'value': {'required': True},
+        "value": {"required": True},
     }
 
     _attribute_map = {
-        'next_link': {'key': 'nextLink', 'type': 'str'},
-        'value': {'key': 'value', 'type': '[ApplianceOperation]'},
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[ApplianceOperation]"},
     }
 
     def __init__(
-        self,
-        *,
-        value: List["ApplianceOperation"],
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
-        super(ApplianceOperationsList, self).__init__(**kwargs)
+        self, *, value: List["_models.ApplianceOperation"], next_link: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword next_link: Next page of operations.
+        :paramtype next_link: str
+        :keyword value: Array of applianceOperation. Required.
+        :paramtype value: list[~azure.mgmt.resourceconnector.models.ApplianceOperation]
+        """
+        super().__init__(**kwargs)
         self.next_link = next_link
         self.value = value
 
 
-class AppliancePropertiesInfrastructureConfig(msrest.serialization.Model):
+class AppliancePropertiesInfrastructureConfig(_serialization.Model):
     """Contains infrastructure information about the Appliance.
 
-    :param provider: Information about the connected appliance. Possible values include: "VMWare",
-     "HCI", "SCVMM".
-    :type provider: str or ~appliances.models.Provider
+    :ivar provider: Information about the connected appliance. Known values are: "VMWare", "HCI",
+     and "SCVMM".
+    :vartype provider: str or ~azure.mgmt.resourceconnector.models.Provider
     """
 
     _attribute_map = {
-        'provider': {'key': 'provider', 'type': 'str'},
+        "provider": {"key": "provider", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        provider: Optional[Union[str, "Provider"]] = None,
-        **kwargs
-    ):
-        super(AppliancePropertiesInfrastructureConfig, self).__init__(**kwargs)
+    def __init__(self, *, provider: Optional[Union[str, "_models.Provider"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword provider: Information about the connected appliance. Known values are: "VMWare",
+         "HCI", and "SCVMM".
+        :paramtype provider: str or ~azure.mgmt.resourceconnector.models.Provider
+        """
+        super().__init__(**kwargs)
         self.provider = provider
 
 
-class ErrorAdditionalInfo(msrest.serialization.Model):
+class ArtifactProfile(_serialization.Model):
+    """Appliance ArtifactProfile definition.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar endpoint: Endpoint is the URL to upload artifacts to.
+    :vartype endpoint: str
+    """
+
+    _validation = {
+        "endpoint": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "endpoint": {"key": "endpoint", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.endpoint = None
+
+
+class ErrorAdditionalInfo(_serialization.Model):
     """The resource management error additional info.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -398,29 +513,27 @@ class ErrorAdditionalInfo(msrest.serialization.Model):
     :ivar type: The additional info type.
     :vartype type: str
     :ivar info: The additional info.
-    :vartype info: any
+    :vartype info: JSON
     """
 
     _validation = {
-        'type': {'readonly': True},
-        'info': {'readonly': True},
+        "type": {"readonly": True},
+        "info": {"readonly": True},
     }
 
     _attribute_map = {
-        'type': {'key': 'type', 'type': 'str'},
-        'info': {'key': 'info', 'type': 'object'},
+        "type": {"key": "type", "type": "str"},
+        "info": {"key": "info", "type": "object"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ErrorAdditionalInfo, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.type = None
         self.info = None
 
 
-class ErrorDetail(msrest.serialization.Model):
+class ErrorDetail(_serialization.Model):
     """The error detail.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -432,32 +545,30 @@ class ErrorDetail(msrest.serialization.Model):
     :ivar target: The error target.
     :vartype target: str
     :ivar details: The error details.
-    :vartype details: list[~appliances.models.ErrorDetail]
+    :vartype details: list[~azure.mgmt.resourceconnector.models.ErrorDetail]
     :ivar additional_info: The error additional info.
-    :vartype additional_info: list[~appliances.models.ErrorAdditionalInfo]
+    :vartype additional_info: list[~azure.mgmt.resourceconnector.models.ErrorAdditionalInfo]
     """
 
     _validation = {
-        'code': {'readonly': True},
-        'message': {'readonly': True},
-        'target': {'readonly': True},
-        'details': {'readonly': True},
-        'additional_info': {'readonly': True},
+        "code": {"readonly": True},
+        "message": {"readonly": True},
+        "target": {"readonly": True},
+        "details": {"readonly": True},
+        "additional_info": {"readonly": True},
     }
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
-        'details': {'key': 'details', 'type': '[ErrorDetail]'},
-        'additional_info': {'key': 'additionalInfo', 'type': '[ErrorAdditionalInfo]'},
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
+        "details": {"key": "details", "type": "[ErrorDetail]"},
+        "additional_info": {"key": "additionalInfo", "type": "[ErrorAdditionalInfo]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(ErrorDetail, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.code = None
         self.message = None
         self.target = None
@@ -465,34 +576,35 @@ class ErrorDetail(msrest.serialization.Model):
         self.additional_info = None
 
 
-class ErrorResponse(msrest.serialization.Model):
-    """Common error response for all Azure Resource Manager APIs to return error details for failed operations. (This also follows the OData error response format.).
+class ErrorResponse(_serialization.Model):
+    """Common error response for all Azure Resource Manager APIs to return error details for failed
+    operations. (This also follows the OData error response format.).
 
-    :param error: The error object.
-    :type error: ~appliances.models.ErrorDetail
+    :ivar error: The error object.
+    :vartype error: ~azure.mgmt.resourceconnector.models.ErrorDetail
     """
 
     _attribute_map = {
-        'error': {'key': 'error', 'type': 'ErrorDetail'},
+        "error": {"key": "error", "type": "ErrorDetail"},
     }
 
-    def __init__(
-        self,
-        *,
-        error: Optional["ErrorDetail"] = None,
-        **kwargs
-    ):
-        super(ErrorResponse, self).__init__(**kwargs)
+    def __init__(self, *, error: Optional["_models.ErrorDetail"] = None, **kwargs: Any) -> None:
+        """
+        :keyword error: The error object.
+        :paramtype error: ~azure.mgmt.resourceconnector.models.ErrorDetail
+        """
+        super().__init__(**kwargs)
         self.error = error
 
 
-class HybridConnectionConfig(msrest.serialization.Model):
-    """Contains the REP (rendezvous endpoint) and “Listener” access token from notification service (NS).
+class HybridConnectionConfig(_serialization.Model):
+    """Contains the REP (rendezvous endpoint) and “Listener” access token from notification service
+    (NS).
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar expiration_time: Timestamp when this token will be expired.
-    :vartype expiration_time: long
+    :vartype expiration_time: int
     :ivar hybrid_connection_name: Name of the connection.
     :vartype hybrid_connection_name: str
     :ivar relay: Name of the notification service.
@@ -502,31 +614,29 @@ class HybridConnectionConfig(msrest.serialization.Model):
     """
 
     _validation = {
-        'expiration_time': {'readonly': True},
-        'hybrid_connection_name': {'readonly': True},
-        'relay': {'readonly': True},
-        'token': {'readonly': True},
+        "expiration_time": {"readonly": True},
+        "hybrid_connection_name": {"readonly": True},
+        "relay": {"readonly": True},
+        "token": {"readonly": True},
     }
 
     _attribute_map = {
-        'expiration_time': {'key': 'expirationTime', 'type': 'long'},
-        'hybrid_connection_name': {'key': 'hybridConnectionName', 'type': 'str'},
-        'relay': {'key': 'relay', 'type': 'str'},
-        'token': {'key': 'token', 'type': 'str'},
+        "expiration_time": {"key": "expirationTime", "type": "int"},
+        "hybrid_connection_name": {"key": "hybridConnectionName", "type": "str"},
+        "relay": {"key": "relay", "type": "str"},
+        "token": {"key": "token", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(HybridConnectionConfig, self).__init__(**kwargs)
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
         self.expiration_time = None
         self.hybrid_connection_name = None
         self.relay = None
         self.token = None
 
 
-class Identity(msrest.serialization.Model):
+class Identity(_serialization.Model):
     """Identity for the resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -535,97 +645,339 @@ class Identity(msrest.serialization.Model):
     :vartype principal_id: str
     :ivar tenant_id: The tenant ID of resource.
     :vartype tenant_id: str
-    :param type: The identity type. Possible values include: "SystemAssigned", "None".
-    :type type: str or ~appliances.models.ResourceIdentityType
+    :ivar type: The identity type. Known values are: "SystemAssigned" and "None".
+    :vartype type: str or ~azure.mgmt.resourceconnector.models.ResourceIdentityType
     """
 
     _validation = {
-        'principal_id': {'readonly': True},
-        'tenant_id': {'readonly': True},
+        "principal_id": {"readonly": True},
+        "tenant_id": {"readonly": True},
     }
 
     _attribute_map = {
-        'principal_id': {'key': 'principalId', 'type': 'str'},
-        'tenant_id': {'key': 'tenantId', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
+        "principal_id": {"key": "principalId", "type": "str"},
+        "tenant_id": {"key": "tenantId", "type": "str"},
+        "type": {"key": "type", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        type: Optional[Union[str, "ResourceIdentityType"]] = None,
-        **kwargs
-    ):
-        super(Identity, self).__init__(**kwargs)
+    def __init__(self, *, type: Optional[Union[str, "_models.ResourceIdentityType"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword type: The identity type. Known values are: "SystemAssigned" and "None".
+        :paramtype type: str or ~azure.mgmt.resourceconnector.models.ResourceIdentityType
+        """
+        super().__init__(**kwargs)
         self.principal_id = None
         self.tenant_id = None
         self.type = type
 
 
-class PatchableAppliance(msrest.serialization.Model):
+class PatchableAppliance(_serialization.Model):
     """The Appliances patchable resource definition.
 
-    :param tags: A set of tags. Resource tags.
-    :type tags: dict[str, str]
+    :ivar tags: Resource tags.
+    :vartype tags: dict[str, str]
     """
 
     _attribute_map = {
-        'tags': {'key': 'tags', 'type': '{str}'},
+        "tags": {"key": "tags", "type": "{str}"},
     }
 
-    def __init__(
-        self,
-        *,
-        tags: Optional[Dict[str, str]] = None,
-        **kwargs
-    ):
-        super(PatchableAppliance, self).__init__(**kwargs)
+    def __init__(self, *, tags: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+        """
+        :keyword tags: Resource tags.
+        :paramtype tags: dict[str, str]
+        """
+        super().__init__(**kwargs)
         self.tags = tags
 
 
-class SystemData(msrest.serialization.Model):
+class SSHKey(_serialization.Model):
+    """Appliance SSHKey definition.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar certificate: Certificate associated with the public key if the key is signed.
+    :vartype certificate: str
+    :ivar creation_time_stamp: Certificate creation timestamp (Unix).
+    :vartype creation_time_stamp: int
+    :ivar expiration_time_stamp: Certificate expiration timestamp (Unix).
+    :vartype expiration_time_stamp: int
+    :ivar private_key: Private Key.
+    :vartype private_key: str
+    :ivar public_key: Public Key.
+    :vartype public_key: str
+    """
+
+    _validation = {
+        "certificate": {"readonly": True},
+        "creation_time_stamp": {"readonly": True},
+        "expiration_time_stamp": {"readonly": True},
+        "private_key": {"readonly": True},
+        "public_key": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "certificate": {"key": "certificate", "type": "str"},
+        "creation_time_stamp": {"key": "creationTimeStamp", "type": "int"},
+        "expiration_time_stamp": {"key": "expirationTimeStamp", "type": "int"},
+        "private_key": {"key": "privateKey", "type": "str"},
+        "public_key": {"key": "publicKey", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.certificate = None
+        self.creation_time_stamp = None
+        self.expiration_time_stamp = None
+        self.private_key = None
+        self.public_key = None
+
+
+class SupportedVersion(_serialization.Model):
+    """The SupportedVersion object for appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar metadata: This is the metadata of the supported newer version.
+    :vartype metadata: ~azure.mgmt.resourceconnector.models.SupportedVersionMetadata
+    :ivar version: The newer version available for upgrade.
+    :vartype version: str
+    """
+
+    _validation = {
+        "metadata": {"readonly": True},
+        "version": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "metadata": {"key": "metadata", "type": "SupportedVersionMetadata"},
+        "version": {"key": "version", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.metadata = None
+        self.version = None
+
+
+class SupportedVersionCatalogVersion(_serialization.Model):
+    """The SupportedVersionCatalogVersion object for appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar data: The newer supported version catalog version data.
+    :vartype data: ~azure.mgmt.resourceconnector.models.SupportedVersionCatalogVersionData
+    :ivar name: The catalog version name for the version available for upgrade.
+    :vartype name: str
+    :ivar namespace: The catalog version namespace for the version available for upgrade.
+    :vartype namespace: str
+    """
+
+    _validation = {
+        "data": {"readonly": True},
+        "name": {"readonly": True},
+        "namespace": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "data": {"key": "data", "type": "SupportedVersionCatalogVersionData"},
+        "name": {"key": "name", "type": "str"},
+        "namespace": {"key": "namespace", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.data = None
+        self.name = None
+        self.namespace = None
+
+
+class SupportedVersionCatalogVersionData(_serialization.Model):
+    """The SupportedVersionCatalogVersionData object for appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar audience: The image audience name for the version available for upgrade.
+    :vartype audience: str
+    :ivar catalog: The image catalog name for the version available for upgrade.
+    :vartype catalog: str
+    :ivar offer: The image offer name for the version available for upgrade.
+    :vartype offer: str
+    :ivar version: The image version for the version available for upgrade.
+    :vartype version: str
+    """
+
+    _validation = {
+        "audience": {"readonly": True},
+        "catalog": {"readonly": True},
+        "offer": {"readonly": True},
+        "version": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "audience": {"key": "audience", "type": "str"},
+        "catalog": {"key": "catalog", "type": "str"},
+        "offer": {"key": "offer", "type": "str"},
+        "version": {"key": "version", "type": "str"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.audience = None
+        self.catalog = None
+        self.offer = None
+        self.version = None
+
+
+class SupportedVersionMetadata(_serialization.Model):
+    """The SupportedVersionMetadata object for appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar catalog_version: The newer supported version catalog version.
+    :vartype catalog_version: ~azure.mgmt.resourceconnector.models.SupportedVersionCatalogVersion
+    """
+
+    _validation = {
+        "catalog_version": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "catalog_version": {"key": "catalogVersion", "type": "SupportedVersionCatalogVersion"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.catalog_version = None
+
+
+class SystemData(_serialization.Model):
     """Metadata pertaining to creation and last modification of the resource.
 
-    :param created_by: The identity that created the resource.
-    :type created_by: str
-    :param created_by_type: The type of identity that created the resource. Possible values
-     include: "User", "Application", "ManagedIdentity", "Key".
-    :type created_by_type: str or ~appliances.models.CreatedByType
-    :param created_at: The timestamp of resource creation (UTC).
-    :type created_at: ~datetime.datetime
-    :param last_modified_by: The identity that last modified the resource.
-    :type last_modified_by: str
-    :param last_modified_by_type: The type of identity that last modified the resource. Possible
-     values include: "User", "Application", "ManagedIdentity", "Key".
-    :type last_modified_by_type: str or ~appliances.models.CreatedByType
-    :param last_modified_at: The timestamp of resource last modification (UTC).
-    :type last_modified_at: ~datetime.datetime
+    :ivar created_by: The identity that created the resource.
+    :vartype created_by: str
+    :ivar created_by_type: The type of identity that created the resource. Known values are:
+     "User", "Application", "ManagedIdentity", and "Key".
+    :vartype created_by_type: str or ~azure.mgmt.resourceconnector.models.CreatedByType
+    :ivar created_at: The timestamp of resource creation (UTC).
+    :vartype created_at: ~datetime.datetime
+    :ivar last_modified_by: The identity that last modified the resource.
+    :vartype last_modified_by: str
+    :ivar last_modified_by_type: The type of identity that last modified the resource. Known values
+     are: "User", "Application", "ManagedIdentity", and "Key".
+    :vartype last_modified_by_type: str or ~azure.mgmt.resourceconnector.models.CreatedByType
+    :ivar last_modified_at: The timestamp of resource last modification (UTC).
+    :vartype last_modified_at: ~datetime.datetime
     """
 
     _attribute_map = {
-        'created_by': {'key': 'createdBy', 'type': 'str'},
-        'created_by_type': {'key': 'createdByType', 'type': 'str'},
-        'created_at': {'key': 'createdAt', 'type': 'iso-8601'},
-        'last_modified_by': {'key': 'lastModifiedBy', 'type': 'str'},
-        'last_modified_by_type': {'key': 'lastModifiedByType', 'type': 'str'},
-        'last_modified_at': {'key': 'lastModifiedAt', 'type': 'iso-8601'},
+        "created_by": {"key": "createdBy", "type": "str"},
+        "created_by_type": {"key": "createdByType", "type": "str"},
+        "created_at": {"key": "createdAt", "type": "iso-8601"},
+        "last_modified_by": {"key": "lastModifiedBy", "type": "str"},
+        "last_modified_by_type": {"key": "lastModifiedByType", "type": "str"},
+        "last_modified_at": {"key": "lastModifiedAt", "type": "iso-8601"},
     }
 
     def __init__(
         self,
         *,
         created_by: Optional[str] = None,
-        created_by_type: Optional[Union[str, "CreatedByType"]] = None,
+        created_by_type: Optional[Union[str, "_models.CreatedByType"]] = None,
         created_at: Optional[datetime.datetime] = None,
         last_modified_by: Optional[str] = None,
-        last_modified_by_type: Optional[Union[str, "CreatedByType"]] = None,
+        last_modified_by_type: Optional[Union[str, "_models.CreatedByType"]] = None,
         last_modified_at: Optional[datetime.datetime] = None,
-        **kwargs
-    ):
-        super(SystemData, self).__init__(**kwargs)
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword created_by: The identity that created the resource.
+        :paramtype created_by: str
+        :keyword created_by_type: The type of identity that created the resource. Known values are:
+         "User", "Application", "ManagedIdentity", and "Key".
+        :paramtype created_by_type: str or ~azure.mgmt.resourceconnector.models.CreatedByType
+        :keyword created_at: The timestamp of resource creation (UTC).
+        :paramtype created_at: ~datetime.datetime
+        :keyword last_modified_by: The identity that last modified the resource.
+        :paramtype last_modified_by: str
+        :keyword last_modified_by_type: The type of identity that last modified the resource. Known
+         values are: "User", "Application", "ManagedIdentity", and "Key".
+        :paramtype last_modified_by_type: str or ~azure.mgmt.resourceconnector.models.CreatedByType
+        :keyword last_modified_at: The timestamp of resource last modification (UTC).
+        :paramtype last_modified_at: ~datetime.datetime
+        """
+        super().__init__(**kwargs)
         self.created_by = created_by
         self.created_by_type = created_by_type
         self.created_at = created_at
         self.last_modified_by = last_modified_by
         self.last_modified_by_type = last_modified_by_type
         self.last_modified_at = last_modified_at
+
+
+class UpgradeGraph(_serialization.Model):
+    """The Upgrade Graph for appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar id: The appliance resource path.
+    :vartype id: str
+    :ivar name: The release train name.
+    :vartype name: str
+    :ivar properties: The properties of supported version.
+    :vartype properties: ~azure.mgmt.resourceconnector.models.UpgradeGraphProperties
+    """
+
+    _validation = {
+        "id": {"readonly": True},
+        "name": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "properties": {"key": "properties", "type": "UpgradeGraphProperties"},
+    }
+
+    def __init__(self, *, properties: Optional["_models.UpgradeGraphProperties"] = None, **kwargs: Any) -> None:
+        """
+        :keyword properties: The properties of supported version.
+        :paramtype properties: ~azure.mgmt.resourceconnector.models.UpgradeGraphProperties
+        """
+        super().__init__(**kwargs)
+        self.id = None
+        self.name = None
+        self.properties = properties
+
+
+class UpgradeGraphProperties(_serialization.Model):
+    """The Upgrade Graph Properties for appliance.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    :ivar appliance_version: The current appliance version.
+    :vartype appliance_version: str
+    :ivar supported_versions: This contains the current version and supported upgrade versions.
+    :vartype supported_versions: list[~azure.mgmt.resourceconnector.models.SupportedVersion]
+    """
+
+    _validation = {
+        "appliance_version": {"readonly": True},
+        "supported_versions": {"readonly": True},
+    }
+
+    _attribute_map = {
+        "appliance_version": {"key": "applianceVersion", "type": "str"},
+        "supported_versions": {"key": "supportedVersions", "type": "[SupportedVersion]"},
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.appliance_version = None
+        self.supported_versions = None

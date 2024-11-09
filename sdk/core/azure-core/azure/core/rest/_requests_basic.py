@@ -23,18 +23,20 @@
 # IN THE SOFTWARE.
 #
 # --------------------------------------------------------------------------
-try:
-    import collections.abc as collections
-except ImportError:
-    import collections  # type: ignore
+import collections.abc as collections
+from requests.structures import (  # pylint: disable=networking-import-outside-azure-core-transport
+    CaseInsensitiveDict,
+)
 
-from requests.structures import CaseInsensitiveDict
-
-from ._http_response_impl import _HttpResponseBaseImpl, HttpResponseImpl, _HttpResponseBackcompatMixinBase
+from ._http_response_impl import (
+    _HttpResponseBaseImpl,
+    HttpResponseImpl,
+    _HttpResponseBackcompatMixinBase,
+)
 from ..pipeline.transport._requests_basic import StreamDownloadGenerator
 
-class _ItemsView(collections.ItemsView):
 
+class _ItemsView(collections.ItemsView):
     def __contains__(self, item):
         if not (isinstance(item, (list, tuple)) and len(item) == 2):
             return False  # requests raises here, we just return False
@@ -44,7 +46,8 @@ class _ItemsView(collections.ItemsView):
         return False
 
     def __repr__(self):
-        return 'ItemsView({})'.format(dict(self.__iter__()))
+        return "ItemsView({})".format(dict(self.__iter__()))
+
 
 class _CaseInsensitiveDict(CaseInsensitiveDict):
     """Overriding default requests dict so we can unify
@@ -53,8 +56,13 @@ class _CaseInsensitiveDict(CaseInsensitiveDict):
     """
 
     def items(self):
-        """Return a new view of the dictionary's items."""
+        """Return a new view of the dictionary's items.
+
+        :rtype: ~collections.abc.ItemsView[str, str]
+        :returns: a view object that displays a list of (key, value) tuple pairs
+        """
         return _ItemsView(self)
+
 
 class _RestRequestsTransportResponseBaseMixin(_HttpResponseBackcompatMixinBase):
     """Backcompat mixin for the sync and async requests responses
@@ -72,6 +80,7 @@ class _RestRequestsTransportResponseBaseMixin(_HttpResponseBackcompatMixinBase):
             self._content = self._internal_response.content
         return self._content
 
+
 class _RestRequestsTransportResponseBase(_HttpResponseBaseImpl, _RestRequestsTransportResponseBaseMixin):
     def __init__(self, **kwargs):
         internal_response = kwargs.pop("internal_response")
@@ -84,15 +93,12 @@ class _RestRequestsTransportResponseBase(_HttpResponseBaseImpl, _RestRequestsTra
             status_code=internal_response.status_code,
             headers=headers,
             reason=internal_response.reason,
-            content_type=headers.get('content-type'),
+            content_type=headers.get("content-type"),
             content=content,
             **kwargs
         )
 
-class RestRequestsTransportResponse(HttpResponseImpl, _RestRequestsTransportResponseBase):
 
+class RestRequestsTransportResponse(HttpResponseImpl, _RestRequestsTransportResponseBase):
     def __init__(self, **kwargs):
-        super(RestRequestsTransportResponse, self).__init__(
-            stream_download_generator=StreamDownloadGenerator,
-            **kwargs
-        )
+        super(RestRequestsTransportResponse, self).__init__(stream_download_generator=StreamDownloadGenerator, **kwargs)

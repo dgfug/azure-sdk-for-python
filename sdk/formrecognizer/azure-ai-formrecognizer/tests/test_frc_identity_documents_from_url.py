@@ -7,28 +7,25 @@
 import pytest
 import functools
 from datetime import date
-from devtools_testutils import recorded_by_proxy, set_bodiless_matcher
+from devtools_testutils import recorded_by_proxy
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.formrecognizer._generated.v2_1.models import AnalyzeOperationResult
 from azure.ai.formrecognizer._response_handlers import prepare_prebuilt_models
 from azure.ai.formrecognizer import FormRecognizerClient, FormRecognizerApiVersion
 from testcase import FormRecognizerTest
-from preparers import GlobalClientPreparer as _GlobalClientPreparer
-from preparers import FormRecognizerPreparer
+from preparers import FormRecognizerPreparer, get_sync_client
+from conftest import skip_flaky_test
 
-FormRecognizerClientPreparer = functools.partial(_GlobalClientPreparer, FormRecognizerClient)
+get_fr_client = functools.partial(get_sync_client, FormRecognizerClient)
 
 
 class TestIdDocumentsFromUrl(FormRecognizerTest):
 
-    def teardown(self):
-        self.sleep(4)
-
+    @skip_flaky_test
     @FormRecognizerPreparer()
     @recorded_by_proxy
-    def test_polling_interval(self, formrecognizer_test_endpoint, formrecognizer_test_api_key, **kwargs):
-        set_bodiless_matcher()
-        client = FormRecognizerClient(formrecognizer_test_endpoint, AzureKeyCredential(formrecognizer_test_api_key), polling_interval=7)
+    def test_polling_interval(self, **kwargs):
+        client = get_fr_client(polling_interval=7)
         assert client._client._config.polling_interval ==  7
 
         poller = client.begin_recognize_identity_documents_from_url(self.identity_document_url_jpg, polling_interval=6)
@@ -38,11 +35,11 @@ class TestIdDocumentsFromUrl(FormRecognizerTest):
         poller2.wait()
         assert poller2._polling_method._timeout ==  7  # goes back to client default
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     @recorded_by_proxy
-    def test_identity_document_url_transform_jpg(self, client):
-        set_bodiless_matcher()
+    def test_identity_document_url_transform_jpg(self):
+        client = get_fr_client()
         responses = []
 
         def callback(raw_response, _, headers):
@@ -75,11 +72,11 @@ class TestIdDocumentsFromUrl(FormRecognizerTest):
         # Check page metadata
         self.assertFormPagesTransformCorrect(id_document.pages, read_results, page_results)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     @recorded_by_proxy
-    def test_identity_document_jpg_include_field_elements(self, client):
-        set_bodiless_matcher()
+    def test_identity_document_jpg_include_field_elements(self):
+        client = get_fr_client()
         poller = client.begin_recognize_identity_documents_from_url(self.identity_document_url_jpg, include_field_elements=True)
 
         result = poller.result()
@@ -98,30 +95,29 @@ class TestIdDocumentsFromUrl(FormRecognizerTest):
                 self.assertFieldElementsHasValues(field.value_data.field_elements, id_document.page_range.first_page_number)
 
     @pytest.mark.live_test_only
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     def test_identity_document_continuation_token(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client()
         initial_poller = client.begin_recognize_identity_documents_from_url(self.identity_document_url_jpg)
         cont_token = initial_poller.continuation_token()
         poller = client.begin_recognize_identity_documents_from_url(None, continuation_token=cont_token)
         result = poller.result()
         assert result is not None
-        initial_poller.wait()  # necessary so azure-devtools doesn't throw assertion error
+        initial_poller.wait()  # necessary so devtools_testutils doesn't throw assertion error
 
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer(client_kwargs={"api_version": FormRecognizerApiVersion.V2_0})
     def test_identity_document_v2(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_fr_client(api_version=FormRecognizerApiVersion.V2_0)
         with pytest.raises(ValueError) as e:
             client.begin_recognize_identity_documents_from_url(self.identity_document_url_jpg)
         assert "Method 'begin_recognize_identity_documents_from_url' is only available for API version V2_1 and up" in str(e.value)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @FormRecognizerClientPreparer()
     @recorded_by_proxy
-    def test_pages_kwarg_specified(self, client):
-        set_bodiless_matcher()
+    def test_pages_kwarg_specified(self):
+        client = get_fr_client()
         poller = client.begin_recognize_identity_documents_from_url(self.identity_document_url_jpg, pages=["1"])
         assert '1' == poller._polling_method._initial_response.http_response.request.query['pages']
         result = poller.result()

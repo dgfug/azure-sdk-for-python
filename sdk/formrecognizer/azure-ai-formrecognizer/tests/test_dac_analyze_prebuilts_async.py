@@ -5,31 +5,30 @@
 # ------------------------------------
 
 import pytest
+import json
 import functools
 from io import BytesIO
 from devtools_testutils.aio import recorded_by_proxy_async
 from datetime import date, time
 from azure.core.exceptions import HttpResponseError
+from azure.core.serialization import AzureJSONEncoder
 from azure.ai.formrecognizer.aio import DocumentAnalysisClient
 from azure.ai.formrecognizer import AnalyzeResult
-from azure.ai.formrecognizer._generated.v2022_01_30_preview.models import AnalyzeResultOperation
-from preparers import FormRecognizerPreparer
+from azure.ai.formrecognizer._generated.v2023_07_31.models import AnalyzeResultOperation
+from preparers import FormRecognizerPreparer, get_async_client
 from asynctestcase import AsyncFormRecognizerTest
-from preparers import GlobalClientPreparer as _GlobalClientPreparer
+from conftest import skip_flaky_test
 
 
-DocumentAnalysisClientPreparer = functools.partial(_GlobalClientPreparer, DocumentAnalysisClient)
+get_da_client = functools.partial(get_async_client, DocumentAnalysisClient)
 
 
 class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
 
-    def teardown(self):
-        self.sleep(4)
-
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_damaged_file_passed_as_bytes(self, client):
+    async def test_damaged_file_passed_as_bytes(self):
+        client = get_da_client()
         damaged_pdf = b"\x25\x50\x44\x46\x55\x55\x55"  # still has correct bytes to be recognized as PDF
         with pytest.raises(HttpResponseError):
             async with client:
@@ -40,9 +39,9 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
                 result = await poller.result()
 
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_damaged_file_passed_as_bytes_io(self, client):
+    async def test_damaged_file_passed_as_bytes_io(self):
+        client = get_da_client()
         damaged_pdf = BytesIO(b"\x25\x50\x44\x46\x55\x55\x55")  # still has correct bytes to be recognized as PDF
         with pytest.raises(HttpResponseError):
             async with client:
@@ -52,11 +51,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
                 )
                 result = await poller.result()
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_blank_page(self, client):
-
+    async def test_blank_page(self):
+        client = get_da_client()
         with open(self.blank_pdf, "rb") as fd:
             blank = fd.read()
         async with client:
@@ -68,18 +67,17 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         assert result is not None
 
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     async def test_passing_unsupported_url_content_type(self, **kwargs):
-        client = kwargs.pop("client")
+        client = get_da_client()
         with pytest.raises(TypeError):
             async with client:
                 poller = await client.begin_analyze_document("prebuilt-receipt", "https://badurl.jpg", content_type="application/json")
                 result = await poller.result()
 
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_auto_detect_unsupported_stream_content(self, client):
+    async def test_auto_detect_unsupported_stream_content(self):
+        client = get_da_client()
         with open(self.unsupported_content_py, "rb") as fd:
             my_file = fd.read()
 
@@ -92,11 +90,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
                 result = await poller.result()
 
     @pytest.mark.live_test_only
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_stream_transform_png(self, client):
-
+    async def test_receipt_stream_transform_png(self):
+        client = get_da_client()
         responses = []
 
         def callback(raw_response, _, headers):
@@ -128,16 +126,16 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_stream_transform_jpg(self, client):
+    async def test_receipt_stream_transform_jpg(self):
+        client = get_da_client()
         responses = []
 
         def callback(raw_response, _, headers):
@@ -169,17 +167,17 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
     @pytest.mark.live_test_only
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_png(self, client):
+    async def test_receipt_png(self):
+        client = get_da_client()
         with open(self.receipt_png, "rb") as fd:
             receipt = fd.read()
 
@@ -199,10 +197,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
 
         assert len(result.pages) == 1
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_multipage(self, client):
+    async def test_receipt_multipage(self):
+        client = get_da_client()
         with open(self.multipage_receipt_pdf, "rb") as fd:
             receipt = fd.read()
         async with client:
@@ -210,6 +209,8 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
             result = await poller.result()
 
         d = result.to_dict()
+        # this is simply checking that the dict is JSON serializable
+        json.dumps(d, cls=AzureJSONEncoder)
         result = AnalyzeResult.from_dict(d)
 
         assert len(result.documents) == 2
@@ -235,10 +236,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         assert receipt.doc_type == "receipt.retailMeal"
         assert len(result.pages) == 2
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_multipage_transform(self, client):
+    async def test_receipt_multipage_transform(self):
+        client = get_da_client()
         responses = []
 
         def callback(raw_response, _, headers):
@@ -271,18 +273,16 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
     @pytest.mark.live_test_only
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     async def test_receipt_continuation_token(self, **kwargs):
-        client = kwargs.pop("client")
-
+        client = get_da_client()
         with open(self.receipt_jpg, "rb") as fd:
             receipt = fd.read()
 
@@ -292,12 +292,13 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
             poller = await client.begin_analyze_document("prebuilt-receipt", None, continuation_token=cont_token)
             result = await poller.result()
             assert result is not None
-            await initial_poller.wait()  # necessary so azure-devtools doesn't throw assertion error
+            await initial_poller.wait()  # necessary so devtools_testutils doesn't throw assertion error
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_locale_specified(self, client):
+    async def test_receipt_locale_specified(self):
+        client = get_da_client()
         with open(self.receipt_jpg, "rb") as fd:
             receipt = fd.read()
         async with client:
@@ -307,9 +308,9 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
             assert result
 
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_receipt_locale_error(self, client):
+    async def test_receipt_locale_error(self):
+        client = get_da_client()
         with open(self.receipt_jpg, "rb") as fd:
             receipt = fd.read()
         with pytest.raises(HttpResponseError) as e:
@@ -317,10 +318,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
                 await client.begin_analyze_document("prebuilt-receipt", receipt, locale="not a locale")
         assert "InvalidArgument" == e.value.error.code
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_pages_kwarg_specified(self, client):
+    async def test_pages_kwarg_specified(self):
+        client = get_da_client()
         with open(self.receipt_jpg, "rb") as fd:
             receipt = fd.read()
         async with client:
@@ -329,10 +331,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
             result = await poller.result()
             assert result
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_business_card_multipage_pdf(self, client):
+    async def test_business_card_multipage_pdf(self):
+        client = get_da_client()
         with open(self.business_card_multipage_pdf, "rb") as fd:
             business_card = fd.read()
 
@@ -386,15 +389,23 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         assert business_card.fields.get("Faxes").value[0].content == "+44 (0) 20 6789 2345"
 
         assert len(business_card.fields.get("Addresses").value) == 1
-        assert business_card.fields.get("Addresses").value[0].value == "2 Kingdom Street Paddington, London, W2 6BD"
+        assert business_card.fields.get("Addresses").value[0].value.house_number == "2"
+        assert business_card.fields.get("Addresses").value[0].value.po_box == None
+        assert business_card.fields.get("Addresses").value[0].value.road == "Kingdom Street"
+        assert business_card.fields.get("Addresses").value[0].value.city == "London"
+        assert business_card.fields.get("Addresses").value[0].value.state == None
+        assert business_card.fields.get("Addresses").value[0].value.postal_code == "W2 6BD"
+        assert business_card.fields.get("Addresses").value[0].value.country_region == None
+        assert business_card.fields.get("Addresses").value[0].value.street_address == "2 Kingdom Street"
 
         assert len(business_card.fields.get("CompanyNames").value) == 1
         assert business_card.fields.get("CompanyNames").value[0].value == "Contoso"
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_identity_document_jpg_passport(self, client):
+    async def test_identity_document_jpg_passport(self):
+        client = get_da_client()
         with open(self.identity_document_passport_jpg, "rb") as fd:
             id_document = fd.read()
 
@@ -415,10 +426,11 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
             assert passport["Sex"].value == "F"
             assert passport["CountryRegion"].value == "CAN"
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_identity_document_jpg(self, client):
+    async def test_identity_document_jpg(self):
+        client = get_da_client()
         with open(self.identity_document_license_jpg, "rb") as fd:
             id_document = fd.read()
 
@@ -435,14 +447,23 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         assert id_document.fields.get("DateOfBirth").value == date(1958,1,6)
         assert id_document.fields.get("DateOfExpiration").value == date(2020,8,12)
         assert id_document.fields.get("Sex").value == "M"
-        assert id_document.fields.get("Address").value == "123 STREET ADDRESS YOUR CITY WA 99999-1234"
+        assert id_document.fields.get("Address").value.house_number == None
+        assert id_document.fields.get("Address").value.po_box == None
+        assert id_document.fields.get("Address").value.road == "123 STREET ADDRESS"
+        assert id_document.fields.get("Address").value.city == "YOUR CITY"
+        assert id_document.fields.get("Address").value.state == "WA"
+        assert id_document.fields.get("Address").value.postal_code == "99999-1234"
+        assert id_document.fields.get("Address").value.country_region == None
+        assert id_document.fields.get("Address").value.street_address == "123 STREET ADDRESS"
         assert id_document.fields.get("CountryRegion").value == "USA"
         assert id_document.fields.get("Region").value == "Washington"
 
+    @pytest.mark.skip("Tracking issue: https://github.com/Azure/azure-sdk-for-python/issues/31214")
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_invoice_stream_transform_tiff(self, client):
+    async def test_invoice_stream_transform_tiff(self):
+        client = get_da_client()
         responses = []
 
         def callback(raw_response, _, headers):
@@ -456,7 +477,7 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
 
         async with client:
             poller = await client.begin_analyze_document(
-                model="prebuilt-invoice",
+                model_id="prebuilt-invoice",
                 document=my_file,
                 cls=callback
             )
@@ -474,16 +495,63 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         self.assertDocumentTransformCorrect(returned_model.documents, raw_analyze_result.documents)
         self.assertDocumentTablesTransformCorrect(returned_model.tables, raw_analyze_result.tables)
         self.assertDocumentKeyValuePairsTransformCorrect(returned_model.key_value_pairs, raw_analyze_result.key_value_pairs)
-        self.assertDocumentEntitiesTransformCorrect(returned_model.entities, raw_analyze_result.entities)
         self.assertDocumentStylesTransformCorrect(returned_model.styles, raw_analyze_result.styles)
 
         # check page range
         assert len(raw_analyze_result.pages) == len(returned_model.pages)
 
+    @skip_flaky_test
     @FormRecognizerPreparer()
-    @DocumentAnalysisClientPreparer()
     @recorded_by_proxy_async
-    async def test_invoice_jpg(self, client, **kwargs):
+    async def test_w2_png_value_address(self):
+        client = get_da_client()
+        with open(self.w2_png, "rb") as fd:
+            document = fd.read()
+
+        async with client:
+            poller = await client.begin_analyze_document("prebuilt-tax.us.w2", document)
+
+            result = await poller.result()
+        assert len(result.documents) == 1
+
+        w2_document = result.documents[0]
+
+        assert w2_document.doc_type == "tax.us.w2"
+        assert w2_document.fields.get("TaxYear").value == "2018"
+        # check value address correctly populated
+        assert w2_document.fields.get("Employee").value.get("Address").value.house_number == "96541"
+        assert w2_document.fields.get("Employee").value.get("Address").value.road == "MOLLY HOLLOW STREET"
+        # FIXME: uncomment once algorithm is fixed
+        # assert w2_document.fields.get("Employee").value.get("Address").value.postal_code == "98631-5293"
+        assert w2_document.fields.get("Employee").value.get("Address").value.city == "KATHRYNMOUTH"
+        assert w2_document.fields.get("Employee").value.get("Address").value.state == "NE"
+        assert w2_document.fields.get("Employee").value.get("Address").value.street_address == "96541 MOLLY HOLLOW STREET"
+        assert w2_document.fields.get("Employee").value.get("Address").value.country_region == None
+        assert w2_document.fields.get("Employee").value.get("Address").value.po_box == None
+
+        w2_dict = result.to_dict()
+        json.dumps(w2_dict, cls=AzureJSONEncoder)
+        result = AnalyzeResult.from_dict(w2_dict)
+
+        assert w2_document.doc_type == "tax.us.w2"
+        assert w2_document.fields.get("TaxYear").value == "2018"
+        # check value address correctly populated
+        assert w2_document.fields.get("Employee").value.get("Address").value.house_number == "96541"
+        assert w2_document.fields.get("Employee").value.get("Address").value.road == "MOLLY HOLLOW STREET"
+        # FIXME: uncomment once algorithm is fixed
+        # assert w2_document.fields.get("Employee").value.get("Address").value.postal_code == "98631-5293"
+        assert w2_document.fields.get("Employee").value.get("Address").value.city == "KATHRYNMOUTH"
+        assert w2_document.fields.get("Employee").value.get("Address").value.state == "NE"
+        assert w2_document.fields.get("Employee").value.get("Address").value.street_address == "96541 MOLLY HOLLOW STREET"
+        assert w2_document.fields.get("Employee").value.get("Address").value.country_region == None
+        assert w2_document.fields.get("Employee").value.get("Address").value.po_box == None
+
+    @pytest.mark.skip("Tracking issue: https://github.com/Azure/azure-sdk-for-python/issues/31214")
+    @skip_flaky_test
+    @FormRecognizerPreparer()
+    @recorded_by_proxy_async
+    async def test_invoice_jpg(self, **kwargs):
+        client = get_da_client()
         with open(self.invoice_jpg, "rb") as fd:
             invoice = fd.read()
 
@@ -491,6 +559,9 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
             poller = await client.begin_analyze_document("prebuilt-invoice", invoice)
 
             result = await poller.result()
+        d = result.to_dict()
+        json.dumps(d, cls=AzureJSONEncoder)
+        result = AnalyzeResult.from_dict(d)
         assert len(result.documents) == 1
         invoice = result.documents[0]
 
@@ -522,8 +593,10 @@ class TestDACAnalyzePrebuiltsAsync(AsyncFormRecognizerTest):
         assert invoice.fields.get("ShippingAddressRecipient").value ==  "Microsoft Delivery"
         assert invoice.fields.get("SubTotal").value.amount ==  100.0
         assert invoice.fields.get("SubTotal").value.symbol ==  "$"
+        assert invoice.fields.get("SubTotal").value.code ==  "USD"
         assert invoice.fields.get("TotalTax").value.amount ==  10.0
         assert invoice.fields.get("TotalTax").value.symbol ==  "$"
+        assert invoice.fields.get("TotalTax").value.code ==  "USD"
         assert invoice.fields.get("VendorName").value ==  "CONTOSO LTD."
         assert invoice.fields.get("VendorAddress").value, "123 456th St New York, NY ==  10001"
         assert invoice.fields.get("VendorAddressRecipient").value ==  "Contoso Headquarters"

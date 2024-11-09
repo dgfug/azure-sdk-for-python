@@ -6,44 +6,27 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class AppSku(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The name of the SKU.
-    """
+class AppSku(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The name of the SKU."""
 
     ST0 = "ST0"
     ST1 = "ST1"
     ST2 = "ST2"
 
-class AppState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The current state of the application.
-    """
+
+class AppState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current state of the application."""
 
     CREATED = "created"
     SUSPENDED = "suspended"
 
-class SystemAssignedServiceIdentityType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of managed service identity (either system assigned, or none).
-    """
+
+class SystemAssignedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of managed service identity (either system assigned, or none)."""
 
     NONE = "None"
     SYSTEM_ASSIGNED = "SystemAssigned"

@@ -4,35 +4,49 @@ import warnings
 import sys
 from urllib.request import urlopen
 from azure.eventgrid._generated import models
-from _constants import files, backward_compat, EXCEPTIONS
+from _constants import files, backward_compat, additional_events, EXCEPTIONS, NAMING_CHANGES
+
 
 def extract(definitions):
     if not definitions:
         return
     tups = []
     for event in definitions:
-        if event.endswith('Data') and event not in EXCEPTIONS:
+        if event.endswith("Data") and event not in EXCEPTIONS:
+            key, txt = "Name".join(event.rsplit("Data", 1)), definitions[event]["description"]
+            if key in NAMING_CHANGES:
+                key = key.replace("Acs", "AcsAdvanced")
             try:
-                key, txt = "Name".join(event.rsplit('Data', 1)), definitions[event]['description']
-                val = re.findall("Microsoft.[a-zA-Z]+.[a-zA-Z]+", txt)
+                val = re.findall("Microsoft.[a-zA-Z]+.[a-zA-Z]+.[a-zA-Z]+", txt)
+                if " event" in val[0]:
+                    val[0] = val[0].split(" event")[0]
                 tups.append((key, val[0]))
             except:
-                warnings.warn("Unable to generate the event mapping for {}".format(event[0]))
-                sys.exit(1)
+                try:
+                    val = re.findall("Microsoft.[a-zA-Z]+.[a-zA-Z]+", txt)
+                    tups.append((key, val[0]))
+                except:
+                    warnings.warn("Unable to generate the event mapping for {}".format(event[0]))
+                    sys.exit(1)
     return tups
 
+
 def generate_enum_content(tuples):
-    print("# these names below are for backward compat only - refrain from using them.")
+    print("# These names at the top are 'corrected' aliases of duplicate values that appear below, which are")
+    print("# deprecated but maintained for backwards compatibility.")
     for k, v in backward_compat.items():
         print(k + " = '" + v + "'\n")
-    print("# backward compat names end here.")
+    print("# Aliases end here")
     for tup in tup_list:
-        print(tup[0] + " = '" + tup[1].replace('API', 'Api') + "'\n")
+        print(tup[0] + " = '" + tup[1] + "'\n")
+    for k, v in additional_events.items():
+        print(k + " = '" + v + "'\n")
+
 
 definitions = {}
 for fp in files:
     data = json.loads(urlopen(fp).read())
-    definitions.update(data.get('definitions'))
+    definitions.update(data.get("definitions"))
 tup_list = extract(definitions)
 tup_list.sort(key=lambda tup: tup[0])
 generate_enum_content(tup_list)

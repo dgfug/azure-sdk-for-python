@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
+import warnings
 
 from ._version import VERSION
 from ._file_client import ShareFileClient
@@ -16,7 +17,9 @@ from ._shared.models import (
     LocationMode,
     ResourceTypes,
     AccountSasPermissions,
-    StorageErrorCode)
+    StorageErrorCode,
+    Services,
+)
 from ._models import (
     ShareProperties,
     DirectoryProperties,
@@ -33,12 +36,10 @@ from ._models import (
     FileSasPermissions,
     ShareSasPermissions,
     ContentSettings,
-    NTFSAttributes)
-from ._generated.models import (
-    HandleItem,
-    ShareAccessTier
+    NTFSAttributes,
 )
 from ._generated.models import (
+    ShareAccessTier,
     ShareRootSquash
 )
 
@@ -74,9 +75,25 @@ __all__ = [
     'ContentSettings',
     'Handle',
     'NTFSAttributes',
-    'HandleItem',
     'ShareRootSquash',
     'generate_account_sas',
     'generate_share_sas',
-    'generate_file_sas'
+    'generate_file_sas',
+    'Services'
 ]
+
+
+# This function is added to deal with HandleItem which is a generated model that
+# was mistakenly added to the module exports. It has been removed import and __all__
+# to prevent it from showing in intellisense/docs but we handle it here to prevent
+# breaking any existing code which may have imported it.
+def __getattr__(name):
+    if name == 'HandleItem':
+        from ._generated.models import HandleItem
+        warnings.warn(
+            "HandleItem is deprecated and should not be used. Use Handle instead.",
+            DeprecationWarning
+        )
+        return HandleItem
+
+    raise AttributeError(f"module 'azure.storage.fileshare' has no attribute {name}")

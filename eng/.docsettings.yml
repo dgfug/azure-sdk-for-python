@@ -9,8 +9,13 @@ omitted_paths:
   - sdk/**/samples/*
   - sdk/identity/azure-identity/tests/*
   - sdk/**/tests/perfstress_tests/*
+  - sdk/**/tests/perf_tests/*
   - sdk/nspkg/*
   - sdk/**/swagger/*
+  - sdk/ml/azure-ai-ml/tests/*
+  - sdk/vision/azure-ai-vision-imageanalysis/tests/*
+  - sdk/ai/azure-ai-inference/tests/*
+  - sdk/storage/azure-storage-extensions/*
 
 language: python
 root_check_enabled: True
@@ -74,6 +79,7 @@ known_content_issues:
   - ['sdk/monitor/azure-monitor-query/samples/README.md', '#4554']
   - ['sdk/graphrbac/azure-graphrbac/README.md', '#4554']
   - ['sdk/loganalytics/azure-loganalytics/README.md', '#4554']
+  - ['sdk/schemaregistry/azure-schemaregistry-avroserializer/README.md', '#4554']
   - ['sdk/servicebus/azure-servicebus/README.md', '#4554']
   - ['sdk/servicebus/azure-servicebus/tests/perf_tests/README.md', '#4554']
   - ['sdk/servicebus/azure-servicebus/stress/scripts/README.md', '#4554']
@@ -100,7 +106,12 @@ known_content_issues:
   - ['sdk/appconfiguration/azure-appconfiguration/swagger/README.md', '#4554']
   - ['sdk/attestation/azure-security-attestation/swagger/README.md', '#4554']
   - ['sdk/core/azure-core/tests/testserver_tests/coretestserver/README.rst', '#4554']
+  - ['sdk/core/corehttp/tests/testserver_tests/coretestserver/README.rst', '#4554']
   - ['sdk/media/azure-media-analytics-edge/README.md', '#4554']
+  - ['sdk/remoterendering/azure-mixedreality-remoterendering/README.md', '#4554']
+  - ['sdk/modelsrepository/azure-iot-modelsrepository/README.md', '#4554']
+  - ['sdk/openai/azure-openai/README.md', '#4554']
+  - ['sdk/ai/azure-ai-generative/README.md', 'Deprecated package.']
 
   # common.
   - ['sdk/appconfiguration/azure-appconfiguration/README.md', 'common']
@@ -109,6 +120,10 @@ known_content_issues:
   - ['sdk/core/azure-common/README.rst', 'common']
   - ['sdk/core/azure-core/README.md', 'common']
   - ['sdk/core/azure-core/samples/README.md', 'common']
+  - ['sdk/core/azure-core-tracing-opencensus/README.md', 'common']
+  - ['sdk/core/azure-core-tracing-opentelemetry/README.md', 'common']
+  - ['sdk/core/corehttp/README.md', 'common']
+  - ['sdk/core/corehttp/samples/README.md', 'common']
   - ['sdk/search/azure-search-documents/README.md', 'common']
   - ['sdk/storage/azure-storage-blob/samples/README.md', 'common']
   - ['sdk/storage/azure-storage-file-datalake/samples/README.md', 'common']
@@ -146,6 +161,8 @@ known_content_issues:
   - ['sdk/textanalytics/azure-ai-textanalytics/swagger/README.md', '#4554']
   - ['sdk/appconfiguration/azure-appconfiguration/swagger/README.md', '#4554']
   - ['sdk/core/azure-core/tests/testserver_tests/coretestserver/README.md', '#4554']
+  - ['sdk/core/azure-core-experimental/README.md', '#4554']
+  - ['sdk/identity/azure-identity-broker/README.md', '#4554']
 package_indexing_exclusion_list:
   - 'azure-sdk-tools'
   - 'azure-template'

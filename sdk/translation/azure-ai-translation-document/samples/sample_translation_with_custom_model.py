@@ -29,9 +29,7 @@ USAGE:
 def sample_translation_with_custom_model():
     import os
     from azure.core.credentials import AzureKeyCredential
-    from azure.ai.translation.document import (
-        DocumentTranslationClient
-    )
+    from azure.ai.translation.document import DocumentTranslationClient
 
     endpoint = os.environ["AZURE_DOCUMENT_TRANSLATION_ENDPOINT"]
     key = os.environ["AZURE_DOCUMENT_TRANSLATION_KEY"]
@@ -41,12 +39,7 @@ def sample_translation_with_custom_model():
 
     client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
 
-    poller = client.begin_translation(
-        source_container_url,
-        target_container_url,
-        "es",
-        category_id=custom_model_id
-    )
+    poller = client.begin_translation(source_container_url, target_container_url, "es", category_id=custom_model_id)
     result = poller.result()
 
     print(f"Operation status: {poller.details.status}")
@@ -65,9 +58,9 @@ def sample_translation_with_custom_model():
             print(f"Source document location: {document.source_document_url}")
             print(f"Translated document location: {document.translated_document_url}")
             print(f"Translated to language: {document.translated_to}\n")
-        else:
+        elif document.error:
             print(f"Error Code: {document.error.code}, Message: {document.error.message}\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sample_translation_with_custom_model()

@@ -22,6 +22,7 @@ USAGE:
     3) TRANSLATION_ID - The ID of the translation operation
 """
 
+
 def sample_list_document_statuses_with_filters():
     # import libraries
     from azure.core.credentials import AzureKeyCredential
@@ -34,22 +35,23 @@ def sample_list_document_statuses_with_filters():
     # obtain client secrets
     endpoint = os.environ["AZURE_DOCUMENT_TRANSLATION_ENDPOINT"]
     key = os.environ["AZURE_DOCUMENT_TRANSLATION_KEY"]
-    translation_id = os.environ["TRANSLATION_ID"]  # this should be the id for the translation operation you'd like to list docs for!
+    translation_id = os.environ[
+        "TRANSLATION_ID"
+    ]  # this should be the id for the translation operation you'd like to list docs for!
 
     # authorize client
     client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
 
     # set your filters
-    '''
+    """
         Note:
             these are just sample values for the filters!
             please comment/uncomment/change what you are interested in using.
-    '''
+    """
     start = datetime(2021, 4, 12)
     end = datetime(2021, 4, 14)
     statuses = ["Canceled", "Failed"]
     order_by = ["created_on desc"]
-    results_per_page = 2
     skip = 3
 
     filtered_docs = client.list_document_statuses(
@@ -62,13 +64,13 @@ def sample_list_document_statuses_with_filters():
         order_by=order_by,
         # paging
         skip=skip,
-        results_per_page=results_per_page
     ).by_page()
 
     # check statuses
     for page in filtered_docs:
         for doc in page:
             display_doc_info(doc)
+
 
 def display_doc_info(document):
     print(f"Document ID: {document.id}")
@@ -78,5 +80,6 @@ def display_doc_info(document):
         print(f"Translated document location: {document.translated_document_url}")
         print(f"Translated to language: {document.translated_to}\n")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sample_list_document_statuses_with_filters()

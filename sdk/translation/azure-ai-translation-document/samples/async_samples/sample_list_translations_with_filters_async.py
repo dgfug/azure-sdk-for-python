@@ -24,6 +24,7 @@ USAGE:
 import os
 import asyncio
 
+
 async def sample_list_translations_with_filters_async():
     # import libraries
     from azure.core.credentials import AzureKeyCredential
@@ -39,16 +40,15 @@ async def sample_list_translations_with_filters_async():
     client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
     async with client:
         # set your filters
-        '''
-            Note:
-                these are just sample values for the filters!
-                please comment/uncomment/change what you are interested in using.
-        '''
+        """
+        Note:
+            these are just sample values for the filters!
+            please comment/uncomment/change what you are interested in using.
+        """
         start = datetime(2021, 4, 12)
         end = datetime(2021, 4, 14)
         statuses = ["Canceled", "Failed"]
         order_by = ["created_on desc"]
-        results_per_page = 2
         skip = 3
 
         # list translation operations
@@ -61,7 +61,6 @@ async def sample_list_translations_with_filters_async():
             order_by=order_by,
             # paging
             skip=skip,
-            results_per_page=results_per_page
         ).by_page()
 
         # check statuses
@@ -86,5 +85,6 @@ def display_translation_info(translation):
 async def main():
     await sample_list_translations_with_filters_async()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())

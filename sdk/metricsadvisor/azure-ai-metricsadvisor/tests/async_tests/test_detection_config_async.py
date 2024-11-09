@@ -21,7 +21,7 @@ from azure.ai.metricsadvisor.models import (
     HardThresholdCondition,
 )
 
-from base_testcase_async import MetricsAdvisorClientPreparer, TestMetricsAdvisorClientBase, CREDENTIALS, ids
+from base_testcase_async import MetricsAdvisorClientPreparer, TestMetricsAdvisorClientBase, CREDENTIALS, ids, API_KEY
 MetricsAdvisorPreparer = functools.partial(MetricsAdvisorClientPreparer, MetricsAdvisorAdministrationClient)
 
 
@@ -78,8 +78,8 @@ class TestMetricsAdvisorAdministrationClientAsync(TestMetricsAdvisorClientBase):
                 assert config.metric_id == variables["data_feed_metric_id"]
                 assert config.description == "My test metric anomaly detection configuration"
                 assert config.name is not None
-                assert config.series_detection_conditions is None
-                assert config.series_group_detection_conditions is None
+                assert config.series_detection_conditions == []
+                assert config.series_group_detection_conditions == []
                 assert config.whole_series_detection_condition.condition_operator == "OR"
                 assert config.whole_series_detection_condition.change_threshold_condition.anomaly_detector_direction == "Both"
                 assert config.whole_series_detection_condition.change_threshold_condition.change_percentage == 50
@@ -421,7 +421,7 @@ class TestMetricsAdvisorAdministrationClientAsync(TestMetricsAdvisorClientBase):
             return variables
 
     @AzureRecordedTestCase.await_prepared_test
-    @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
+    @pytest.mark.parametrize("credential", API_KEY, ids=ids)  # API key only. AAD error: (Forbidden) You do not have sufficient permissions on this Metric.
     @MetricsAdvisorPreparer()
     @recorded_by_proxy_async
     async def test_list_detection_configs(self, client):

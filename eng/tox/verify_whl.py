@@ -12,11 +12,10 @@ import os
 import glob
 import shutil
 from tox_helper_tasks import (
-    get_package_details,
-    unzip_sdist_to_directory,
-    move_and_rename,
     unzip_file_to_directory,
 )
+
+from ci_tools.parsing import ParsedSetup
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -34,8 +33,8 @@ def extract_whl(dist_dir, version):
     # Find whl for the package
     path_to_whl = glob.glob(os.path.join(dist_dir, "*{}*.whl".format(version)))[0]
 
-    # Cleanup any existing stale files if any and rename whl file to tar.gz
-    zip_file = path_to_whl.replace(".whl", ".tar.gz")
+    # Cleanup any existing stale files if any and rename whl file to zip for extraction later
+    zip_file = path_to_whl.replace(".whl", ".zip")
     cleanup(zip_file)
     os.rename(path_to_whl, zip_file)
 
@@ -47,7 +46,7 @@ def extract_whl(dist_dir, version):
 
 
 def verify_whl_root_directory(dist_dir, expected_top_level_module, version):
-    # This method ensures root directory in whl is the directoy indicated by our top level namespace
+    # This method ensures root directory in whl is the directory indicated by our top level namespace
     extract_location = extract_whl(dist_dir, version)
     root_folders = os.listdir(extract_location)
 
@@ -107,16 +106,16 @@ if __name__ == "__main__":
 
     # get target package name from target package path
     pkg_dir = os.path.abspath(args.target_package)
-    pkg_name, namespace, ver = get_package_details(os.path.join(pkg_dir, "setup.py"))
+    
+    pkg_details = ParsedSetup.from_path(pkg_dir)
+    top_level_module = pkg_details.namespace.split('.')[0]
 
-    top_level_module = namespace.split('.')[0]
-
-    if should_verify_package(pkg_name):
-        logging.info("Verifying root directory in whl for package: [%s]", pkg_name)
-        if verify_whl_root_directory(args.dist_dir, top_level_module, ver):
-            logging.info("Verified root directory in whl for package: [%s]", pkg_name)
+    if should_verify_package(pkg_details.name):
+        logging.info("Verifying root directory in whl for package: [%s]", pkg_details.name)
+        if verify_whl_root_directory(args.dist_dir, top_level_module, pkg_details.version):
+            logging.info("Verified root directory in whl for package: [%s]", pkg_details.name)
         else:
             logging.info(
-                "Failed to verify root directory in whl for package: [%s]", pkg_name
+                "Failed to verify root directory in whl for package: [%s]", pkg_details.name
             )
             exit(1)

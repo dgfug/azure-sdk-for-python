@@ -12,7 +12,7 @@ token from the STS that can be used to access Mixed Reality services.
 
 ## Currently supported environments
 
-This package has been tested with Python 2.7, 3.5, 3.6, 3.7, 3.8, and 3.9.
+This package has been tested with Python 3.7+.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ This package has been tested with Python 2.7, 3.5, 3.6, 3.7, 3.8, and 3.9.
   - [Azure Remote Rendering](https://docs.microsoft.com/azure/remote-rendering/)
   - [Azure Spatial Anchors](https://docs.microsoft.com/azure/spatial-anchors/)
 - Familiarity with the authentication and credential concepts from the [Azure Identity library][azure_identity].
-- Python 2.7, or 3.5 or later is required to use this package.
+- Python 3.7 or later is required to use this package.
 
 ## Install the package
 
@@ -31,7 +31,7 @@ Install the Azure Mixed Reality Authentication SDK.
 pip install --pre azure-mixedreality-authentication
 ```
 
-## Create and authenticate a `MixedRealityStsClient`
+## Create and authenticate the client
 
 To create a client object to request an access token for a Mixed Reality service, you will need the `account identifier`
 and `account domain` of your Mixed Reality service resource and a `credential`.
@@ -61,7 +61,7 @@ Once you have an account key, you can use the `AzureKeyCredential` class to auth
 from azure.core.credentials import AzureKeyCredential
 from azure.mixedreality.authentication import MixedRealityStsClient
 
-account_id = "<ACCOUNTD ID>"
+account_id = "<ACCOUNT_ID>"
 account_domain = "<ACCOUNT_DOMAIN>"
 account_key = "<ACCOUNT_KEY>"
 key_credential = AzureKeyCredential(account_key)
@@ -85,7 +85,7 @@ by assigning the appropriate role for your Mixed Reality service to your service
 from azure.identity import DefaultAzureCredential
 from azure.mixedreality.authentication import MixedRealityStsClient
 
-account_id = "<ACCOUNTD ID>"
+account_id = "<ACCOUNT_ID>"
 account_domain = "<ACCOUNT_DOMAIN>"
 default_credential = DefaultAzureCredential()
 
@@ -105,7 +105,7 @@ Tokens obtained from the Mixed Reality STS have a lifetime of **24 hours**.
 
 The return value for a successful call to `get_token` is an `azure.core.credentials.AccessToken`.
 
-See the authentication examples [above](#authenticate-the-client) or [Azure Identity][azure_identity] for more complex
+See the authentication examples [above](#create-and-authenticate-the-client) or [Azure Identity][azure_identity] for more complex
 authentication scenarios.
 
 ## Retrieve an access token synchronously
@@ -114,7 +114,7 @@ authentication scenarios.
 from azure.core.credentials import AzureKeyCredential
 from azure.mixedreality.authentication import MixedRealityStsClient
 
-account_id = "<ACCOUNTD ID>"
+account_id = "<ACCOUNT_ID>"
 account_domain = "<ACCOUNT_DOMAIN>"
 account_key = "<ACCOUNT_KEY>"
 key_credential = AzureKeyCredential(account_key)
@@ -130,7 +130,7 @@ token = client.get_token()
 from azure.core.credentials import AzureKeyCredential
 from azure.mixedreality.authentication.aio import MixedRealityStsClient
 
-account_id = "<ACCOUNTD ID>"
+account_id = "<ACCOUNT_ID>"
 account_domain = "<ACCOUNT_DOMAIN>"
 account_key = "<ACCOUNT_KEY>"
 key_credential = AzureKeyCredential(account_key)

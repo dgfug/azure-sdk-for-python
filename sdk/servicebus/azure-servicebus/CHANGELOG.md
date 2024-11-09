@@ -1,14 +1,267 @@
 # Release History
 
-## 7.6.1 (Unreleased)
+## 7.12.4 (Unreleased)
 
 ### Features Added
+
+- Added `ssl_context` parameter to the clients to allow users to pass in the SSL context, in which case, `connection_verify` will be ignored if specified.([#37246](https://github.com/Azure/azure-sdk-for-python/issues/37246))
 
 ### Breaking Changes
 
 ### Bugs Fixed
 
+- Fixed a broken f-string present in a `ValueError` when using the async client ([37695](https://github.com/Azure/azure-sdk-for-python/issues/37695))
+
 ### Other Changes
+
+- Added logging to track received messages.
+
+## 7.12.3 (2024-09-19)
+
+### Bugs Fixed
+
+ - Fixed a bug where token refreshes were not happening on long running operations ([35717](https://github.com/Azure/azure-sdk-for-python/issues/35717))
+ - Fixed a bug where using TokenCredential to create a subscription with forwarding caused a `ResourceNotFoundError` ([36545](https://github.com/Azure/azure-sdk-for-python/pull/36545))
+ - Fixed a bug where messages received on one receiver could not be settled on another receiver over mgmt link ([35304](https://github.com/Azure/azure-sdk-for-python/issues/35304))
+ - Addressed a bug where excess Link Credits were being allocated when large messages were being received ([34270](https://github.com/Azure/azure-sdk-for-python/issues/34270))
+
+## 7.12.2 (2024-05-08)
+
+### Bugs Fixed
+
+- Fixed a bug where WebsocketConnectionClosedException was not being caught when receiving with AmqpOverWebsocket ([34859](https://github.com/Azure/azure-sdk-for-python/pull/34859))
+- Fixed incorrect dependency on typing-extensions ([34869](https://github.com/Azure/azure-sdk-for-python/issues/34869), thanks @YaroBear).
+
+## 7.12.1 (2024-03-20)
+
+### Bugs Fixed
+
+- Fixed a bug where the client was not retrying when a connection drop happened ([34786](https://github.com/Azure/azure-sdk-for-python/pull/34786))
+- Fixed a bug where the client would not handle a role instance swap on the service correctly ([34820](https://github.com/Azure/azure-sdk-for-python/pull/34820))
+
+### Other Changes
+
+- Updated the logging to more accurately represent when frames are being sent to prevent a client-side idle timeout ([#34793](https://github.com/Azure/azure-sdk-for-python/pull/34793)).
+
+## 7.12.0 (2024-03-06)
+
+### Features Added
+
+- Updated `max_wait_time` on the ServiceBusReceiver constructor allowing users to change the default server timeout of 65 seconds when accepting a session on a Session-Enabled/Queues/Topics if NEXT_AVAILABLE_SESSION is used.
+
+### Other Changes
+
+- Updated minimum `azure-core` version to 1.28.0.
+- Updated Pure Python AMQP network trace logging to replace `None` values in AMQP connection info with empty strings as per the OpenTelemetry specification ([#32190](https://github.com/Azure/azure-sdk-for-python/issues/32190)).
+- Updated Pure Python AMQP network trace logging error log on connection close to warning (PR #34504, thanks @RichardOberdieck).
+
+## 7.11.4 (2023-11-13)
+
+### Bugs Fixed
+
+- Fixed a bug where a two character count session id was being incorrectly parsed by azure amqp.
+
+## 7.11.3 (2023-10-11)
+
+### Bugs Fixed
+
+- Fixed a bug where `prefetch_count` was not being passed through correctly and caused messages to not be received as expected when in `RECEIVE_AND_DELETE` mode ([#31712](https://github.com/Azure/azure-sdk-for-python/issues/31712), [#31711](https://github.com/Azure/azure-sdk-for-python/issues/31711)).
+
+## 7.11.2 (2023-09-13)
+
+### Bugs Fixed
+
+- Fixed the error `NoneType object has no attribute 'settle_messages'` which was raised when a connection was dropped due to a blocked process ([#30514](https://github.com/Azure/azure-sdk-for-python/issues/30514))
+
+### Other Changes
+
+- The `__contains__` method was added to `azure.servicebus` for the following (PR #30846, thanks @pamelafox).
+  - `ServiceBusConnectionStringProperties`
+  - `amqp.AmqpMessageHeader`
+  - `amqp.AmqpMessageProperties`
+  - `management.AccessRights`
+  - `management.NamespaceProperties`
+  - `management.QueueProperties`
+  - `management.TopicProperties`
+  - `management.SubscriptionProperties`
+  - `management.RuleProperties`
+
+## 7.11.1 (2023-07-12)
+
+### Bugs Fixed
+
+- Fixed the error `end frame received on invalid channel` which was raised when a disconnect was sent by the service ([#30860](https://github.com/Azure/azure-sdk-for-python/pull/30860))
+- Fixed the error `link already closed` which was raised when the client was closing and disconnecting from the service ([#30836](https://github.com/Azure/azure-sdk-for-python/pull/30836))
+
+### Other Changes
+
+- The error raised when attempting to complete a message with an expired lock received from a non-sessionful entity has been updated to the more fine-grained `MessageLockLostError` from the superclass `ServiceBusError`.
+
+## 7.11.0 (2023-06-12)
+
+### Features Added
+
+- A new float keyword argument `socket_timeout` has been added to `get_queue_sender`, `get_queue_receiver`, `get_topic_sender`, and `get_subscription_receiver` on the sync and async `ServiceBusClient`.
+
+### Bugs Fixed
+
+- Fixed a bug where sending large messages failed on socket write timeout ([#30425](https://github.com/Azure/azure-sdk-for-python/issues/30425)).
+- Fixed a bug where settling large messages failed due to  `delivery_id` being `None`.
+
+### Other Changes
+
+- Tracing updates:
+  - Span links on receive/send spans now fall back to using `Diagnostic-Id` if the `traceparent` message application property is not found.
+  - Span links will now still be created for receive/send spans even if no context propagation headers are found in message application properties.
+  - The `component` attribute was removed from all spans.
+
+## 7.10.0 (2023-05-09)
+
+Version 7.10.0 is our first stable release of the Azure Service Bus client library based on a pure Python implemented AMQP stack.
+
+### Features Added
+
+- A new boolean keyword argument `uamqp_transport` has been added to sync and async `ServiceBusClient` constructors which indicates whether to use the `uamqp` library or the default pure Python AMQP library as the underlying transport.
+
+### Breaking Changes
+
+- Added the following as dependencies to be used for operations over websocket:
+  - `websocket-client` for sync
+  - `aiohttp` for async
+- Removed uAMQP from required dependencies and added it as an optional dependency for use with the `uamqp_transport` keyword.
+
+### Bugs Fixed
+
+- Fixed a bug where sync and async `ServiceBusAdministrationClient` expected `credential` with `get_token` method returning `AccessToken.token` of type `bytes` and not `str`, now matching the documentation.
+- Fixed a bug where `raw_amqp_message.header` and `message.header` properties on `ServiceReceivedBusMessage` were returned with `durable`, `first_acquirer`, and `priority` properties set by default, rather than the values returned by the service.
+- Fixed a bug where `ServiceBusReceivedMessage` was not picklable (Issue #27947).
+
+### Other Changes
+
+- The `message` attribute on `ServiceBus`/`ServiceBusMessageBatch`/`ServiceBusReceivedMessage`, which previously exposed the `uamqp.Message`/`uamqp.BatchMessage`, has been deprecated.
+  - `LegacyMessage`/`LegacyBatchMessage` objects returned by the `message` attribute on `ServiceBus`/`ServiceBusMessageBatch` have been introduced to help facilitate the transition.
+- Removed uAMQP from required dependencies.
+- Adding `uamqp >= 1.6.3` as an optional dependency for use with the `uamqp_transport` keyword.
+ - Updated tracing ([#29995](https://github.com/Azure/azure-sdk-for-python/pull/29995)):
+   - Additional attributes added to existing spans:
+     - `messaging.system` - messaging system (i.e., `servicebus`)
+     - `messaging.operation` - type of operation (i.e., `publish`, `receive`, or `settle`)
+     - `messaging.batch.message_count` - number of messages sent or received (if more than one)
+   - A span will now be created upon calls to the service that settle messages.
+     - The span name will contain the settlement operation (e.g., `ServiceBus.complete`)
+     - The span will contain `az.namespace`, `messaging.destination.name`, `net.peer.name`, `messaging.system`, and `messaging.operation` attributes.
+   - All `send` spans now contain links to `message` spans. Now, `message` spans will no longer contain a link to the `send` span.
+
+## 7.10.0b1 (2023-04-13)
+
+### Features Added
+
+- A new boolean keyword argument `uamqp_transport` has been added to sync and async `ServiceBusClient` constructors which indicates whether to use the `uamqp` library or the default pure Python AMQP library as the underlying transport.
+
+### Bugs Fixed
+
+- Fixed a bug where sync and async `ServiceBusAdministrationClient` expected `credential` with `get_token` method returning `AccessToken.token` of type `bytes` and not `str`, now matching the documentation.
+- Fixed a bug where `raw_amqp_message.header` and `message.header` properties on `ServiceReceivedBusMessage` were returned with `durable`, `first_acquirer`, and `priority` properties set by default, rather than the values returned by the service.
+
+### Other Changes
+
+- The `message` attribute on `ServiceBus`/`ServiceBusMessageBatch`/`ServiceBusReceivedMessage`, which previously exposed the `uamqp.Message`/`uamqp.BatchMessage`, has been deprecated.
+  - `LegacyMessage`/`LegacyBatchMessage` objects returned by the `message` attribute on `ServiceBus`/`ServiceBusMessageBatch` have been introduced to help facilitate the transition.
+- Removed uAMQP from required dependencies.
+- Adding `uamqp >= 1.6.3` as an optional dependency for use with the `uamqp_transport` keyword.
+
+## 7.9.0 (2023-04-11)
+
+### Breaking Changes
+
+- Client side validation of input is now disabled by default for the sync and async `ServiceBusAdministrationClient`. This means there will be no `msrest.exceptions.ValidationError` raised by the `ServiceBusAdministrationClient` in the case of malformed input. An `azure.core.exceptions.HttpResponseError` may now be raised if the server refuses the request.
+
+### Bugs Fixed
+
+- Fixed a bug where enum members in `azure.servicebus.management` were not following uppercase convention.
+
+### Other Changes
+
+- All pure Python AMQP stack related changes have been removed and will be added back in the next version.
+- Updated minimum `azure-core` version to 1.24.0.
+- Removed `msrest` dependency.
+- Removed `azure-common` dependency.
+
+## 7.9.0b1 (2023-03-09)
+
+### Features Added
+
+- Iterator receiving from Service Bus entities has been added back in.
+
+## 7.8.3 (2023-03-09)
+
+### Bugs Fixed
+
+- Fixed a bug where asynchronous method to add distributed tracing attributes was not being awaited (Issue #28738).
+
+## 7.8.2 (2023-01-10)
+
+### Bugs Fixed
+
+- Fixed a bug that would cause an exception when `None` was sent to `set_state` instead of clearing session state (Issue #27582).
+
+### Other Changes
+
+- Updated uAMQP dependency to 1.6.3.
+  - Added support for Python 3.11.
+
+## 7.9.0a1 (2022-10-11)
+
+Version 7.9.0a1 is our first efforts to build an Azure Service Bus client library based on a pure Python implemented AMQP stack.
+
+### Breaking Changes
+
+- The following features have been temporarily pulled out which will be added back in future previews as we work towards a stable release:
+  - Iterator receiving from Service Bus entities.
+
+### Other Changes
+
+- uAMQP dependency is removed.
+
+## 7.8.1 (2022-10-11)
+
+This version and all future versions will require Python 3.7+. Python 3.6 is no longer supported.
+
+### Bugs Fixed
+
+- Fixed bug on async `ServiceBusClient` where `custom_endpoint_address` and `connection_verify` kwargs were not being passed through correctly. (Issue #26015)
+
+## 7.8.0 (2022-07-06)
+
+This version will be the last version to officially support Python 3.6, future versions will require Python 3.7+.
+
+### Features Added
+
+- In `ServiceBusClient`, `get_queue_receiver`, `get_subscription_receiver`, `get_queue_sender`, and `get_topic_sender` now accept
+an optional `client_identifier` argument which allows for specifying a custom identifier for the respective sender or receiver. It can
+be useful during debugging as Service Bus associates the id with errors and helps with easier correlation.
+- `ServiceBusReceiver` and `ServiceBusSender` have an added property `client_identifier` which returns the `client_identifier` for the current instance.
+
+## 7.7.0 (2022-06-07)
+
+### Bugs Fixed
+
+- Fixed bug to make AMQP exceptions retryable by default, if condition is not non-retryable, to ensure that InternalServerErrors are retried.
+
+### Features Added
+
+- The `ServiceBusClient` constructor now accepts optional `custom_endpoint_address` argument
+which allows for specifying a custom endpoint to use when communicating with the Service Bus service,
+and is useful when your network does not allow communicating to the standard Service Bus endpoint.
+- The `ServiceBusClient`constructor now accepts optional `connection_verify` argument
+which allows for specifying the path to the custom CA_BUNDLE file of the SSL certificate which is used to authenticate
+the identity of the connection endpoint.
+
+## 7.6.1 (2022-04-11)
+
+### Other Changes
+
+- Improved receiving by releasing messages from internal buffer when the `prefetch_count` of `ServiceBusReceiver`  is set 0 and there is no active receive call, this helps avoid receiving expired messages and incrementing delivery count of a message.
 
 ## 7.6.0 (2022-02-10)
 

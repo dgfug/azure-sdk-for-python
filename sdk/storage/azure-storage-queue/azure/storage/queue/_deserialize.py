@@ -5,18 +5,22 @@
 # --------------------------------------------------------------------------
 # pylint: disable=unused-argument
 
+from typing import Any, Dict, TYPE_CHECKING
+
 from azure.core.exceptions import ResourceExistsError
-
-from ._shared.models import StorageErrorCode
 from ._models import QueueProperties
+from ._shared.models import StorageErrorCode
+from ._shared.response_handlers import deserialize_metadata
+
+if TYPE_CHECKING:
+    from azure.core.pipeline import PipelineResponse
 
 
-def deserialize_metadata(response, obj, headers):
-    raw_metadata = {k: v for k, v in response.http_response.headers.items() if k.startswith("x-ms-meta-")}
-    return {k[10:]: v for k, v in raw_metadata.items()}
-
-
-def deserialize_queue_properties(response, obj, headers):
+def deserialize_queue_properties(
+    response: "PipelineResponse",
+    obj: Any,
+    headers: Dict[str, Any]
+) -> QueueProperties:
     metadata = deserialize_metadata(response, obj, headers)
     queue_properties = QueueProperties(
         metadata=metadata,
@@ -25,18 +29,22 @@ def deserialize_queue_properties(response, obj, headers):
     return queue_properties
 
 
-def deserialize_queue_creation(response, obj, headers):
+def deserialize_queue_creation(
+    response: "PipelineResponse",
+    obj: Any,
+    headers: Dict[str, Any]
+) -> Dict[str, Any]:
     response = response.http_response
-    if response.status_code == 204:
+    if response.status_code == 204:  # type: ignore
         error_code = StorageErrorCode.queue_already_exists
         error = ResourceExistsError(
-            message="Queue already exists\nRequestId:{}\nTime:{}\nErrorCode:{}".format(
-                headers['x-ms-request-id'],
-                headers['Date'],
-                error_code
-            ),
-            response=response)
-        error.error_code = error_code
-        error.additional_info = {}
+            message=(
+                "Queue already exists\n"
+                f"RequestId:{headers['x-ms-request-id']}\n"
+                f"Time:{headers['Date']}\n"
+                f"ErrorCode:{error_code}"),
+            response=response)  # type: ignore
+        error.error_code = error_code  # type: ignore
+        error.additional_info = {}  # type: ignore
         raise error
     return headers

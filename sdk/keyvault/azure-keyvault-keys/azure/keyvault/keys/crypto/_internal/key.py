@@ -4,22 +4,15 @@
 # ------------------------------------
 
 from abc import ABCMeta, abstractmethod
-from six import with_metaclass
+from typing import Any, FrozenSet
+
 from .algorithm import Algorithm
 
-try:
-    from typing import TYPE_CHECKING
-except ImportError:
-    TYPE_CHECKING = False
 
-if TYPE_CHECKING:
-    # pylint:disable=unused-import
-    from typing import Any, FrozenSet
-
-class Key(with_metaclass(ABCMeta, object)):
-    _supported_encryption_algorithms = frozenset([])  # type: FrozenSet[Any]
-    _supported_key_wrap_algorithms = frozenset([])  # type: FrozenSet[Any]
-    _supported_signature_algorithms = frozenset([])  # type: FrozenSet[Any]
+class Key(object, metaclass=ABCMeta):
+    _supported_encryption_algorithms: FrozenSet[Any] = frozenset([])
+    _supported_key_wrap_algorithms: FrozenSet[Any] = frozenset([])
+    _supported_signature_algorithms: FrozenSet[Any] = frozenset([])
 
     def __init__(self):
         self._kid = None
@@ -96,6 +89,6 @@ class Key(with_metaclass(ABCMeta, object)):
             algorithm = Algorithm.resolve(algorithm)
 
         if not algorithm or not supported_algorithms or algorithm.name() not in supported_algorithms:
-            raise ValueError("unsupported algorithm '{}'".format(algorithm))
+            raise ValueError(f"unsupported algorithm '{algorithm}'")
 
         return algorithm

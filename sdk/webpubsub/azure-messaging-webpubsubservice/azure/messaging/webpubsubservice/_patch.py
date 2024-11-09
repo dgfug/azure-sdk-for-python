@@ -24,21 +24,22 @@
 # IN THE SOFTWARE.
 #
 # --------------------------------------------------------------------------
+
 from typing import Any, TYPE_CHECKING, Optional, Union, Awaitable
 from datetime import datetime, timedelta
 import jwt
-import six
 
 from azure.core.pipeline import PipelineRequest
 from azure.core.pipeline.policies import SansIOHTTPPolicy, ProxyPolicy
 from azure.core.credentials import AzureKeyCredential
 
-from ._web_pub_sub_service_client import WebPubSubServiceClient as WebPubSubServiceClientGenerated
+from ._client import WebPubSubServiceClient as WebPubSubServiceClientGenerated
 from ._operations._patch import _UTC_TZ
 
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
+
     from azure.core.credentials import TokenCredential
 
 
@@ -55,13 +56,10 @@ def _parse_connection_string(connection_string: str, **kwargs: Any) -> Any:
                     segment, connection_string
                 )
             )
-
     if "endpoint" not in kwargs:
         raise ValueError("connection_string missing 'endpoint' field")
-
     if "accesskey" not in kwargs:
         raise ValueError("connection_string missing 'accesskey' field")
-
     return kwargs
 
 
@@ -108,13 +106,12 @@ class JwtCredentialPolicy(SansIOHTTPPolicy):
         }
         if self._user:
             data[self.NAME_CLAIM_TYPE] = self._user
-
         encoded = jwt.encode(
             payload=data,
             key=self._credential.key,
             algorithm="HS256",
         )
-        return six.ensure_str(encoded)
+        return encoded
 
 
 class ApiManagementProxy(ProxyPolicy):

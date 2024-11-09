@@ -18,10 +18,10 @@ import os
 import uuid
 import datetime
 from azure.servicebus.management import ServiceBusAdministrationClient
+from azure.identity import DefaultAzureCredential
 
-CONNECTION_STR = os.environ['SERVICE_BUS_CONNECTION_STR']
+FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
 TOPIC_NAME = "sb_mgmt_topic" + str(uuid.uuid4())
-
 
 
 def create_topic(servicebus_mgmt_client):
@@ -57,10 +57,7 @@ def get_and_update_topic(servicebus_mgmt_client):
 
     # update by passing keyword arguments
     topic_properties = servicebus_mgmt_client.get_topic(TOPIC_NAME)
-    servicebus_mgmt_client.update_topic(
-        topic_properties,
-        default_message_time_to_live=datetime.timedelta(minutes=15)
-    )
+    servicebus_mgmt_client.update_topic(topic_properties, default_message_time_to_live=datetime.timedelta(minutes=15))
 
 
 def get_topic_runtime_properties(servicebus_mgmt_client):
@@ -71,7 +68,8 @@ def get_topic_runtime_properties(servicebus_mgmt_client):
     print("")
 
 
-with ServiceBusAdministrationClient.from_connection_string(CONNECTION_STR) as servicebus_mgmt_client:
+credential = DefaultAzureCredential()
+with ServiceBusAdministrationClient(FULLY_QUALIFIED_NAMESPACE, credential) as servicebus_mgmt_client:
     create_topic(servicebus_mgmt_client)
     list_topics(servicebus_mgmt_client)
     get_and_update_topic(servicebus_mgmt_client)

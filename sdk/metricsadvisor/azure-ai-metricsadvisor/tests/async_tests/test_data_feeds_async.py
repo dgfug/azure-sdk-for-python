@@ -7,7 +7,7 @@
 
 import datetime
 import uuid
-from dateutil.tz import tzutc
+from datetime import timezone
 import pytest
 import functools
 from azure.core.exceptions import ResourceNotFoundError
@@ -34,7 +34,7 @@ from azure.ai.metricsadvisor.models import (
 from devtools_testutils import AzureRecordedTestCase
 from devtools_testutils.aio import recorded_by_proxy_async
 from azure.ai.metricsadvisor.aio import MetricsAdvisorAdministrationClient
-from base_testcase_async import TestMetricsAdvisorClientBase, MetricsAdvisorClientPreparer, CREDENTIALS, ids
+from base_testcase_async import TestMetricsAdvisorClientBase, MetricsAdvisorClientPreparer, CREDENTIALS, ids, API_KEY
 MetricsAdvisorPreparer = functools.partial(MetricsAdvisorClientPreparer, MetricsAdvisorAdministrationClient)
 
 
@@ -70,7 +70,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert data_feed.granularity.granularity_type == "Daily"
                 assert data_feed.schema.metrics[0].name == "cost"
                 assert data_feed.schema.metrics[1].name == "revenue"
-                assert data_feed.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=tzutc())
+                assert data_feed.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=timezone.utc)
 
             finally:
                 await self.clean_up(client.delete_data_feed, variables)
@@ -146,7 +146,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert data_feed.schema.dimensions[1].name == "city"
                 assert data_feed.schema.dimensions[0].display_name == "display category"
                 assert data_feed.schema.dimensions[1].display_name == "display city"
-                assert data_feed.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=tzutc())
+                assert data_feed.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=timezone.utc)
                 assert data_feed.ingestion_settings.data_source_request_concurrency == 0
                 assert data_feed.ingestion_settings.ingestion_retry_delay == -1
                 assert data_feed.ingestion_settings.ingestion_start_offset == -1
@@ -243,7 +243,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert data_feed.schema.dimensions[1].name == "city"
                 assert data_feed.schema.dimensions[0].display_name == "display category"
                 assert data_feed.schema.dimensions[1].display_name == "display city"
-                assert data_feed.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=tzutc())
+                assert data_feed.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=timezone.utc)
                 assert data_feed.ingestion_settings.data_source_request_concurrency == 0
                 assert data_feed.ingestion_settings.ingestion_retry_delay == -1
                 assert data_feed.ingestion_settings.ingestion_start_offset == -1
@@ -762,12 +762,12 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             assert len(feeds_list) > 0
 
     @AzureRecordedTestCase.await_prepared_test
-    @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
+    @pytest.mark.parametrize("credential", API_KEY, ids=ids)  # API key only. AAD doesn't find any data feeds
     @MetricsAdvisorPreparer()
     @recorded_by_proxy_async
     async def test_list_data_feeds_with_data_feed_name(self, client):
         async with client:
-            feeds = client.list_data_feeds(data_feed_name="azureSqlDatafeed")
+            feeds = client.list_data_feeds(data_feed_name="azBlobDataFeed")
             feeds_list = []
             async for item in feeds:
                 feeds_list.append(item)
@@ -789,7 +789,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
         assert len(all_feeds_list) > len(skipped_feeds_list)
 
     @AzureRecordedTestCase.await_prepared_test
-    @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
+    @pytest.mark.parametrize("credential", API_KEY, ids=ids)  # API key only. AAD doesn't find any data feeds
     @MetricsAdvisorPreparer()
     @recorded_by_proxy_async
     async def test_list_data_feeds_with_status(self, client):
@@ -861,7 +861,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert updated.name == variables["data_feed_updated_name"]
                 assert updated.data_feed_description == "updated"
                 assert updated.schema.timestamp_column == "time"
-                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2021, 12, 10, tzinfo=tzutc())
+                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2021, 12, 10, tzinfo=timezone.utc)
                 assert updated.ingestion_settings.ingestion_start_offset == 1
                 assert updated.ingestion_settings.data_source_request_concurrency == 1
                 assert updated.ingestion_settings.ingestion_retry_delay == 120
@@ -920,7 +920,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert updated.name == variables["data_feed_updated_name"]
                 assert updated.data_feed_description == "updated"
                 assert updated.schema.timestamp_column == "time"
-                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2021, 9, 10, tzinfo=tzutc())
+                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2021, 9, 10, tzinfo=timezone.utc)
                 assert updated.ingestion_settings.ingestion_start_offset == 1
                 assert updated.ingestion_settings.data_source_request_concurrency == 1
                 assert updated.ingestion_settings.ingestion_retry_delay == 120
@@ -998,7 +998,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert updated.name == variables["data_feed_updated_name"]
                 assert updated.data_feed_description == "updateMe"
                 assert updated.schema.timestamp_column == "time"
-                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2021, 9, 10, tzinfo=tzutc())
+                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2021, 9, 10, tzinfo=timezone.utc)
                 assert updated.ingestion_settings.ingestion_start_offset == 1
                 assert updated.ingestion_settings.data_source_request_concurrency == 1
                 assert updated.ingestion_settings.ingestion_retry_delay == 120
@@ -1053,7 +1053,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 assert updated.name == variables["data_feed_updated_name"]
                 # assert updated.data_feed_description == ""  # doesn't currently clear
                 # assert updated.schema.timestamp_column == ""  # doesn't currently clear
-                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=tzutc())
+                assert updated.ingestion_settings.ingestion_begin_time == datetime.datetime(2019, 10, 1, tzinfo=timezone.utc)
                 assert updated.ingestion_settings.ingestion_start_offset == -1
                 assert updated.ingestion_settings.data_source_request_concurrency == 0
                 assert updated.ingestion_settings.ingestion_retry_delay == -1

@@ -20,26 +20,26 @@ USAGE:
     python sample_recognize_linked_entities_async.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_TEXT_ANALYTICS_ENDPOINT - the endpoint to your Cognitive Services resource.
-    2) AZURE_TEXT_ANALYTICS_KEY - your Text Analytics subscription key
+    1) AZURE_LANGUAGE_ENDPOINT - the endpoint to your Language resource.
+    2) AZURE_LANGUAGE_KEY - your Language subscription key
 """
 
-import os
 import asyncio
 
 
-async def sample_recognize_linked_entities_async():
+async def sample_recognize_linked_entities_async() -> None:
     print(
         "In this sample, we are students conducting research for a class project. We will extract "
         "links to Wikipedia articles for all entities listed in our research documents, so we have "
         "all of the necessary information for research purposes."
     )
     # [START recognize_linked_entities_async]
+    import os
     from azure.core.credentials import AzureKeyCredential
     from azure.ai.textanalytics.aio import TextAnalyticsClient
 
-    endpoint = os.environ["AZURE_TEXT_ANALYTICS_ENDPOINT"]
-    key = os.environ["AZURE_TEXT_ANALYTICS_KEY"]
+    endpoint = os.environ["AZURE_LANGUAGE_ENDPOINT"]
+    key = os.environ["AZURE_LANGUAGE_KEY"]
 
     text_analytics_client = TextAnalyticsClient(endpoint=endpoint, credential=AzureKeyCredential(key))
     documents = [
@@ -72,9 +72,9 @@ async def sample_recognize_linked_entities_async():
     # [END recognize_linked_entities_async]
 
     print("\nNow let's see all of the Wikipedia articles we've extracted from our research documents")
-    for entity, url in entity_to_url.items():
+    for entity_name, url in entity_to_url.items():
         print("Link to Wikipedia article for '{}': {}".format(
-                entity, url
+                entity_name, url
         ))
 
 

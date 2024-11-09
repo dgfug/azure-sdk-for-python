@@ -6,18 +6,36 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
+from ._licenses_operations import LicensesOperations
 from ._machines_operations import MachinesOperations
+from ._license_profiles_operations import LicenseProfilesOperations
 from ._machine_extensions_operations import MachineExtensionsOperations
+from ._hybrid_compute_management_client_operations import HybridComputeManagementClientOperationsMixin
+from ._extension_metadata_operations import ExtensionMetadataOperations
 from ._operations import Operations
+from ._network_profile_operations import NetworkProfileOperations
 from ._private_link_scopes_operations import PrivateLinkScopesOperations
 from ._private_link_resources_operations import PrivateLinkResourcesOperations
 from ._private_endpoint_connections_operations import PrivateEndpointConnectionsOperations
+from ._network_security_perimeter_configurations_operations import NetworkSecurityPerimeterConfigurationsOperations
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'MachinesOperations',
-    'MachineExtensionsOperations',
-    'Operations',
-    'PrivateLinkScopesOperations',
-    'PrivateLinkResourcesOperations',
-    'PrivateEndpointConnectionsOperations',
+    "LicensesOperations",
+    "MachinesOperations",
+    "LicenseProfilesOperations",
+    "MachineExtensionsOperations",
+    "HybridComputeManagementClientOperationsMixin",
+    "ExtensionMetadataOperations",
+    "Operations",
+    "NetworkProfileOperations",
+    "PrivateLinkScopesOperations",
+    "PrivateLinkResourcesOperations",
+    "PrivateEndpointConnectionsOperations",
+    "NetworkSecurityPerimeterConfigurationsOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

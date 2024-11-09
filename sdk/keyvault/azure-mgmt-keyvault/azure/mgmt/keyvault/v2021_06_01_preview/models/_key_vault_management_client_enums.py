@@ -6,46 +6,33 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class AccessPolicyUpdateKind(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+class AccessPolicyUpdateKind(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """AccessPolicyUpdateKind."""
 
     ADD = "add"
     REPLACE = "replace"
     REMOVE = "remove"
 
-class ActionsRequired(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """A message indicating if changes on the service provider require any updates on the consumer.
-    """
+
+class ActionsRequired(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """A message indicating if changes on the service provider require any updates on the consumer."""
 
     NONE = "None"
 
-class CertificatePermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class CertificatePermissions(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """CertificatePermissions."""
 
     ALL = "all"
     GET = "get"
     LIST = "list"
     DELETE = "delete"
     CREATE = "create"
-    IMPORT_ENUM = "import"
+    IMPORT = "import"
     UPDATE = "update"
     MANAGECONTACTS = "managecontacts"
     GETISSUERS = "getissuers"
@@ -57,15 +44,17 @@ class CertificatePermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)
     PURGE = "purge"
     BACKUP = "backup"
     RESTORE = "restore"
+    IMPORT_ENUM = "import"
 
-class CreateMode(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The vault's create mode to indicate whether the vault need to be recovered or not.
-    """
+
+class CreateMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The vault's create mode to indicate whether the vault need to be recovered or not."""
 
     RECOVER = "recover"
     DEFAULT = "default"
 
-class DeletionRecoveryLevel(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class DeletionRecoveryLevel(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The deletion recovery level currently in effect for the object. If it contains 'Purgeable',
     then the object can be permanently deleted by a privileged user; otherwise, only the system can
     purge the object at the end of the retention interval.
@@ -76,25 +65,26 @@ class DeletionRecoveryLevel(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum))
     RECOVERABLE = "Recoverable"
     RECOVERABLE_PROTECTED_SUBSCRIPTION = "Recoverable+ProtectedSubscription"
 
-class IdentityType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity.
-    """
+
+class IdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class JsonWebKeyCurveName(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The elliptic curve name. For valid values, see JsonWebKeyCurveName.
-    """
+
+class JsonWebKeyCurveName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The elliptic curve name. For valid values, see JsonWebKeyCurveName."""
 
     P256 = "P-256"
     P384 = "P-384"
     P521 = "P-521"
     P256_K = "P-256K"
 
-class JsonWebKeyOperation(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class JsonWebKeyOperation(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The permitted JSON web key operations of the key. For more information, see
     JsonWebKeyOperation.
     """
@@ -105,19 +95,22 @@ class JsonWebKeyOperation(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     VERIFY = "verify"
     WRAP_KEY = "wrapKey"
     UNWRAP_KEY = "unwrapKey"
-    IMPORT_ENUM = "import"
+    IMPORT = "import"
     RELEASE = "release"
+    IMPORT_ENUM = "import"
 
-class JsonWebKeyType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of the key. For valid values, see JsonWebKeyType.
-    """
+
+class JsonWebKeyType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of the key. For valid values, see JsonWebKeyType."""
 
     EC = "EC"
     EC_HSM = "EC-HSM"
     RSA = "RSA"
     RSA_HSM = "RSA-HSM"
 
-class KeyPermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class KeyPermissions(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """KeyPermissions."""
 
     ALL = "all"
     ENCRYPT = "encrypt"
@@ -130,7 +123,7 @@ class KeyPermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     LIST = "list"
     CREATE = "create"
     UPDATE = "update"
-    IMPORT_ENUM = "import"
+    IMPORT = "import"
     DELETE = "delete"
     BACKUP = "backup"
     RESTORE = "restore"
@@ -140,28 +133,33 @@ class KeyPermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     GETROTATIONPOLICY = "getrotationpolicy"
     SETROTATIONPOLICY = "setrotationpolicy"
     RELEASE = "release"
+    IMPORT_ENUM = "import"
 
-class KeyRotationPolicyActionType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of action.
-    """
 
-    ROTATE = "rotate"
-    NOTIFY = "notify"
+class KeyRotationPolicyActionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of the action. The value should be compared case-insensitively."""
 
-class ManagedHsmSkuFamily(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """SKU Family of the managed HSM Pool
-    """
+    ROTATE = "Rotate"
+    """Rotate the key based on the key policy."""
+    NOTIFY = "Notify"
+    """Trigger Event Grid events. Defaults to 30 days before expiry. Key Vault only."""
+
+
+class ManagedHsmSkuFamily(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """SKU Family of the managed HSM Pool."""
 
     B = "B"
 
-class ManagedHsmSkuName(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """SKU of the managed HSM Pool
-    """
+
+class ManagedHsmSkuName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """SKU of the managed HSM Pool."""
 
     STANDARD_B1 = "Standard_B1"
     CUSTOM_B32 = "Custom_B32"
+    CUSTOM_B6 = "Custom_B6"
 
-class NetworkRuleAction(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class NetworkRuleAction(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The default action when no rule from ipRules and from virtualNetworkRules match. This is only
     used after the bypass property has been evaluated.
     """
@@ -169,7 +167,8 @@ class NetworkRuleAction(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     ALLOW = "Allow"
     DENY = "Deny"
 
-class NetworkRuleBypassOptions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class NetworkRuleBypassOptions(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Tells what traffic can bypass network rules. This can be 'AzureServices' or 'None'.  If not
     specified the default is 'AzureServices'.
     """
@@ -177,9 +176,9 @@ class NetworkRuleBypassOptions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enu
     AZURE_SERVICES = "AzureServices"
     NONE = "None"
 
-class PrivateEndpointConnectionProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The current provisioning state.
-    """
+
+class PrivateEndpointConnectionProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current provisioning state."""
 
     SUCCEEDED = "Succeeded"
     CREATING = "Creating"
@@ -188,45 +187,45 @@ class PrivateEndpointConnectionProvisioningState(with_metaclass(_CaseInsensitive
     FAILED = "Failed"
     DISCONNECTED = "Disconnected"
 
-class PrivateEndpointServiceConnectionStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The private endpoint connection status.
-    """
+
+class PrivateEndpointServiceConnectionStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The private endpoint connection status."""
 
     PENDING = "Pending"
     APPROVED = "Approved"
     REJECTED = "Rejected"
     DISCONNECTED = "Disconnected"
 
-class ProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Provisioning state.
-    """
 
-    #: The managed HSM Pool has been full provisioned.
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Provisioning state."""
+
     SUCCEEDED = "Succeeded"
-    #: The managed HSM Pool is currently being provisioned.
+    """The managed HSM Pool has been full provisioned."""
     PROVISIONING = "Provisioning"
-    #: Provisioning of the managed HSM Pool has failed.
+    """The managed HSM Pool is currently being provisioned."""
     FAILED = "Failed"
-    #: The managed HSM Pool is currently being updated.
+    """Provisioning of the managed HSM Pool has failed."""
     UPDATING = "Updating"
-    #: The managed HSM Pool is currently being deleted.
+    """The managed HSM Pool is currently being updated."""
     DELETING = "Deleting"
-    #: The managed HSM pool is ready for normal use.
+    """The managed HSM Pool is currently being deleted."""
     ACTIVATED = "Activated"
-    #: The managed HSM pool is waiting for a security domain restore action.
+    """The managed HSM pool is ready for normal use."""
     SECURITY_DOMAIN_RESTORE = "SecurityDomainRestore"
-    #: The managed HSM pool is being restored from full HSM backup.
+    """The managed HSM pool is waiting for a security domain restore action."""
     RESTORING = "Restoring"
+    """The managed HSM pool is being restored from full HSM backup."""
 
-class PublicNetworkAccess(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Control permission for data plane traffic coming from public networks while private endpoint is
-    enabled.
-    """
+
+class PublicNetworkAccess(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Control permission to the managed HSM from public networks."""
 
     ENABLED = "Enabled"
     DISABLED = "Disabled"
 
-class Reason(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class Reason(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The reason that a vault name could not be used. The Reason element is only returned if
     NameAvailable is false.
     """
@@ -234,7 +233,9 @@ class Reason(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     ACCOUNT_NAME_INVALID = "AccountNameInvalid"
     ALREADY_EXISTS = "AlreadyExists"
 
-class SecretPermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class SecretPermissions(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """SecretPermissions."""
 
     ALL = "all"
     GET = "get"
@@ -246,20 +247,22 @@ class SecretPermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     RECOVER = "recover"
     PURGE = "purge"
 
-class SkuFamily(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """SKU family name
-    """
+
+class SkuFamily(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """SKU family name."""
 
     A = "A"
 
-class SkuName(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """SKU name to specify whether the key vault is a standard vault or a premium vault.
-    """
+
+class SkuName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """SKU name to specify whether the key vault is a standard vault or a premium vault."""
 
     STANDARD = "standard"
     PREMIUM = "premium"
 
-class StoragePermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class StoragePermissions(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """StoragePermissions."""
 
     ALL = "all"
     GET = "get"
@@ -277,9 +280,9 @@ class StoragePermissions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     GETSAS = "getsas"
     DELETESAS = "deletesas"
 
-class VaultProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Provisioning state of the vault.
-    """
+
+class VaultProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Provisioning state of the vault."""
 
     SUCCEEDED = "Succeeded"
     REGISTERING_DNS = "RegisteringDns"

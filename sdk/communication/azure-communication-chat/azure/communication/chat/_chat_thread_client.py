@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from urllib.parse import urlparse
 
@@ -36,12 +36,11 @@ from ._version import SDK_MONIKER
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
-    from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union, Tuple
     from datetime import datetime
     from azure.core.paging import ItemPaged
 
 
-class ChatThreadClient(object):
+class ChatThreadClient(object): # pylint: disable=client-accepts-api-version-keyword
     """A client to interact with the AzureCommunicationService Chat gateway.
     Instances of this class is normally retrieved by ChatClient.get_chat_thread_client()
 
@@ -88,7 +87,7 @@ class ChatThreadClient(object):
             if not endpoint.lower().startswith('http'):
                 endpoint = "https://" + endpoint
         except AttributeError:
-            raise ValueError("Host URL must be a string")
+            raise ValueError("Host URL must be a string") # pylint: disable=raise-missing-from
 
         parsed_url = urlparse(endpoint.rstrip('/'))
         if not parsed_url.netloc:
@@ -99,7 +98,7 @@ class ChatThreadClient(object):
         self._credential = credential
 
         self._client = AzureCommunicationChatService(
-            endpoint,
+            endpoint=self._endpoint,
             authentication_policy=BearerTokenCredentialPolicy(self._credential),
             sdk_moniker=SDK_MONIKER,
             **kwargs
@@ -310,7 +309,7 @@ class ChatThreadClient(object):
             try:
                 chat_message_type = ChatMessageType.__getattr__(chat_message_type) # pylint:disable=protected-access
             except Exception:
-                raise ValueError(
+                raise ValueError( # pylint:disable=raise-missing-from
                     "chat_message_type: {message_type} is not acceptable".format(message_type=chat_message_type))
 
         if chat_message_type not in [ChatMessageType.TEXT, ChatMessageType.HTML]:
@@ -373,7 +372,7 @@ class ChatThreadClient(object):
 
         :keyword int results_per_page: The maximum number of messages to be returned per page.
         :keyword ~datetime.datetime start_time: The earliest point in time to get messages up to.
-        The timestamp should be in RFC3339 format: ``yyyy-MM-ddTHH:mm:ssZ``.
+            The timestamp should be in RFC3339 format: ``yyyy-MM-ddTHH:mm:ssZ``.
         :return: An iterator like instance of ChatMessage
         :rtype: ~azure.core.paging.ItemPaged[~azure.communication.chat.ChatMessage]
         :raises: ~azure.core.exceptions.HttpResponseError, ValueError
@@ -543,14 +542,11 @@ class ChatThreadClient(object):
                 add_chat_participants_request=add_thread_participants_request,
                 **kwargs)
 
-
-            if hasattr(add_chat_participants_result, 'invalid_participants') and \
-                    add_chat_participants_result.invalid_participants is not None:
-                response = CommunicationErrorResponseConverter._convert( # pylint:disable=protected-access
+            if hasattr(add_chat_participants_result, 'invalid_participants'):
+                response = CommunicationErrorResponseConverter.convert(
                     participants=thread_participants,
                     chat_errors=add_chat_participants_result.invalid_participants
                 )
-
         return response
 
     @distributed_trace

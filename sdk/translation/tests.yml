@@ -1,31 +1,21 @@
 trigger: none
 
-stages:
-  - template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
+extends:
+    template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
     parameters:
-      BuildTargetingString: azure-ai-translation-document
       ServiceDirectory: translation
-      Clouds: Public,Int
+      TestTimeoutInMinutes: 200
+      Clouds: Public # Skipping INT, re-enable when environment fixed
       CloudConfig:
         Public:
-          SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
-          MatrixReplace:
-            - TestSamples=.*/true
+          Location: 'westus3'
         Int:
           # We run tests in Dogfood for the service team. This cloud config is just used to validate the service deployment
           # so we don't need to run on every version of Python.
           SubscriptionConfiguration: $(sub-config-translation-int-test-resources)
-          # TODO fix this to specify which version to run rather than filtering out versions.
           MatrixFilters:
-            - PythonVersion=^(?!pypy3).*
-            - PythonVersion=^(?!3.6).*
-            - PythonVersion=^(?!3.7).*
-            - PythonVersion=^(?!3.8).*
-            - PythonVersion=^(?!3.9).*
+            - PythonVersion=3.11.*
       EnvVars:
-        AZURE_CLIENT_ID: $(aad-azure-sdk-test-client-id)
-        AZURE_CLIENT_SECRET: $(aad-azure-sdk-test-client-secret)
-        AZURE_TENANT_ID: $(aad-azure-sdk-test-tenant-id)
         AZURE_TEST_RUN_LIVE: 'true'
         TEST_MODE: 'RunLiveNoRecord'
         AZURE_SKIP_LIVE_RECORDING: 'True'

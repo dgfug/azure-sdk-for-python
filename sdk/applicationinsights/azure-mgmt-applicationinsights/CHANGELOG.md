@@ -1,5 +1,42 @@
 # Release History
 
+## 4.0.0 (2023-04-20)
+
+### Features Added
+
+  - Model WebTestPropertiesValidationRules has a new parameter ignore_http_status_code
+  - Model WorkbookErrorDefinition has a new parameter innererror
+
+### Breaking Changes
+
+  - Model WebTestPropertiesValidationRules no longer has parameter ignore_https_status_code
+  - Model WorkbookErrorDefinition no longer has parameter inner_error
+
+## 4.0.0b1 (2023-02-14)
+
+### Features Added
+
+  - Model WorkbookErrorDefinition has a new parameter innererror
+
+### Breaking Changes
+
+  - Model WorkbookErrorDefinition no longer has parameter inner_error
+
+## 3.1.0 (2022-06-02)
+
+**Features**
+
+  - Added model ErrorResponseComponents
+  - Added model ErrorResponseComponentsError
+  - Added model WorkbookSharedTypeKind
+  - Added model WorkbookUpdateSharedTypeKind
+
+## 3.0.0 (2022-03-23)
+
+**Breaking changes**
+
+  - Operation WorkbooksOperations.get has a new signature
+
 ## 2.1.0 (2022-01-25)
 
 **Features**

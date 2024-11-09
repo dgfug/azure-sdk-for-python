@@ -6,177 +6,232 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-try:
-    from ._models_py3 import ApiOperation
-    from ._models_py3 import ApiOperationDisplay
-    from ._models_py3 import ApiOperationListResult
-    from ._models_py3 import ApiOperationPropertiesServiceSpecification
-    from ._models_py3 import AscOperation
-    from ._models_py3 import BlobNfsTarget
-    from ._models_py3 import Cache
-    from ._models_py3 import CacheActiveDirectorySettings
-    from ._models_py3 import CacheActiveDirectorySettingsCredentials
-    from ._models_py3 import CacheDirectorySettings
-    from ._models_py3 import CacheEncryptionSettings
-    from ._models_py3 import CacheHealth
-    from ._models_py3 import CacheIdentity
-    from ._models_py3 import CacheNetworkSettings
-    from ._models_py3 import CacheSecuritySettings
-    from ._models_py3 import CacheSku
-    from ._models_py3 import CacheUpgradeStatus
-    from ._models_py3 import CacheUsernameDownloadSettings
-    from ._models_py3 import CacheUsernameDownloadSettingsCredentials
-    from ._models_py3 import CachesListResult
-    from ._models_py3 import ClfsTarget
-    from ._models_py3 import CloudErrorBody
-    from ._models_py3 import Condition
-    from ._models_py3 import ErrorResponse
-    from ._models_py3 import KeyVaultKeyReference
-    from ._models_py3 import KeyVaultKeyReferenceSourceVault
-    from ._models_py3 import MetricDimension
-    from ._models_py3 import MetricSpecification
-    from ._models_py3 import NamespaceJunction
-    from ._models_py3 import Nfs3Target
-    from ._models_py3 import NfsAccessPolicy
-    from ._models_py3 import NfsAccessRule
-    from ._models_py3 import ResourceSku
-    from ._models_py3 import ResourceSkuCapabilities
-    from ._models_py3 import ResourceSkuLocationInfo
-    from ._models_py3 import ResourceSkusResult
-    from ._models_py3 import Restriction
-    from ._models_py3 import StorageTarget
-    from ._models_py3 import StorageTargetResource
-    from ._models_py3 import StorageTargetsResult
-    from ._models_py3 import SystemData
-    from ._models_py3 import UnknownTarget
-    from ._models_py3 import UsageModel
-    from ._models_py3 import UsageModelDisplay
-    from ._models_py3 import UsageModelsResult
-    from ._models_py3 import UserAssignedIdentitiesValue
-except (SyntaxError, ImportError):
-    from ._models import ApiOperation  # type: ignore
-    from ._models import ApiOperationDisplay  # type: ignore
-    from ._models import ApiOperationListResult  # type: ignore
-    from ._models import ApiOperationPropertiesServiceSpecification  # type: ignore
-    from ._models import AscOperation  # type: ignore
-    from ._models import BlobNfsTarget  # type: ignore
-    from ._models import Cache  # type: ignore
-    from ._models import CacheActiveDirectorySettings  # type: ignore
-    from ._models import CacheActiveDirectorySettingsCredentials  # type: ignore
-    from ._models import CacheDirectorySettings  # type: ignore
-    from ._models import CacheEncryptionSettings  # type: ignore
-    from ._models import CacheHealth  # type: ignore
-    from ._models import CacheIdentity  # type: ignore
-    from ._models import CacheNetworkSettings  # type: ignore
-    from ._models import CacheSecuritySettings  # type: ignore
-    from ._models import CacheSku  # type: ignore
-    from ._models import CacheUpgradeStatus  # type: ignore
-    from ._models import CacheUsernameDownloadSettings  # type: ignore
-    from ._models import CacheUsernameDownloadSettingsCredentials  # type: ignore
-    from ._models import CachesListResult  # type: ignore
-    from ._models import ClfsTarget  # type: ignore
-    from ._models import CloudErrorBody  # type: ignore
-    from ._models import Condition  # type: ignore
-    from ._models import ErrorResponse  # type: ignore
-    from ._models import KeyVaultKeyReference  # type: ignore
-    from ._models import KeyVaultKeyReferenceSourceVault  # type: ignore
-    from ._models import MetricDimension  # type: ignore
-    from ._models import MetricSpecification  # type: ignore
-    from ._models import NamespaceJunction  # type: ignore
-    from ._models import Nfs3Target  # type: ignore
-    from ._models import NfsAccessPolicy  # type: ignore
-    from ._models import NfsAccessRule  # type: ignore
-    from ._models import ResourceSku  # type: ignore
-    from ._models import ResourceSkuCapabilities  # type: ignore
-    from ._models import ResourceSkuLocationInfo  # type: ignore
-    from ._models import ResourceSkusResult  # type: ignore
-    from ._models import Restriction  # type: ignore
-    from ._models import StorageTarget  # type: ignore
-    from ._models import StorageTargetResource  # type: ignore
-    from ._models import StorageTargetsResult  # type: ignore
-    from ._models import SystemData  # type: ignore
-    from ._models import UnknownTarget  # type: ignore
-    from ._models import UsageModel  # type: ignore
-    from ._models import UsageModelDisplay  # type: ignore
-    from ._models import UsageModelsResult  # type: ignore
-    from ._models import UserAssignedIdentitiesValue  # type: ignore
+from ._models_py3 import AmlFilesystem
+from ._models_py3 import AmlFilesystemArchive
+from ._models_py3 import AmlFilesystemArchiveInfo
+from ._models_py3 import AmlFilesystemArchiveStatus
+from ._models_py3 import AmlFilesystemCheckSubnetError
+from ._models_py3 import AmlFilesystemCheckSubnetErrorFilesystemSubnet
+from ._models_py3 import AmlFilesystemClientInfo
+from ._models_py3 import AmlFilesystemContainerStorageInterface
+from ._models_py3 import AmlFilesystemEncryptionSettings
+from ._models_py3 import AmlFilesystemHealth
+from ._models_py3 import AmlFilesystemHsmSettings
+from ._models_py3 import AmlFilesystemIdentity
+from ._models_py3 import AmlFilesystemPropertiesHsm
+from ._models_py3 import AmlFilesystemPropertiesMaintenanceWindow
+from ._models_py3 import AmlFilesystemRootSquashSettings
+from ._models_py3 import AmlFilesystemSubnetInfo
+from ._models_py3 import AmlFilesystemUpdate
+from ._models_py3 import AmlFilesystemUpdatePropertiesMaintenanceWindow
+from ._models_py3 import AmlFilesystemsListResult
+from ._models_py3 import ApiOperation
+from ._models_py3 import ApiOperationDisplay
+from ._models_py3 import ApiOperationListResult
+from ._models_py3 import ApiOperationPropertiesServiceSpecification
+from ._models_py3 import AscOperation
+from ._models_py3 import AscOperationErrorResponse
+from ._models_py3 import BlobNfsTarget
+from ._models_py3 import Cache
+from ._models_py3 import CacheActiveDirectorySettings
+from ._models_py3 import CacheActiveDirectorySettingsCredentials
+from ._models_py3 import CacheDirectorySettings
+from ._models_py3 import CacheEncryptionSettings
+from ._models_py3 import CacheHealth
+from ._models_py3 import CacheIdentity
+from ._models_py3 import CacheNetworkSettings
+from ._models_py3 import CacheSecuritySettings
+from ._models_py3 import CacheSku
+from ._models_py3 import CacheUpgradeSettings
+from ._models_py3 import CacheUpgradeStatus
+from ._models_py3 import CacheUsernameDownloadSettings
+from ._models_py3 import CacheUsernameDownloadSettingsCredentials
+from ._models_py3 import CachesListResult
+from ._models_py3 import ClfsTarget
+from ._models_py3 import CloudErrorBody
+from ._models_py3 import Condition
+from ._models_py3 import ErrorAdditionalInfo
+from ._models_py3 import ErrorDetail
+from ._models_py3 import ErrorResponse
+from ._models_py3 import ImportJob
+from ._models_py3 import ImportJobUpdate
+from ._models_py3 import ImportJobsListResult
+from ._models_py3 import KeyVaultKeyReference
+from ._models_py3 import KeyVaultKeyReferenceSourceVault
+from ._models_py3 import LogSpecification
+from ._models_py3 import MetricDimension
+from ._models_py3 import MetricSpecification
+from ._models_py3 import NamespaceJunction
+from ._models_py3 import Nfs3Target
+from ._models_py3 import NfsAccessPolicy
+from ._models_py3 import NfsAccessRule
+from ._models_py3 import PrimingJob
+from ._models_py3 import PrimingJobIdParameter
+from ._models_py3 import RequiredAmlFilesystemSubnetsSize
+from ._models_py3 import RequiredAmlFilesystemSubnetsSizeInfo
+from ._models_py3 import Resource
+from ._models_py3 import ResourceSku
+from ._models_py3 import ResourceSkuCapabilities
+from ._models_py3 import ResourceSkuLocationInfo
+from ._models_py3 import ResourceSkusResult
+from ._models_py3 import ResourceUsage
+from ._models_py3 import ResourceUsageName
+from ._models_py3 import ResourceUsagesListResult
+from ._models_py3 import Restriction
+from ._models_py3 import SkuName
+from ._models_py3 import StorageTarget
+from ._models_py3 import StorageTargetResource
+from ._models_py3 import StorageTargetSpaceAllocation
+from ._models_py3 import StorageTargetsResult
+from ._models_py3 import SystemData
+from ._models_py3 import TrackedResource
+from ._models_py3 import UnknownTarget
+from ._models_py3 import UsageModel
+from ._models_py3 import UsageModelDisplay
+from ._models_py3 import UsageModelsResult
+from ._models_py3 import UserAssignedIdentitiesValue
+from ._models_py3 import UserAssignedIdentitiesValueAutoGenerated
 
-from ._storage_cache_management_client_enums import (
-    CacheIdentityType,
-    CreatedByType,
-    DomainJoinedType,
-    FirmwareStatusType,
-    HealthStateType,
-    MetricAggregationType,
-    NfsAccessRuleAccess,
-    NfsAccessRuleScope,
-    OperationalStateType,
-    ProvisioningStateType,
-    ReasonCode,
-    StorageTargetType,
-    UsernameDownloadedType,
-    UsernameSource,
-)
+from ._storage_cache_management_client_enums import AmlFilesystemHealthStateType
+from ._storage_cache_management_client_enums import AmlFilesystemIdentityType
+from ._storage_cache_management_client_enums import AmlFilesystemProvisioningStateType
+from ._storage_cache_management_client_enums import AmlFilesystemSquashMode
+from ._storage_cache_management_client_enums import ArchiveStatusType
+from ._storage_cache_management_client_enums import CacheIdentityType
+from ._storage_cache_management_client_enums import ConflictResolutionMode
+from ._storage_cache_management_client_enums import CreatedByType
+from ._storage_cache_management_client_enums import DomainJoinedType
+from ._storage_cache_management_client_enums import FilesystemSubnetStatusType
+from ._storage_cache_management_client_enums import FirmwareStatusType
+from ._storage_cache_management_client_enums import HealthStateType
+from ._storage_cache_management_client_enums import ImportJobProvisioningStateType
+from ._storage_cache_management_client_enums import ImportStatusType
+from ._storage_cache_management_client_enums import MaintenanceDayOfWeekType
+from ._storage_cache_management_client_enums import MetricAggregationType
+from ._storage_cache_management_client_enums import NfsAccessRuleAccess
+from ._storage_cache_management_client_enums import NfsAccessRuleScope
+from ._storage_cache_management_client_enums import OperationalStateType
+from ._storage_cache_management_client_enums import PrimingJobState
+from ._storage_cache_management_client_enums import ProvisioningStateType
+from ._storage_cache_management_client_enums import ReasonCode
+from ._storage_cache_management_client_enums import StorageTargetType
+from ._storage_cache_management_client_enums import UsernameDownloadedType
+from ._storage_cache_management_client_enums import UsernameSource
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'ApiOperation',
-    'ApiOperationDisplay',
-    'ApiOperationListResult',
-    'ApiOperationPropertiesServiceSpecification',
-    'AscOperation',
-    'BlobNfsTarget',
-    'Cache',
-    'CacheActiveDirectorySettings',
-    'CacheActiveDirectorySettingsCredentials',
-    'CacheDirectorySettings',
-    'CacheEncryptionSettings',
-    'CacheHealth',
-    'CacheIdentity',
-    'CacheNetworkSettings',
-    'CacheSecuritySettings',
-    'CacheSku',
-    'CacheUpgradeStatus',
-    'CacheUsernameDownloadSettings',
-    'CacheUsernameDownloadSettingsCredentials',
-    'CachesListResult',
-    'ClfsTarget',
-    'CloudErrorBody',
-    'Condition',
-    'ErrorResponse',
-    'KeyVaultKeyReference',
-    'KeyVaultKeyReferenceSourceVault',
-    'MetricDimension',
-    'MetricSpecification',
-    'NamespaceJunction',
-    'Nfs3Target',
-    'NfsAccessPolicy',
-    'NfsAccessRule',
-    'ResourceSku',
-    'ResourceSkuCapabilities',
-    'ResourceSkuLocationInfo',
-    'ResourceSkusResult',
-    'Restriction',
-    'StorageTarget',
-    'StorageTargetResource',
-    'StorageTargetsResult',
-    'SystemData',
-    'UnknownTarget',
-    'UsageModel',
-    'UsageModelDisplay',
-    'UsageModelsResult',
-    'UserAssignedIdentitiesValue',
-    'CacheIdentityType',
-    'CreatedByType',
-    'DomainJoinedType',
-    'FirmwareStatusType',
-    'HealthStateType',
-    'MetricAggregationType',
-    'NfsAccessRuleAccess',
-    'NfsAccessRuleScope',
-    'OperationalStateType',
-    'ProvisioningStateType',
-    'ReasonCode',
-    'StorageTargetType',
-    'UsernameDownloadedType',
-    'UsernameSource',
+    "AmlFilesystem",
+    "AmlFilesystemArchive",
+    "AmlFilesystemArchiveInfo",
+    "AmlFilesystemArchiveStatus",
+    "AmlFilesystemCheckSubnetError",
+    "AmlFilesystemCheckSubnetErrorFilesystemSubnet",
+    "AmlFilesystemClientInfo",
+    "AmlFilesystemContainerStorageInterface",
+    "AmlFilesystemEncryptionSettings",
+    "AmlFilesystemHealth",
+    "AmlFilesystemHsmSettings",
+    "AmlFilesystemIdentity",
+    "AmlFilesystemPropertiesHsm",
+    "AmlFilesystemPropertiesMaintenanceWindow",
+    "AmlFilesystemRootSquashSettings",
+    "AmlFilesystemSubnetInfo",
+    "AmlFilesystemUpdate",
+    "AmlFilesystemUpdatePropertiesMaintenanceWindow",
+    "AmlFilesystemsListResult",
+    "ApiOperation",
+    "ApiOperationDisplay",
+    "ApiOperationListResult",
+    "ApiOperationPropertiesServiceSpecification",
+    "AscOperation",
+    "AscOperationErrorResponse",
+    "BlobNfsTarget",
+    "Cache",
+    "CacheActiveDirectorySettings",
+    "CacheActiveDirectorySettingsCredentials",
+    "CacheDirectorySettings",
+    "CacheEncryptionSettings",
+    "CacheHealth",
+    "CacheIdentity",
+    "CacheNetworkSettings",
+    "CacheSecuritySettings",
+    "CacheSku",
+    "CacheUpgradeSettings",
+    "CacheUpgradeStatus",
+    "CacheUsernameDownloadSettings",
+    "CacheUsernameDownloadSettingsCredentials",
+    "CachesListResult",
+    "ClfsTarget",
+    "CloudErrorBody",
+    "Condition",
+    "ErrorAdditionalInfo",
+    "ErrorDetail",
+    "ErrorResponse",
+    "ImportJob",
+    "ImportJobUpdate",
+    "ImportJobsListResult",
+    "KeyVaultKeyReference",
+    "KeyVaultKeyReferenceSourceVault",
+    "LogSpecification",
+    "MetricDimension",
+    "MetricSpecification",
+    "NamespaceJunction",
+    "Nfs3Target",
+    "NfsAccessPolicy",
+    "NfsAccessRule",
+    "PrimingJob",
+    "PrimingJobIdParameter",
+    "RequiredAmlFilesystemSubnetsSize",
+    "RequiredAmlFilesystemSubnetsSizeInfo",
+    "Resource",
+    "ResourceSku",
+    "ResourceSkuCapabilities",
+    "ResourceSkuLocationInfo",
+    "ResourceSkusResult",
+    "ResourceUsage",
+    "ResourceUsageName",
+    "ResourceUsagesListResult",
+    "Restriction",
+    "SkuName",
+    "StorageTarget",
+    "StorageTargetResource",
+    "StorageTargetSpaceAllocation",
+    "StorageTargetsResult",
+    "SystemData",
+    "TrackedResource",
+    "UnknownTarget",
+    "UsageModel",
+    "UsageModelDisplay",
+    "UsageModelsResult",
+    "UserAssignedIdentitiesValue",
+    "UserAssignedIdentitiesValueAutoGenerated",
+    "AmlFilesystemHealthStateType",
+    "AmlFilesystemIdentityType",
+    "AmlFilesystemProvisioningStateType",
+    "AmlFilesystemSquashMode",
+    "ArchiveStatusType",
+    "CacheIdentityType",
+    "ConflictResolutionMode",
+    "CreatedByType",
+    "DomainJoinedType",
+    "FilesystemSubnetStatusType",
+    "FirmwareStatusType",
+    "HealthStateType",
+    "ImportJobProvisioningStateType",
+    "ImportStatusType",
+    "MaintenanceDayOfWeekType",
+    "MetricAggregationType",
+    "NfsAccessRuleAccess",
+    "NfsAccessRuleScope",
+    "OperationalStateType",
+    "PrimingJobState",
+    "ProvisioningStateType",
+    "ReasonCode",
+    "StorageTargetType",
+    "UsernameDownloadedType",
+    "UsernameSource",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

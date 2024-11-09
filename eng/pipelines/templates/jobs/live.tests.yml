@@ -2,6 +2,9 @@ parameters:
   - name: ServiceDirectory
     type: string
     default: ''
+  - name: TestResourceDirectories
+    type: object
+    default: null
   - name: PreSteps
     type: object
     default: []
@@ -55,6 +58,17 @@ parameters:
   - name: TestProxy
     type: boolean
     default: false
+  - name: OSName
+    type: string
+  - name: ToxTestEnv
+    type: string
+    default: 'whl'
+  - name: UseFederatedAuth
+    type: boolean
+    default: false
+  - name: PersistOidcToken
+    type: boolean
+    default: false
 
 jobs:
   - job:
@@ -66,29 +80,40 @@ jobs:
 
     variables:
       - template: ../variables/globals.yml
+      - template: ../variables/image.yml
 
       - name: skipComponentGovernanceDetection
         value: true
       - name: ArmTemplateParameters
         value: '@{}'
+      - name: AZURE_SKIP_LIVE_RECORDING
+        value: true
 
     timeoutInMinutes: ${{ parameters.TestTimeoutInMinutes }}
     continueOnError: false
 
     pool:
       name: $(Pool)
-      vmImage: $(OSVmImage)
+      # 1es pipeline templates converts `image` to demands: ImageOverride under the hood
+      # which is incompatible with image selection in the default non-1es hosted pools
+      ${{ if eq(parameters.OSName, 'macOS') }}:
+        vmImage: $(OSVmImage)
+      ${{ else }}:
+        image: $(OSVmImage)
+      os: ${{ parameters.OSName }}
 
     ${{ if eq(parameters.UsePlatformContainer, 'true') }}:
       # Add a default so the job doesn't fail when the matrix is empty
       container: $[ variables['Container'] ]
 
     steps:
+      - ${{ parameters.PreSteps }}
+
       - template: /eng/common/pipelines/templates/steps/verify-agent-os.yml
         parameters:
-          AgentImage: $(OSVmImage)
+          AgentImage: ${{ parameters.OSName }}
 
-      - template: /eng/pipelines/templates/steps/targeting-string-resolve.yml
+      - template: /eng/pipelines/templates/steps/resolve-package-targeting.yml
         parameters:
           BuildTargetingString: ${{ parameters.BuildTargetingString }}
 
@@ -96,15 +121,27 @@ jobs:
         parameters:
           SubscriptionConfiguration: ${{ parameters.CloudConfig.SubscriptionConfiguration }}
           SubscriptionConfigurations: ${{ parameters.CloudConfig.SubscriptionConfigurations }}
+          ${{ if parameters.UseFederatedAuth }}:
+            SubscriptionConfigurationFilePaths: ${{ parameters.CloudConfig.SubscriptionConfigurationFilePaths }}
+          EnvVars:
+            Pool: $(Pool)
+            ${{ insert }}: ${{ parameters.EnvVars }}
 
-      - template: /eng/common/TestResources/deploy-test-resources.yml
-        parameters:
-          Location: ${{ coalesce(parameters.Location, parameters.CloudConfig.Location) }}
-          ServiceDirectory: '${{ parameters.ServiceDirectory }}'
-          SubscriptionConfiguration: $(SubscriptionConfiguration)
-          ArmTemplateParameters: $(ArmTemplateParameters)
+      - ${{ each directory in coalesce(parameters.TestResourceDirectories, split(parameters.ServiceDirectory, '|')) }}:
+        - template: /eng/common/TestResources/deploy-test-resources.yml
+          parameters:
+            Location: ${{ coalesce(parameters.Location, parameters.CloudConfig.Location) }}
+            ServiceDirectory: '${{ directory }}'
+            SubscriptionConfiguration: $(SubscriptionConfiguration)
+            ArmTemplateParameters: $(ArmTemplateParameters)
+            UseFederatedAuth: ${{ parameters.UseFederatedAuth }}
+            PersistOidcToken: ${{ parameters.PersistOidcToken }}
+            ServiceConnection: ${{ parameters.CloudConfig.ServiceConnection }}
+            EnvVars:
+              Pool: $(Pool)
+              ${{ insert }}: ${{ parameters.EnvVars }}
 
-      - template: ../steps/build-test.yml
+      - template: /eng/pipelines/templates/steps/build-test.yml
         parameters:
           ServiceDirectory: ${{ parameters.ServiceDirectory }}
           CloudName: ${{ parameters.CloudConfig.Cloud }}
@@ -112,18 +149,23 @@ jobs:
           EnvVars:
             AZURE_RUN_MODE: 'Live' #Record, Playback
             ${{ insert }}: ${{ parameters.EnvVars }}
-          PreSteps: ${{ parameters.PreSteps }}
-          PostSteps: ${{ parameters.PostSteps }}
           PythonVersion: $(PythonVersion)
           OSVmImage: $(OSVmImage)
-          ToxTestEnv: "whl"
+          ToxTestEnv: ${{ parameters.ToxTestEnv }}
           AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
           TestMarkArgument: ${{ parameters.TestMarkArgument }}
           InjectedPackages: ${{ parameters.InjectedPackages }}
           BuildDocs: ${{ parameters.BuildDocs }}
           TestProxy: ${{ parameters.TestProxy }}
+          UseFederatedAuth: ${{ parameters.UseFederatedAuth }}
+          ServiceConnection: ${{ parameters.CloudConfig.ServiceConnection }}
 
-      - template: /eng/common/TestResources/remove-test-resources.yml
-        parameters:
-          ServiceDirectory: '${{ parameters.ServiceDirectory }}'
-          SubscriptionConfiguration: $(SubscriptionConfiguration)
+      - ${{ each directory in coalesce(parameters.TestResourceDirectories, split(parameters.ServiceDirectory, '|')) }}:
+        - template: /eng/common/TestResources/remove-test-resources.yml
+          parameters:
+            ServiceDirectory: '${{ directory }}'
+            SubscriptionConfiguration: $(SubscriptionConfiguration)
+            UseFederatedAuth: ${{ parameters.UseFederatedAuth }}
+            ServiceConnection: ${{ parameters.CloudConfig.ServiceConnection }}
+
+      - ${{ parameters.PostSteps }}

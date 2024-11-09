@@ -13,19 +13,20 @@ The Azure Event Hubs client library allows for publishing and consuming of Azure
 - Observe interesting operations and interactions happening within your business or other ecosystem, allowing loosely coupled systems to interact without the need to bind them together.
 - Receive events from one or more publishers, transform them to better meet the needs of your ecosystem, then publish the transformed events to a new stream for consumers to observe.
 
-[Source code](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventhub/azure-eventhub/) | [Package (PyPi)](https://pypi.org/project/azure-eventhub/) | [API reference documentation][api_reference] | [Product documentation](https://docs.microsoft.com/azure/event-hubs/) | [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/eventhub/azure-eventhub/samples)
-
-## _Disclaimer_
-
-_Azure SDK Python packages support for Python 2.7 has ended 01 January 2022. For more information and questions, please refer to https://github.com/Azure/azure-sdk-for-python/issues/20691_
+[Source code](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventhub/azure-eventhub/)
+| [Package (PyPi)](https://pypi.org/project/azure-eventhub/)
+| [Package (Conda)](https://anaconda.org/microsoft/azure-eventhub/)
+| [API reference documentation][api_reference]
+| [Product documentation](https://docs.microsoft.com/azure/event-hubs/)
+| [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/eventhub/azure-eventhub/samples)
 
 ## Getting started
 
 ### Prerequisites
 
-- Python 3.6 or later.
+- Python 3.8 or later.
 - **Microsoft Azure Subscription:**  To use Azure services, including Azure Event Hubs, you'll need a subscription.
-If you do not have an existing Azure account, you may sign up for a free trial or use your MSDN subscriber benefits when you [create an account](https://account.windowsazure.com/Home/Index).
+If you do not have an existing Azure account, you may sign up for a free trial or use your MSDN subscriber benefits when you [create an account](https://azure.microsoft.com/free/).
 
 - **Event Hubs namespace with an Event Hub:** To interact with Azure Event Hubs, you'll also need to have a namespace and Event Hub  available.
 If you are not familiar with creating Azure resources, you may wish to follow the step-by-step guide
@@ -93,6 +94,12 @@ its partition; if there are multiple readers on the same partition, then they wi
 For more concepts and deeper discussion, see: [Event Hubs Features](https://docs.microsoft.com/azure/event-hubs/event-hubs-features).
 Also, the concepts for AMQP are well documented in [OASIS Advanced Messaging Queuing Protocol (AMQP) Version 1.0](https://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-overview-v1.0-os.html).
 
+### Thread safety
+
+We do not guarantee that the EventHubProducerClient or EventHubConsumerClient are thread-safe. We do not recommend reusing these instances across threads. It is up to the running application to use these classes in a thread-safe manner.
+
+The data model type, `EventDataBatch` is not thread-safe. It should not be shared across threads nor used concurrently with client methods.
+
 ## Examples
 
 The following sections provide several code snippets covering some of the most common Event Hubs tasks, including:
@@ -112,37 +119,41 @@ The following sections provide several code snippets covering some of the most c
 Get the partition ids of an Event Hub.
 
 ```python
+import os
 from azure.eventhub import EventHubConsumerClient
+from azure.identity import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
-consumer_group = '<< CONSUMER GROUP >>'
-eventhub_name = '<< NAME OF THE EVENT HUB >>'
-client = EventHubConsumerClient.from_connection_string(connection_str, consumer_group, eventhub_name=eventhub_name)
-partition_ids = client.get_partition_ids()
+FULLY_QUALIFIED_NAMESPACE = os.environ["EVENT_HUB_HOSTNAME"]
+EVENTHUB_NAME = os.environ['EVENT_HUB_NAME']
+
+consumer_client = EventHubConsumerClient(
+    fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,
+    consumer_group='$Default',
+    eventhub_name=EVENTHUB_NAME,
+    credential=DefaultAzureCredential(),
+)
+
+with consumer_client:
+    pass # consumer_client is now ready to be used.
 ```
 
 ### Publish events to an Event Hub
 
 Use the `create_batch` method on `EventHubProducerClient` to create an `EventDataBatch` object which can then be sent using the `send_batch` method.
 Events may be added to the `EventDataBatch` using the `add` method until the maximum batch size limit in bytes has been reached.
+
+<!-- SNIPPET:send.send_event_data_batch -->
+
 ```python
-from azure.eventhub import EventHubProducerClient, EventData
-
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
-eventhub_name = '<< NAME OF THE EVENT HUB >>'
-client = EventHubProducerClient.from_connection_string(connection_str, eventhub_name=eventhub_name)
-
-event_data_batch = client.create_batch()
-can_add = True
-while can_add:
-    try:
-        event_data_batch.add(EventData('Message inside EventBatchData'))
-    except ValueError:
-        can_add = False  # EventDataBatch object reaches max_size.
-
-with client:
-    client.send_batch(event_data_batch)
+def send_event_data_batch(producer):
+    # Without specifying partition_id or partition_key
+    # the events will be distributed to available partitions via round-robin.
+    event_data_batch = producer.create_batch()
+    event_data_batch.add(EventData('Single message'))
+    producer.send_batch(event_data_batch)
 ```
+
+<!-- END SNIPPET -->
 
 ### Consume events from an Event Hub
 
@@ -152,11 +163,17 @@ the `EventHubConsumerClient.receive` method will be of use as follows:
 ```python
 import logging
 from azure.eventhub import EventHubConsumerClient
+from azure.identity import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
 consumer_group = '<< CONSUMER GROUP >>'
 eventhub_name = '<< NAME OF THE EVENT HUB >>'
-client = EventHubConsumerClient.from_connection_string(connection_str, consumer_group, eventhub_name=eventhub_name)
+client = EventHubConsumerClient(
+    fully_qualified_namespace=fully_qualified_namespace,
+    eventhub_name=eventhub_name,
+    consumer_group=consumer_group,
+    credential=DefaultAzureCredential(),
+)
 
 logger = logging.getLogger("azure.eventhub")
 logging.basicConfig(level=logging.INFO)
@@ -182,11 +199,17 @@ triggers the callback on a batch of events, attempting to receive a number at a 
 ```python
 import logging
 from azure.eventhub import EventHubConsumerClient
+from azure.identity import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
 consumer_group = '<< CONSUMER GROUP >>'
 eventhub_name = '<< NAME OF THE EVENT HUB >>'
-client = EventHubConsumerClient.from_connection_string(connection_str, consumer_group, eventhub_name=eventhub_name)
+client = EventHubConsumerClient(
+    fully_qualified_namespace=fully_qualified_namespace,
+    eventhub_name=eventhub_name,
+    consumer_group=consumer_group,
+    credential=DefaultAzureCredential(),
+)
 
 logger = logging.getLogger("azure.eventhub")
 logging.basicConfig(level=logging.INFO)
@@ -210,11 +233,11 @@ Use the `create_batch` method on `EventHubProducer` to create an `EventDataBatch
 Events may be added to the `EventDataBatch` using the `add` method until the maximum batch size limit in bytes has been reached.
 ```python
 import asyncio
-from azure.eventhub.aio import EventHubProducerClient  # The package name suffixed with ".aio" for async
+from azure.eventhub.aio import EventHubProducerClient   # The package name suffixed with ".aio" for async
 from azure.eventhub import EventData
+from azure.identity.aio import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
-consumer_group = '<< CONSUMER GROUP >>'
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
 eventhub_name = '<< NAME OF THE EVENT HUB >>'
 
 async def create_batch(client):
@@ -228,7 +251,11 @@ async def create_batch(client):
     return event_data_batch
 
 async def send():
-    client = EventHubProducerClient.from_connection_string(connection_str, eventhub_name=eventhub_name)
+    client = EventHubProducerClient(
+        fully_qualified_namespace=fully_qualified_namespace,
+        eventhub_name=eventhub_name,
+        credential=DefaultAzureCredential(),
+    )
     batch_data = await create_batch(client)
     async with client:
         await client.send_batch(batch_data)
@@ -247,8 +274,9 @@ aio, one would need the following:
 import logging
 import asyncio
 from azure.eventhub.aio import EventHubConsumerClient
+from azure.identity.aio import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
 consumer_group = '<< CONSUMER GROUP >>'
 eventhub_name = '<< NAME OF THE EVENT HUB >>'
 
@@ -260,7 +288,12 @@ async def on_event(partition_context, event):
     await partition_context.update_checkpoint(event)
 
 async def receive():
-    client = EventHubConsumerClient.from_connection_string(connection_str, consumer_group, eventhub_name=eventhub_name)
+    client = EventHubConsumerClient(
+        fully_qualified_namespace=fully_qualified_namespace,
+        eventhub_name=eventhub_name,
+        consumer_group=consumer_group,
+        credential=DefaultAzureCredential(),
+    )
     async with client:
         await client.receive(
             on_event=on_event,
@@ -283,8 +316,9 @@ the same within asyncio as follows:
 import logging
 import asyncio
 from azure.eventhub.aio import EventHubConsumerClient
+from azure.identity.aio import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
 consumer_group = '<< CONSUMER GROUP >>'
 eventhub_name = '<< NAME OF THE EVENT HUB >>'
 
@@ -296,7 +330,12 @@ async def on_event_batch(partition_context, events):
     await partition_context.update_checkpoint()
 
 async def receive_batch():
-    client = EventHubConsumerClient.from_connection_string(connection_str, consumer_group, eventhub_name=eventhub_name)
+    client = EventHubConsumerClient(
+        fully_qualified_namespace=fully_qualified_namespace,
+        eventhub_name=eventhub_name,
+        consumer_group=consumer_group,
+        credential=DefaultAzureCredential(),
+    )
     async with client:
         await client.receive_batch(
             on_event_batch=on_event_batch,
@@ -338,11 +377,12 @@ import asyncio
 
 from azure.eventhub.aio import EventHubConsumerClient
 from azure.eventhub.extensions.checkpointstoreblobaio import BlobCheckpointStore
+from azure.identity.aio import DefaultAzureCredential
 
-connection_str = '<< CONNECTION STRING FOR THE EVENT HUBS NAMESPACE >>'
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
 consumer_group = '<< CONSUMER GROUP >>'
 eventhub_name = '<< NAME OF THE EVENT HUB >>'
-storage_connection_str = '<< CONNECTION STRING FOR THE STORAGE >>'
+blob_account_url = '<< STORAGE ACCOUNT URL >>'
 container_name = '<<NAME OF THE BLOB CONTAINER>>'
 
 async def on_event(partition_context, event):
@@ -356,11 +396,16 @@ async def receive(client):
     )
 
 async def main():
-    checkpoint_store = BlobCheckpointStore.from_connection_string(storage_connection_str, container_name)
-    client = EventHubConsumerClient.from_connection_string(
-        connection_str,
-        consumer_group,
+    checkpoint_store = BlobCheckpointStore(
+        blob_account_url=blob_account_url,
+        container_name=container_name,
+        credential=DefaultAzureCredential()
+    )
+    client = EventHubConsumerClient(
+        fully_qualified_namespace=fully_qualified_namespace,
         eventhub_name=eventhub_name,
+        credential=DefaultAzureCredential(),
+        consumer_group=consumer_group,
         checkpoint_store=checkpoint_store,  # For load balancing and checkpoint. Leave None for no load balancing
     )
     async with client:
@@ -395,34 +440,31 @@ Refer to [IoT Hub Connection String Sample](https://github.com/Azure/azure-sdk-f
 
 ## Troubleshooting
 
-### General
-
-The Event Hubs APIs generate the following exceptions in azure.eventhub.exceptions
-
-- **AuthenticationError:** Failed to authenticate because of wrong address, SAS policy/key pair, SAS token or azure identity.
-- **ConnectError:** Failed to connect to the EventHubs. The AuthenticationError is a type of ConnectError.
-- **ConnectionLostError:** Lose connection after a connection has been built.
-- **EventDataError:** The EventData to be sent fails data validation. For instance, this error is raised if you try to send an EventData that is already sent.
-- **EventDataSendError:** The Eventhubs service responds with an error when an EventData is sent.
-- **OperationTimeoutError:** EventHubConsumer.send() times out.
-- **EventHubError:** All other Eventhubs related errors. It is also the root error class of all the errors described above.
+See the `azure-eventhub` [troubleshooting guide](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventhub/azure-eventhub/TROUBLESHOOTING.md) for details on how to diagnose various failure scenarios.
 
 ### Logging
 
 - Enable `azure.eventhub` logger to collect traces from the library.
-- Enable `uamqp` logger to collect traces from the underlying uAMQP library.
 - Enable AMQP frame level trace by setting `logging_enable=True` when creating the client.
-- There may be cases where you consider the `uamqp` logging to be too verbose. To suppress unnecessary logging, add the following snippet to the top of your code:
+- Refer to [this guide](https://learn.microsoft.com/azure/developer/python/sdk/azure-sdk-logging) on configuring logging for Azure libraries for Python for additional information.
+
 ```python
 import logging
+import sys
 
-# The logging levels below may need to be adjusted based on the logging that you want to suppress.
-uamqp_logger = logging.getLogger('uamqp')
-uamqp_logger.setLevel(logging.ERROR)
+handler = logging.StreamHandler(stream=sys.stdout)
+log_fmt = logging.Formatter(fmt="%(asctime)s | %(threadName)s | %(levelname)s | %(name)s | %(message)s")
+handler.setFormatter(log_fmt)
+logger = logging.getLogger('azure.eventhub')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
-# or even further fine-grained control, suppressing the warnings in uamqp.connection module
-uamqp_connection_logger = logging.getLogger('uamqp.connection')
-uamqp_connection_logger.setLevel(logging.ERROR)
+...
+
+from azure.eventhub import EventHubProducerClient, EventHubConsumerClient
+
+producer = EventHubProducerClient(..., logging_enable=True)
+consumer = EventHubConsumerClient(..., logging_enable=True)
 ```
 
 ## Next steps
@@ -440,12 +482,52 @@ Reference documentation is available [here](https://azuresdkdocs.blob.core.windo
 The EventHubs SDK integrates nicely with the [Schema Registry][schemaregistry_service] service and [Avro][avro].
 For more information, please refer to [Schema Registry SDK][schemaregistry_repo] and [Schema Registry Avro Encoder SDK][schemaregistry_avroencoder_repo].
 
+### Pure Python AMQP Transport and Backward Compatibility Support
+
+The Azure Event Hubs client library is now based on a pure Python AMQP implementation. `uAMQP` has been removed as required dependency.
+
+To use `uAMQP` as the underlying transport:
+
+1. Install `uamqp` with pip.
+
+```
+$ pip install uamqp 
+```
+
+2. Pass `uamqp_transport=True` during client construction.
+
+```python
+from azure.eventhub import EventHubProducerClient, EventHubConsumerClient
+from azure.identity import DefaultAzureCredential
+
+fully_qualified_namespace = '<< EVENT HUBS FULLY QUALIFIED NAMESPACE >>'
+consumer_group = '<< CONSUMER GROUP >>'
+eventhub_name = '<< NAME OF THE EVENT HUB >>'
+
+client = EventHubProducerClient(
+    fully_qualified_namespace=fully_qualified_namespace,
+    eventhub_name=eventhub_name,
+    credential=DefaultAzureCredential(),
+    uamqp_transport=True
+)
+client = EventHubConsumerClient(
+    fully_qualified_namespace=fully_qualified_namespace,
+    eventhub_name=eventhub_name,
+    credential=DefaultAzureCredential(),
+    consumer_group=consumer_group,
+    uamqp_transport=True
+)
+```
+
+Note: The `message` attribute on `EventData`/`EventDataBatch`, which previously exposed the `uamqp.Message`, has been deprecated.
+ The "Legacy" objects returned by `EventData.message`/`EventDataBatch.message` have been introduced to help facilitate the transition.
+
 ### Building uAMQP wheel from source
 
-`azure-eventhub` depends on the [uAMQP](https://pypi.org/project/uamqp/) for the AMQP protocol implementation.
-uAMQP wheels are provided for most major operating systems and will be installed automatically when installing `azure-eventhub`.
+If [uAMQP](https://pypi.org/project/uamqp/) is intended to be used as the underlying AMQP protocol implementation for `azure-eventhub`,
+uAMQP wheels can be found for most major operating systems.
 
-If you're running on a platform for which uAMQP wheels are not provided, please follow
+If you intend to use `uAMQP` and you're running on a platform for which uAMQP wheels are not provided, please follow
  the [uAMQP Installation](https://github.com/Azure/azure-uamqp-python#installation) guidance to install from source.
 
 ### Provide Feedback

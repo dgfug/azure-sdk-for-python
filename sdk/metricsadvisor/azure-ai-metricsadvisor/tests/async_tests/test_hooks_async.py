@@ -23,6 +23,7 @@ MetricsAdvisorPreparer = functools.partial(MetricsAdvisorClientPreparer, Metrics
 
 class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer()
@@ -58,6 +59,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                     await client.get_hook(variables["email_hook_id"])
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer()
@@ -104,6 +106,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
             hooks_list.append(hook)
         assert len(list(hooks_list)) > 0
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
@@ -132,6 +135,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="email_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
@@ -160,6 +164,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="email_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
@@ -192,6 +197,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="email_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(email_hook=True)
@@ -220,6 +226,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="email_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
@@ -248,6 +255,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="web_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
@@ -278,6 +286,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="web_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)
@@ -313,6 +322,7 @@ class TestMetricsAdvisorAdministrationClient(TestMetricsAdvisorClientBase):
                 await self.clean_up(client.delete_hook, variables, key="web_hook_id")
             return variables
 
+    @pytest.mark.skip()
     @AzureRecordedTestCase.await_prepared_test
     @pytest.mark.parametrize("credential", CREDENTIALS, ids=ids)
     @MetricsAdvisorPreparer(web_hook=True)

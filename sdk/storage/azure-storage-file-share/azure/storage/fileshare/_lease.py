@@ -3,12 +3,11 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
+# pylint: disable=docstring-keyword-should-match-keyword-only
 
 import uuid
 
-from typing import (  # pylint: disable=unused-import
-    Union, Optional, Any, TypeVar, TYPE_CHECKING
-)
+from typing import Union, Optional, Any, TYPE_CHECKING
 
 from azure.core.tracing.decorator import distributed_trace
 from azure.core.exceptions import HttpResponseError
@@ -18,24 +17,13 @@ from ._generated.operations import FileOperations, ShareOperations
 
 if TYPE_CHECKING:
     from datetime import datetime
-    ShareFileClient = TypeVar("ShareFileClient")
-    ShareClient = TypeVar("ShareClient")
+    from azure.storage.fileshare import ShareClient, ShareFileClient
 
 
-class ShareLeaseClient(object):
+class ShareLeaseClient(object):  # pylint: disable=client-accepts-api-version-keyword
     """Creates a new ShareLeaseClient.
 
     This client provides lease operations on a ShareClient or ShareFileClient.
-
-    :ivar str id:
-        The ID of the lease currently being maintained. This will be `None` if no
-        lease has yet been acquired.
-    :ivar str etag:
-        The ETag of the lease currently being maintained. This will be `None` if no
-        lease has yet been acquired or modified.
-    :ivar ~datetime.datetime last_modified:
-        The last modified timestamp of the lease currently being maintained.
-        This will be `None` if no lease has yet been acquired or modified.
 
     :param client:
         The client of the file or share to lease.
@@ -45,15 +33,26 @@ class ShareLeaseClient(object):
         A string representing the lease ID of an existing lease. This value does not
         need to be specified in order to acquire a new lease, or break one.
     """
-    def __init__(
-            self, client, lease_id=None
-    ):  # pylint: disable=missing-client-constructor-parameter-credential,missing-client-constructor-parameter-kwargs
-        # type: (Union[ShareFileClient, ShareClient], Optional[str]) -> None
+
+    id: str
+    """The ID of the lease currently being maintained. This will be `None` if no
+        lease has yet been acquired."""
+    etag: Optional[str]
+    """The ETag of the lease currently being maintained. This will be `None` if no
+        lease has yet been acquired or modified."""
+    last_modified: Optional["datetime"]
+    """The last modified timestamp of the lease currently being maintained.
+        This will be `None` if no lease has yet been acquired or modified."""
+
+    def __init__(  # pylint: disable=missing-client-constructor-parameter-credential, missing-client-constructor-parameter-kwargs
+        self, client: Union["ShareFileClient", "ShareClient"],
+        lease_id: Optional[str] = None
+    ) -> None:
         self.id = lease_id or str(uuid.uuid4())
         self.last_modified = None
         self.etag = None
         if hasattr(client, 'file_name'):
-            self._client = client._client.file  # type: ignore # pylint: disable=protected-access
+            self._client = client._client.file  # type: ignore
             self._snapshot = None
         elif hasattr(client, 'share_name'):
             self._client = client._client.share
@@ -64,12 +63,11 @@ class ShareLeaseClient(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any):
         self.release()
 
     @distributed_trace
-    def acquire(self, **kwargs):
-        # type: (**Any) -> None
+    def acquire(self, **kwargs: Any) -> None:
         """Requests a new lease. This operation establishes and manages a lock on a
         file or share for write and delete operations. If the file or share does not have an active lease,
         the File or Share service creates a lease on the file or share. If the file has an active lease,
@@ -86,7 +84,11 @@ class ShareLeaseClient(object):
             using renew or change. Default is -1 (infinite share lease).
 
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-file-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share
+            #other-client--per-operation-configuration>`__.
         :rtype: None
         """
         try:
@@ -101,13 +103,12 @@ class ShareLeaseClient(object):
                 **kwargs)
         except HttpResponseError as error:
             process_storage_error(error)
-        self.id = response.get('lease_id')  # type: str
-        self.last_modified = response.get('last_modified')   # type: datetime
-        self.etag = response.get('etag')  # type: str
+        self.id = response.get('lease_id')
+        self.last_modified = response.get('last_modified')
+        self.etag = response.get('etag')
 
     @distributed_trace
-    def renew(self, **kwargs):
-        # type: (Any) -> None
+    def renew(self, **kwargs: Any) -> None:
         """Renews the share lease.
 
         The share lease can be renewed if the lease ID specified in the
@@ -119,7 +120,11 @@ class ShareLeaseClient(object):
         .. versionadded:: 12.6.0
 
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-file-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share
+            #other-client--per-operation-configuration>`__.
         :return: None
         """
         if isinstance(self._client, FileOperations):
@@ -133,19 +138,22 @@ class ShareLeaseClient(object):
                 **kwargs)
         except HttpResponseError as error:
             process_storage_error(error)
-        self.etag = response.get('etag')  # type: str
-        self.id = response.get('lease_id')  # type: str
-        self.last_modified = response.get('last_modified')   # type: datetime
+        self.etag = response.get('etag')
+        self.id = response.get('lease_id')
+        self.last_modified = response.get('last_modified')
 
     @distributed_trace
-    def release(self, **kwargs):
-        # type: (Any) -> None
+    def release(self, **kwargs: Any) -> None:
         """Releases the lease. The lease may be released if the lease ID specified on the request matches
         that associated with the share or file. Releasing the lease allows another client to immediately acquire
         the lease for the share or file as soon as the release is complete.
 
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-file-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share
+            #other-client--per-operation-configuration>`__.
         :return: None
         """
         try:
@@ -158,13 +166,12 @@ class ShareLeaseClient(object):
                 **kwargs)
         except HttpResponseError as error:
             process_storage_error(error)
-        self.etag = response.get('etag')  # type: str
-        self.id = response.get('lease_id')  # type: str
-        self.last_modified = response.get('last_modified')   # type: datetime
+        self.etag = response.get('etag')
+        self.id = response.get('lease_id')
+        self.last_modified = response.get('last_modified')
 
     @distributed_trace
-    def change(self, proposed_lease_id, **kwargs):
-        # type: (str, Any) -> None
+    def change(self, proposed_lease_id: str, **kwargs: Any) -> None:
         """ Changes the lease ID of an active lease. A change must include the current lease ID in x-ms-lease-id and
         a new lease ID in x-ms-proposed-lease-id.
 
@@ -172,7 +179,11 @@ class ShareLeaseClient(object):
             Proposed lease ID, in a GUID string format. The File or Share service will raise an error
             (Invalid request) if the proposed lease ID is not in the correct format.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-file-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share
+            #other-client--per-operation-configuration>`__.
         :return: None
         """
         try:
@@ -186,13 +197,12 @@ class ShareLeaseClient(object):
                 **kwargs)
         except HttpResponseError as error:
             process_storage_error(error)
-        self.etag = response.get('etag')  # type: str
-        self.id = response.get('lease_id')  # type: str
-        self.last_modified = response.get('last_modified')   # type: datetime
+        self.etag = response.get('etag')
+        self.id = response.get('lease_id')
+        self.last_modified = response.get('last_modified')
 
     @distributed_trace
-    def break_lease(self, **kwargs):
-        # type: (Any) -> int
+    def break_lease(self, **kwargs: Any) -> int:
         """Force breaks the lease if the file or share has an active lease. Any authorized request can break the lease;
         the request is not required to specify a matching lease ID. An infinite lease breaks immediately.
 
@@ -215,7 +225,11 @@ class ShareLeaseClient(object):
             .. versionadded:: 12.6.0
 
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-file-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-share
+            #other-client--per-operation-configuration>`__.
         :return: Approximate time remaining in the lease period, in seconds.
         :rtype: int
         """

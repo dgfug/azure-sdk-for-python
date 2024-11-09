@@ -7,49 +7,72 @@
 # --------------------------------------------------------------------------
 
 from enum import Enum
-from six import with_metaclass
 from azure.core import CaseInsensitiveEnumMeta
 
 
-class ActionsRequired(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Any action that is required beyond basic workflow (approve/ reject/ disconnect)
-    """
+class ActionsRequired(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Any action that is required beyond basic workflow (approve/ reject/ disconnect)."""
 
     NONE = "None"
     RECREATE = "Recreate"
 
-class ConfigurationResourceType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The resource type to check for name availability.
+
+class AuthenticationMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The data plane proxy authentication mode. This property manages the authentication mode of
+    request to the data plane resources.
     """
+
+    LOCAL = "Local"
+    """The local authentication mode. Users are not required to have data plane permissions if local
+    authentication is not disabled."""
+    PASS_THROUGH = "Pass-through"
+    """The pass-through authentication mode. User identity will be passed through from Azure Resource
+    Manager (ARM), requiring user to have data plane action permissions (Available via App
+    Configuration Data Owner/ App Configuration Data Reader)."""
+
+
+class CompositionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The composition type describes how the key-values within the snapshot are composed. The 'key'
+    composition type ensures there are no two key-values containing the same key. The 'key_label'
+    composition type ensures there are no two key-values containing the same key and label.
+    """
+
+    KEY = "Key"
+    KEY_LABEL = "Key_Label"
+
+
+class ConfigurationResourceType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The resource type to check for name availability."""
 
     MICROSOFT_APP_CONFIGURATION_CONFIGURATION_STORES = "Microsoft.AppConfiguration/configurationStores"
 
-class ConnectionStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The private link service connection status.
-    """
+
+class ConnectionStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The private link service connection status."""
 
     PENDING = "Pending"
     APPROVED = "Approved"
     REJECTED = "Rejected"
     DISCONNECTED = "Disconnected"
 
-class CreatedByType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class CreateMode(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Indicates whether the configuration store need to be recovered.
-    """
+
+class CreateMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Indicates whether the configuration store need to be recovered."""
 
     RECOVER = "Recover"
     DEFAULT = "Default"
 
-class IdentityType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class IdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The type of managed identity used. The type 'SystemAssigned, UserAssigned' includes both an
     implicitly created identity and a set of user-assigned identities. The type 'None' will remove
     any identities.
@@ -60,9 +83,22 @@ class IdentityType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     USER_ASSIGNED = "UserAssigned"
     SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned, UserAssigned"
 
-class ProvisioningState(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The provisioning state of the configuration store.
+
+class PrivateLinkDelegation(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The data plane proxy private link delegation. This property manages if a request from delegated
+    Azure Resource Manager (ARM) private link is allowed when the data plane resource requires
+    private link.
     """
+
+    ENABLED = "Enabled"
+    """Azure Resource Manager (ARM) private endpoint is required if the resource requires private
+    link."""
+    DISABLED = "Disabled"
+    """Request is denied if the resource requires private link."""
+
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The provisioning state of the configuration store."""
 
     CREATING = "Creating"
     UPDATING = "Updating"
@@ -71,10 +107,30 @@ class ProvisioningState(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     FAILED = "Failed"
     CANCELED = "Canceled"
 
-class PublicNetworkAccess(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class PublicNetworkAccess(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Control permission for data plane traffic coming from public networks while private endpoint is
     enabled.
     """
 
     ENABLED = "Enabled"
     DISABLED = "Disabled"
+
+
+class ReplicaProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The provisioning state of the replica."""
+
+    CREATING = "Creating"
+    SUCCEEDED = "Succeeded"
+    DELETING = "Deleting"
+    FAILED = "Failed"
+    CANCELED = "Canceled"
+
+
+class SnapshotStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current status of the snapshot."""
+
+    PROVISIONING = "Provisioning"
+    READY = "Ready"
+    ARCHIVED = "Archived"
+    FAILED = "Failed"

@@ -7,46 +7,48 @@
 # --------------------------------------------------------------------------
 
 from enum import Enum
-from six import with_metaclass
 from azure.core import CaseInsensitiveEnumMeta
 
 
-class AzureResourceType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of the Azure resource the hostname is assigned to.
-    """
+class AzureResourceType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of the Azure resource the hostname is assigned to."""
 
     WEBSITE = "Website"
     TRAFFIC_MANAGER = "TrafficManager"
 
-class CustomHostNameDnsRecordType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of the DNS record.
-    """
+
+class CustomHostNameDnsRecordType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of the DNS record."""
 
     C_NAME = "CName"
     A = "A"
 
-class DnsType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Current DNS type
-    """
+
+class DnsType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Current DNS type."""
 
     AZURE_DNS = "AzureDns"
     DEFAULT_DOMAIN_REGISTRAR_DNS = "DefaultDomainRegistrarDns"
 
-class DomainPatchResourcePropertiesDomainNotRenewableReasonsItem(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class DomainPatchResourcePropertiesDomainNotRenewableReasonsItem(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """DomainPatchResourcePropertiesDomainNotRenewableReasonsItem."""
 
     REGISTRATION_STATUS_NOT_SUPPORTED_FOR_RENEWAL = "RegistrationStatusNotSupportedForRenewal"
     EXPIRATION_NOT_IN_RENEWAL_TIME_RANGE = "ExpirationNotInRenewalTimeRange"
     SUBSCRIPTION_NOT_ACTIVE = "SubscriptionNotActive"
 
-class DomainPropertiesDomainNotRenewableReasonsItem(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class DomainPropertiesDomainNotRenewableReasonsItem(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """DomainPropertiesDomainNotRenewableReasonsItem."""
 
     REGISTRATION_STATUS_NOT_SUPPORTED_FOR_RENEWAL = "RegistrationStatusNotSupportedForRenewal"
     EXPIRATION_NOT_IN_RENEWAL_TIME_RANGE = "ExpirationNotInRenewalTimeRange"
     SUBSCRIPTION_NOT_ACTIVE = "SubscriptionNotActive"
 
-class DomainStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Domain registration status.
-    """
+
+class DomainStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Domain registration status."""
 
     ACTIVE = "Active"
     AWAITING = "Awaiting"
@@ -70,7 +72,8 @@ class DomainStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     UPDATED = "Updated"
     JSON_CONVERTER_FAILED = "JsonConverterFailed"
 
-class DomainType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class DomainType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Valid values are Regular domain: Azure will charge the full price of domain registration,
     SoftDeleted: Purchasing this domain will simply restore it and this operation will not cost
     anything.
@@ -79,16 +82,16 @@ class DomainType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     REGULAR = "Regular"
     SOFT_DELETED = "SoftDeleted"
 
-class HostNameType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of the hostname.
-    """
+
+class HostNameType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of the hostname."""
 
     VERIFIED = "Verified"
     MANAGED = "Managed"
 
-class ProvisioningState(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Domain provisioning state.
-    """
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Domain provisioning state."""
 
     SUCCEEDED = "Succeeded"
     FAILED = "Failed"

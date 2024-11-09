@@ -6,61 +6,52 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import Any, Optional, TYPE_CHECKING
+from copy import deepcopy
+from typing import Any, Awaitable, TYPE_CHECKING
 
+from azure.core.pipeline import policies
+from azure.core.rest import AsyncHttpResponse, HttpRequest
 from azure.mgmt.core import AsyncARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import AsyncARMAutoResourceProviderRegistrationPolicy
+
+from .. import models as _models
+from .._serialization import Deserializer, Serializer
+from ._configuration import CdnManagementClientConfiguration
+from .operations import (
+    AFDCustomDomainsOperations,
+    AFDEndpointsOperations,
+    AFDOriginGroupsOperations,
+    AFDOriginsOperations,
+    AFDProfilesOperations,
+    CdnManagementClientOperationsMixin,
+    CustomDomainsOperations,
+    EdgeNodesOperations,
+    EndpointsOperations,
+    LogAnalyticsOperations,
+    ManagedRuleSetsOperations,
+    Operations,
+    OriginGroupsOperations,
+    OriginsOperations,
+    PoliciesOperations,
+    ProfilesOperations,
+    ResourceUsageOperations,
+    RoutesOperations,
+    RuleSetsOperations,
+    RulesOperations,
+    SecretsOperations,
+    SecurityPoliciesOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials_async import AsyncTokenCredential
 
-from ._configuration import CdnManagementClientConfiguration
-from .operations import ProfilesOperations
-from .operations import EndpointsOperations
-from .operations import OriginsOperations
-from .operations import OriginGroupsOperations
-from .operations import CustomDomainsOperations
-from .operations import CdnManagementClientOperationsMixin
-from .operations import ResourceUsageOperations
-from .operations import Operations
-from .operations import EdgeNodesOperations
-from .operations import AFDProfilesOperations
-from .operations import AFDCustomDomainsOperations
-from .operations import AFDEndpointsOperations
-from .operations import AFDOriginGroupsOperations
-from .operations import AFDOriginsOperations
-from .operations import RoutesOperations
-from .operations import RuleSetsOperations
-from .operations import RulesOperations
-from .operations import SecurityPoliciesOperations
-from .operations import SecretsOperations
-from .operations import ValidateOperations
-from .operations import LogAnalyticsOperations
-from .operations import PoliciesOperations
-from .operations import ManagedRuleSetsOperations
-from .. import models
 
-
-class CdnManagementClient(CdnManagementClientOperationsMixin):
+class CdnManagementClient(
+    CdnManagementClientOperationsMixin
+):  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """Cdn Management Client.
 
-    :ivar profiles: ProfilesOperations operations
-    :vartype profiles: azure.mgmt.cdn.aio.operations.ProfilesOperations
-    :ivar endpoints: EndpointsOperations operations
-    :vartype endpoints: azure.mgmt.cdn.aio.operations.EndpointsOperations
-    :ivar origins: OriginsOperations operations
-    :vartype origins: azure.mgmt.cdn.aio.operations.OriginsOperations
-    :ivar origin_groups: OriginGroupsOperations operations
-    :vartype origin_groups: azure.mgmt.cdn.aio.operations.OriginGroupsOperations
-    :ivar custom_domains: CustomDomainsOperations operations
-    :vartype custom_domains: azure.mgmt.cdn.aio.operations.CustomDomainsOperations
-    :ivar resource_usage: ResourceUsageOperations operations
-    :vartype resource_usage: azure.mgmt.cdn.aio.operations.ResourceUsageOperations
-    :ivar operations: Operations operations
-    :vartype operations: azure.mgmt.cdn.aio.operations.Operations
-    :ivar edge_nodes: EdgeNodesOperations operations
-    :vartype edge_nodes: azure.mgmt.cdn.aio.operations.EdgeNodesOperations
     :ivar afd_profiles: AFDProfilesOperations operations
     :vartype afd_profiles: azure.mgmt.cdn.aio.operations.AFDProfilesOperations
     :ivar afd_custom_domains: AFDCustomDomainsOperations operations
@@ -81,83 +72,128 @@ class CdnManagementClient(CdnManagementClientOperationsMixin):
     :vartype security_policies: azure.mgmt.cdn.aio.operations.SecurityPoliciesOperations
     :ivar secrets: SecretsOperations operations
     :vartype secrets: azure.mgmt.cdn.aio.operations.SecretsOperations
-    :ivar validate: ValidateOperations operations
-    :vartype validate: azure.mgmt.cdn.aio.operations.ValidateOperations
     :ivar log_analytics: LogAnalyticsOperations operations
     :vartype log_analytics: azure.mgmt.cdn.aio.operations.LogAnalyticsOperations
+    :ivar profiles: ProfilesOperations operations
+    :vartype profiles: azure.mgmt.cdn.aio.operations.ProfilesOperations
+    :ivar endpoints: EndpointsOperations operations
+    :vartype endpoints: azure.mgmt.cdn.aio.operations.EndpointsOperations
+    :ivar origins: OriginsOperations operations
+    :vartype origins: azure.mgmt.cdn.aio.operations.OriginsOperations
+    :ivar origin_groups: OriginGroupsOperations operations
+    :vartype origin_groups: azure.mgmt.cdn.aio.operations.OriginGroupsOperations
+    :ivar custom_domains: CustomDomainsOperations operations
+    :vartype custom_domains: azure.mgmt.cdn.aio.operations.CustomDomainsOperations
+    :ivar resource_usage: ResourceUsageOperations operations
+    :vartype resource_usage: azure.mgmt.cdn.aio.operations.ResourceUsageOperations
+    :ivar operations: Operations operations
+    :vartype operations: azure.mgmt.cdn.aio.operations.Operations
+    :ivar edge_nodes: EdgeNodesOperations operations
+    :vartype edge_nodes: azure.mgmt.cdn.aio.operations.EdgeNodesOperations
     :ivar policies: PoliciesOperations operations
     :vartype policies: azure.mgmt.cdn.aio.operations.PoliciesOperations
     :ivar managed_rule_sets: ManagedRuleSetsOperations operations
     :vartype managed_rule_sets: azure.mgmt.cdn.aio.operations.ManagedRuleSetsOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials_async.AsyncTokenCredential
-    :param subscription_id: Azure Subscription ID.
+    :param subscription_id: Azure Subscription ID. Required.
     :type subscription_id: str
-    :param str base_url: Service URL
-    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no Retry-After header is present.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
+    :keyword api_version: Api Version. Default value is "2024-02-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
+    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
+     Retry-After header is present.
     """
 
     def __init__(
         self,
         credential: "AsyncTokenCredential",
         subscription_id: str,
-        base_url: Optional[str] = None,
+        base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        if not base_url:
-            base_url = 'https://management.azure.com'
-        self._config = CdnManagementClientConfiguration(credential, subscription_id, **kwargs)
-        self._client = AsyncARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = CdnManagementClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                AsyncARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: AsyncARMPipelineClient = AsyncARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
-        self._serialize.client_side_validation = False
         self._deserialize = Deserializer(client_models)
-
-        self.profiles = ProfilesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.endpoints = EndpointsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.origins = OriginsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.origin_groups = OriginGroupsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.custom_domains = CustomDomainsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.resource_usage = ResourceUsageOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.operations = Operations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.edge_nodes = EdgeNodesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.afd_profiles = AFDProfilesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+        self._serialize.client_side_validation = False
+        self.afd_profiles = AFDProfilesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.afd_custom_domains = AFDCustomDomainsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.afd_endpoints = AFDEndpointsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.afd_endpoints = AFDEndpointsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.afd_origin_groups = AFDOriginGroupsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.afd_origins = AFDOriginsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.routes = RoutesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.rule_sets = RuleSetsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.rules = RulesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.afd_origins = AFDOriginsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.routes = RoutesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.rule_sets = RuleSetsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.rules = RulesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.security_policies = SecurityPoliciesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.secrets = SecretsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.validate = ValidateOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.log_analytics = LogAnalyticsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.policies = PoliciesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.secrets = SecretsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.log_analytics = LogAnalyticsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.profiles = ProfilesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.endpoints = EndpointsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.origins = OriginsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.origin_groups = OriginGroupsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.custom_domains = CustomDomainsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.resource_usage = ResourceUsageOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
+        self.edge_nodes = EdgeNodesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.policies = PoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.managed_rule_sets = ManagedRuleSetsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+
+    def _send_request(
+        self, request: HttpRequest, *, stream: bool = False, **kwargs: Any
+    ) -> Awaitable[AsyncHttpResponse]:
+        """Runs the network request through the client's chained policies.
+
+        >>> from azure.core.rest import HttpRequest
+        >>> request = HttpRequest("GET", "https://www.example.org/")
+        <HttpRequest [GET], url: 'https://www.example.org/'>
+        >>> response = await client._send_request(request)
+        <AsyncHttpResponse: 200 OK>
+
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
+
+        :param request: The network request you want to make. Required.
+        :type request: ~azure.core.rest.HttpRequest
+        :keyword bool stream: Whether the response payload will be streamed. Defaults to False.
+        :return: The response of your network call. Does not do error handling on your response.
+        :rtype: ~azure.core.rest.AsyncHttpResponse
+        """
+
+        request_copy = deepcopy(request)
+        request_copy.url = self._client.format_url(request_copy.url)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
     async def close(self) -> None:
         await self._client.close()
@@ -166,5 +202,5 @@ class CdnManagementClient(CdnManagementClientOperationsMixin):
         await self._client.__aenter__()
         return self
 
-    async def __aexit__(self, *exc_details) -> None:
+    async def __aexit__(self, *exc_details: Any) -> None:
         await self._client.__aexit__(*exc_details)

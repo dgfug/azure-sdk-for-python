@@ -12,13 +12,13 @@ from testcase import FormRecognizerTest
 class TestToDict(FormRecognizerTest):
     def test_bounding_region_to_dict(self):
         model = _models.BoundingRegion(
-            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)], page_number=1
+            polygon=[_models.Point(1, 2), _models.Point(3, 4)], page_number=1
         )
         # d = [p.to_dict() for p in model]
         d = model.to_dict()
         final = {
             "page_number": 1,
-            "bounding_box": [
+            "polygon": [
                 {"x": 1, "y": 2},
                 {
                     "x": 3,
@@ -41,51 +41,55 @@ class TestToDict(FormRecognizerTest):
         }
         assert d == final
 
+    def test_address_value_to_dict(self):
+        model = _models.AddressValue(
+            house_number="123",
+            po_box="4567",
+            road="Contoso Ave",
+            city="Redmond",
+            state="WA",
+            postal_code="98052",
+            country_region="USA",
+            street_address="123 Contoso Ave",
+            unit="unit",
+            city_district="city_district",
+            state_district="state_district",
+            suburb="suburb",
+            house="house",
+            level="level"
+        )
+
+        d = model.to_dict()
+        final = {
+            "house_number": "123",
+            "po_box": "4567",
+            "road": "Contoso Ave",
+            "city": "Redmond",
+            "state": "WA",
+            "postal_code": "98052",
+            "country_region": "USA",
+            "street_address": "123 Contoso Ave",
+            "unit": "unit",
+            "city_district": "city_district",
+            "state_district": "state_district",
+            "suburb": "suburb",
+            "house": "house",
+            "level": "level"
+        }
+        assert d == final
+
     def test_currency_value_to_dict(self):
         model = _models.CurrencyValue(
             amount=5.01,
             symbol="$",
+            code="USD"
         )
 
         d = model.to_dict()
         final = {
             "amount": 5.01,
             "symbol": "$",
-        }
-        assert d == final
-
-    def test_document_content_element_to_dict(self):
-        model = _models.DocumentContentElement(
-            content="sample",
-            bounding_box=[
-                _models.Point(1427.0, 1669.0),
-                _models.Point(1527.0, 1669.0),
-                _models.Point(1527.0, 1698.0),
-                _models.Point(1427.0, 1698.0),
-            ],
-            span=_models.DocumentSpan(
-                offset=5,
-                length=2,
-            ),
-            kind="word",
-            confidence=0.99,
-        )
-
-        d = model.to_dict()
-        final = {
-            "content": "sample",
-            "bounding_box": [
-                {"x": 1427.0, "y": 1669.0},
-                {"x": 1527.0, "y": 1669.0},
-                {"x": 1527.0, "y": 1698.0},
-                {"x": 1427.0, "y": 1698.0},
-            ],
-            "span": {
-                "offset": 5,
-                "length": 2,
-            },
-            "confidence": 0.99,
-            "kind": "word",
+            "code": "USD"
         }
         assert d == final
 
@@ -94,11 +98,11 @@ class TestToDict(FormRecognizerTest):
             doc_type="test:doc",
             bounding_regions=[
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
             ],
@@ -119,14 +123,14 @@ class TestToDict(FormRecognizerTest):
                     content="0.1",
                     bounding_regions=[
                         _models.BoundingRegion(
-                            bounding_box=[
+                            polygon=[
                                 _models.Point(1, 2),
                                 _models.Point(3, 4),
                             ],
                             page_number=1,
                         ),
                         _models.BoundingRegion(
-                            bounding_box=[
+                            polygon=[
                                 _models.Point(1, 2),
                                 _models.Point(3, 4),
                             ],
@@ -156,7 +160,7 @@ class TestToDict(FormRecognizerTest):
             "bounding_regions": [
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -166,7 +170,7 @@ class TestToDict(FormRecognizerTest):
                 },
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -193,7 +197,7 @@ class TestToDict(FormRecognizerTest):
                     "bounding_regions": [
                         {
                             "page_number": 1,
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1, "y": 2},
                                 {
                                     "x": 3,
@@ -203,7 +207,7 @@ class TestToDict(FormRecognizerTest):
                         },
                         {
                             "page_number": 1,
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1, "y": 2},
                                 {
                                     "x": 3,
@@ -230,76 +234,6 @@ class TestToDict(FormRecognizerTest):
 
         assert d == final
 
-    def test_document_entity_to_dict(self):
-        model = _models.DocumentEntity(
-            category="category",
-            sub_category="sub_category",
-            content="content",
-            bounding_regions=[
-                _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
-                    page_number=1,
-                ),
-                _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
-                    page_number=1,
-                ),
-            ],
-            spans=[
-                _models.DocumentSpan(
-                    offset=5,
-                    length=2,
-                ),
-                _models.DocumentSpan(
-                    offset=5,
-                    length=2,
-                ),
-            ],
-            confidence=0.99,
-        )
-
-        d = model.to_dict()
-
-        final = {
-            "category": "category",
-            "sub_category": "sub_category",
-            "content": "content",
-            "bounding_regions": [
-                {
-                    "page_number": 1,
-                    "bounding_box": [
-                        {"x": 1, "y": 2},
-                        {
-                            "x": 3,
-                            "y": 4,
-                        },
-                    ],
-                },
-                {
-                    "page_number": 1,
-                    "bounding_box": [
-                        {"x": 1, "y": 2},
-                        {
-                            "x": 3,
-                            "y": 4,
-                        },
-                    ],
-                },
-            ],
-            "spans": [
-                {
-                    "offset": 5,
-                    "length": 2,
-                },
-                {
-                    "offset": 5,
-                    "length": 2,
-                },
-            ],
-            "confidence": 0.99,
-        }
-        assert d == final
-
     def test_document_field_to_dict(self):
         model = _models.DocumentField(
             value_type="number",
@@ -307,11 +241,11 @@ class TestToDict(FormRecognizerTest):
             content="0.1",
             bounding_regions=[
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
             ],
@@ -337,7 +271,7 @@ class TestToDict(FormRecognizerTest):
             "bounding_regions": [
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -347,7 +281,7 @@ class TestToDict(FormRecognizerTest):
                 },
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -370,16 +304,160 @@ class TestToDict(FormRecognizerTest):
         }
         assert d == final
 
+    def test_document_field_to_dict_none_value_address(self):
+        model = _models.DocumentField(
+            value_type="address",
+            value=None,
+            content="123 Main St",
+            bounding_regions=[
+                _models.BoundingRegion(
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
+                    page_number=1,
+                ),
+                _models.BoundingRegion(
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
+                    page_number=1,
+                ),
+            ],
+            spans=[
+                _models.DocumentSpan(
+                    offset=5,
+                    length=2,
+                ),
+                _models.DocumentSpan(
+                    offset=5,
+                    length=2,
+                ),
+            ],
+            confidence=0.99,
+        )
+
+        d = model.to_dict()
+
+        final = {
+            "value_type": "address",
+            "value": None,
+            "content": "123 Main St",
+            "bounding_regions": [
+                {
+                    "page_number": 1,
+                    "polygon": [
+                        {"x": 1, "y": 2},
+                        {
+                            "x": 3,
+                            "y": 4,
+                        },
+                    ],
+                },
+                {
+                    "page_number": 1,
+                    "polygon": [
+                        {"x": 1, "y": 2},
+                        {
+                            "x": 3,
+                            "y": 4,
+                        },
+                    ],
+                },
+            ],
+            "spans": [
+                {
+                    "offset": 5,
+                    "length": 2,
+                },
+                {
+                    "offset": 5,
+                    "length": 2,
+                },
+            ],
+            "confidence": 0.99,
+        }
+        assert d == final
+        test_from_dict = _models.DocumentField.from_dict(d)
+        assert test_from_dict.value == None
+
+    def test_document_field_to_dict_none_value_currency(self):
+        model = _models.DocumentField(
+            value_type="currency",
+            value=None,
+            content="$1.33",
+            bounding_regions=[
+                _models.BoundingRegion(
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
+                    page_number=1,
+                ),
+                _models.BoundingRegion(
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
+                    page_number=1,
+                ),
+            ],
+            spans=[
+                _models.DocumentSpan(
+                    offset=5,
+                    length=2,
+                ),
+                _models.DocumentSpan(
+                    offset=5,
+                    length=2,
+                ),
+            ],
+            confidence=0.99,
+        )
+
+        d = model.to_dict()
+
+        final = {
+            "value_type": "currency",
+            "value": None,
+            "content": "$1.33",
+            "bounding_regions": [
+                {
+                    "page_number": 1,
+                    "polygon": [
+                        {"x": 1, "y": 2},
+                        {
+                            "x": 3,
+                            "y": 4,
+                        },
+                    ],
+                },
+                {
+                    "page_number": 1,
+                    "polygon": [
+                        {"x": 1, "y": 2},
+                        {
+                            "x": 3,
+                            "y": 4,
+                        },
+                    ],
+                },
+            ],
+            "spans": [
+                {
+                    "offset": 5,
+                    "length": 2,
+                },
+                {
+                    "offset": 5,
+                    "length": 2,
+                },
+            ],
+            "confidence": 0.99,
+        }
+        assert d == final
+        test_from_dict = _models.DocumentField.from_dict(d)
+        assert test_from_dict.value == None
+
     def test_document_key_value_element_to_dict(self):
         model = _models.DocumentKeyValueElement(
             content="content",
             bounding_regions=[
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
             ],
@@ -402,7 +480,7 @@ class TestToDict(FormRecognizerTest):
             "bounding_regions": [
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -412,7 +490,7 @@ class TestToDict(FormRecognizerTest):
                 },
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -441,7 +519,7 @@ class TestToDict(FormRecognizerTest):
                 content="key",
                 bounding_regions=[
                     _models.BoundingRegion(
-                        bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                        polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                         page_number=1,
                     ),
                 ],
@@ -456,7 +534,7 @@ class TestToDict(FormRecognizerTest):
                 content="value",
                 bounding_regions=[
                     _models.BoundingRegion(
-                        bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                        polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                         page_number=1,
                     ),
                 ],
@@ -467,7 +545,7 @@ class TestToDict(FormRecognizerTest):
                     ),
                 ],
             ),
-            confidence=0.89,
+            confidence=0.89
         )
 
         d = model.to_dict()
@@ -478,7 +556,7 @@ class TestToDict(FormRecognizerTest):
                 "bounding_regions": [
                     {
                         "page_number": 1,
-                        "bounding_box": [
+                        "polygon": [
                             {"x": 1, "y": 2},
                             {
                                 "x": 3,
@@ -499,7 +577,7 @@ class TestToDict(FormRecognizerTest):
                 "bounding_regions": [
                     {
                         "page_number": 1,
-                        "bounding_box": [
+                        "polygon": [
                             {"x": 1, "y": 2},
                             {
                                 "x": 3,
@@ -515,7 +593,7 @@ class TestToDict(FormRecognizerTest):
                     },
                 ],
             },
-            "confidence": 0.89,
+            "confidence": 0.89
         }
 
         assert d == final
@@ -523,7 +601,7 @@ class TestToDict(FormRecognizerTest):
     def test_document_line_to_dict(self):
         model = _models.DocumentLine(
             content="sample line",
-            bounding_box=[
+            polygon=[
                 _models.Point(1427.0, 1669.0),
                 _models.Point(1527.0, 1669.0),
                 _models.Point(1527.0, 1698.0),
@@ -540,7 +618,7 @@ class TestToDict(FormRecognizerTest):
         d = model.to_dict()
         final = {
             "content": "sample line",
-            "bounding_box": [
+            "polygon": [
                 {"x": 1427.0, "y": 1669.0},
                 {"x": 1527.0, "y": 1669.0},
                 {"x": 1527.0, "y": 1698.0},
@@ -571,7 +649,7 @@ class TestToDict(FormRecognizerTest):
             words=[
                 _models.DocumentWord(
                     content="example",
-                    bounding_box=[
+                    polygon=[
                         _models.Point(1427.0, 1669.0),
                         _models.Point(1527.0, 1669.0),
                         _models.Point(1527.0, 1698.0),
@@ -587,7 +665,7 @@ class TestToDict(FormRecognizerTest):
             selection_marks=[
                 _models.DocumentSelectionMark(
                     state="unselected",
-                    bounding_box=[
+                    polygon=[
                         _models.Point(1427.0, 1669.0),
                         _models.Point(1527.0, 1669.0),
                         _models.Point(1527.0, 1698.0),
@@ -603,7 +681,7 @@ class TestToDict(FormRecognizerTest):
             lines=[
                 _models.DocumentLine(
                     content="sample line",
-                    bounding_box=[
+                    polygon=[
                         _models.Point(1427.0, 1669.0),
                         _models.Point(1527.0, 1669.0),
                         _models.Point(1527.0, 1698.0),
@@ -617,6 +695,34 @@ class TestToDict(FormRecognizerTest):
                     ],
                 ),
             ],
+            barcodes=[
+                _models.DocumentBarcode(
+                    kind="QRCode",
+                    value="15",
+                    polygon=[
+                        _models.Point(1427.0, 1669.0),
+                        _models.Point(1527.0, 1669.0),
+                        _models.Point(1527.0, 1698.0),
+                        _models.Point(1427.0, 1698.0),
+                    ],
+                    span=_models.DocumentSpan(offset=5, length=2),
+                    confidence=0.8
+                )
+            ],
+            formulas=[
+                _models.DocumentFormula(
+                    kind="inline",
+                    value="2+2=4",
+                    polygon=[
+                        _models.Point(1427.0, 1669.0),
+                        _models.Point(1527.0, 1669.0),
+                        _models.Point(1527.0, 1698.0),
+                        _models.Point(1427.0, 1698.0),
+                    ],
+                    span=_models.DocumentSpan(offset=5, length=2),
+                    confidence=0.8
+                )
+            ]
         )
 
         d = model.to_dict()
@@ -636,7 +742,7 @@ class TestToDict(FormRecognizerTest):
             "words": [
                 {
                     "content": "example",
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1427.0, "y": 1669.0},
                         {"x": 1527.0, "y": 1669.0},
                         {"x": 1527.0, "y": 1698.0},
@@ -647,14 +753,12 @@ class TestToDict(FormRecognizerTest):
                         "length": 2,
                     },
                     "confidence": 0.62,
-                    "kind": "word",
                 },
             ],
             "selection_marks": [
                 {
-                    "content": None,
                     "state": "unselected",
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1427.0, "y": 1669.0},
                         {"x": 1527.0, "y": 1669.0},
                         {"x": 1527.0, "y": 1698.0},
@@ -664,14 +768,13 @@ class TestToDict(FormRecognizerTest):
                         "offset": 5,
                         "length": 2,
                     },
-                    "kind": "selectionMark",
                     "confidence": 1.0,
                 },
             ],
             "lines": [
                 {
                     "content": "sample line",
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1427.0, "y": 1669.0},
                         {"x": 1527.0, "y": 1669.0},
                         {"x": 1527.0, "y": 1698.0},
@@ -685,6 +788,40 @@ class TestToDict(FormRecognizerTest):
                     ],
                 },
             ],
+            "barcodes": [
+                {
+                    "kind": "QRCode",
+                    "polygon": [
+                        {"x": 1427.0, "y": 1669.0},
+                        {"x": 1527.0, "y": 1669.0},
+                        {"x": 1527.0, "y": 1698.0},
+                        {"x": 1427.0, "y": 1698.0}
+                    ],
+                    "confidence": 0.8,
+                    "span": {
+                        "offset": 5,
+                        "length": 2
+                    },
+                    "value": "15"
+                }
+            ],
+            "formulas": [
+                {
+                    "kind": "inline",
+                    "polygon": [
+                        {"x": 1427.0, "y": 1669.0},
+                        {"x": 1527.0, "y": 1669.0},
+                        {"x": 1527.0, "y": 1698.0},
+                        {"x": 1427.0, "y": 1698.0}
+                    ],
+                    "confidence": 0.8,
+                    "span": {
+                        "offset": 5,
+                        "length": 2
+                    },
+                    "value": "2+2=4"
+                }
+            ]
         }
 
         assert d == final
@@ -692,7 +829,7 @@ class TestToDict(FormRecognizerTest):
     def test_document_selection_mark_to_dict(self):
         model = _models.DocumentSelectionMark(
             state="unselected",
-            bounding_box=[
+            polygon=[
                 _models.Point(1427.0, 1669.0),
                 _models.Point(1527.0, 1669.0),
                 _models.Point(1527.0, 1698.0),
@@ -708,9 +845,8 @@ class TestToDict(FormRecognizerTest):
         d = model.to_dict()
 
         final = {
-            "content": None,
             "state": "unselected",
-            "bounding_box": [
+            "polygon": [
                 {"x": 1427.0, "y": 1669.0},
                 {"x": 1527.0, "y": 1669.0},
                 {"x": 1527.0, "y": 1698.0},
@@ -720,7 +856,6 @@ class TestToDict(FormRecognizerTest):
                 "offset": 5,
                 "length": 2,
             },
-            "kind": "selectionMark",
             "confidence": 1.0,
         }
 
@@ -736,6 +871,11 @@ class TestToDict(FormRecognizerTest):
                 ),
             ],
             confidence=1.0,
+            similar_font_family="Arial",
+            font_style="italic",
+            font_weight="bold",
+            color="#FF0000",
+            background_color="#FFFFFF"
         )
 
         d = model.to_dict()
@@ -749,6 +889,11 @@ class TestToDict(FormRecognizerTest):
                 }
             ],
             "confidence": 1.0,
+            'similar_font_family': 'Arial',
+            'font_style': 'italic',
+            'font_weight': 'bold',
+            'color': '#FF0000',
+            'background_color': '#FFFFFF',
         }
 
         assert d == final
@@ -767,7 +912,7 @@ class TestToDict(FormRecognizerTest):
                     content="cell content",
                     bounding_regions=[
                         _models.BoundingRegion(
-                            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                            polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                             page_number=1,
                         ),
                     ],
@@ -781,7 +926,7 @@ class TestToDict(FormRecognizerTest):
             ],
             bounding_regions=[
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
             ],
@@ -809,7 +954,7 @@ class TestToDict(FormRecognizerTest):
                     "bounding_regions": [
                         {
                             "page_number": 1,
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1, "y": 2},
                                 {
                                     "x": 3,
@@ -829,7 +974,7 @@ class TestToDict(FormRecognizerTest):
             "bounding_regions": [
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -858,7 +1003,7 @@ class TestToDict(FormRecognizerTest):
             content="cell content",
             bounding_regions=[
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
             ],
@@ -882,7 +1027,7 @@ class TestToDict(FormRecognizerTest):
             "bounding_regions": [
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -909,7 +1054,7 @@ class TestToDict(FormRecognizerTest):
             content="cell content",
             bounding_regions=[
                 _models.BoundingRegion(
-                    bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                    polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                     page_number=1,
                 ),
             ],
@@ -933,7 +1078,7 @@ class TestToDict(FormRecognizerTest):
             "bounding_regions": [
                 {
                     "page_number": 1,
-                    "bounding_box": [
+                    "polygon": [
                         {"x": 1, "y": 2},
                         {
                             "x": 3,
@@ -953,7 +1098,7 @@ class TestToDict(FormRecognizerTest):
         assert d == final
 
     def test_model_operation_info_to_dict(self):
-        model = _models.ModelOperationInfo(
+        model = _models.OperationSummary(
             operation_id="id123",
             status="succeeded",
             percent_completed=100,
@@ -961,7 +1106,7 @@ class TestToDict(FormRecognizerTest):
             last_updated_on="1994-11-05T13:20:30Z",
             kind="documentModelBuild",
             resource_location="https://contoso.com/resource",
-            api_version="2022-01-30-preview",
+            api_version="2022-08-31",
             tags={"test": "value"},
         )
 
@@ -975,7 +1120,7 @@ class TestToDict(FormRecognizerTest):
             "last_updated_on": "1994-11-05T13:20:30Z",
             "kind": "documentModelBuild",
             "resource_location": "https://contoso.com/resource",
-            "api_version": "2022-01-30-preview",
+            "api_version": "2022-08-31",
             "tags": {"test": "value"},
         }
 
@@ -984,7 +1129,7 @@ class TestToDict(FormRecognizerTest):
     def test_document_word_to_dict(self):
         model = _models.DocumentWord(
             content="example",
-            bounding_box=[
+            polygon=[
                 _models.Point(1427.0, 1669.0),
                 _models.Point(1527.0, 1669.0),
                 _models.Point(1527.0, 1698.0),
@@ -1001,7 +1146,7 @@ class TestToDict(FormRecognizerTest):
 
         final = {
             "content": "example",
-            "bounding_box": [
+            "polygon": [
                 {"x": 1427.0, "y": 1669.0},
                 {"x": 1527.0, "y": 1669.0},
                 {"x": 1527.0, "y": 1698.0},
@@ -1012,24 +1157,41 @@ class TestToDict(FormRecognizerTest):
                 "length": 2,
             },
             "confidence": 0.62,
-            "kind": "word",
         }
 
         assert d == final
 
     def test_analyze_result_to_dict(self):
         model = _models.AnalyzeResult(
-            api_version="2021-07-30-preview",
+            api_version="2022-08-31",
             model_id="modelId1",
             content="Sample\nFile content.",
             languages=[
                 _models.DocumentLanguage(
-                    language_code="en",
+                    locale="en",
                     spans=[
                         _models.DocumentSpan(offset=5, length=2),
                     ],
                     confidence=0.99,
                 ),
+            ],
+            paragraphs=[
+                _models.DocumentParagraph(
+                    role="pageNumber",
+                    content="a paragraph",
+                    bounding_regions=[
+                        _models.BoundingRegion(
+                            polygon=[
+                                _models.Point(1, 2),
+                                _models.Point(3, 4),
+                            ],
+                            page_number=1,
+                        ),
+                    ],
+                    spans=[
+                        _models.DocumentSpan(offset=5, length=2),
+                    ],
+                )
             ],
             pages=[
                 _models.DocumentPage(
@@ -1044,7 +1206,7 @@ class TestToDict(FormRecognizerTest):
                     words=[
                         _models.DocumentWord(
                             content="example",
-                            bounding_box=[
+                            polygon=[
                                 _models.Point(1427.0, 1669.0),
                                 _models.Point(1527.0, 1669.0),
                                 _models.Point(1527.0, 1698.0),
@@ -1057,7 +1219,7 @@ class TestToDict(FormRecognizerTest):
                     selection_marks=[
                         _models.DocumentSelectionMark(
                             state="unselected",
-                            bounding_box=[
+                            polygon=[
                                 _models.Point(1427.0, 1669.0),
                                 _models.Point(1527.0, 1669.0),
                                 _models.Point(1527.0, 1698.0),
@@ -1070,7 +1232,7 @@ class TestToDict(FormRecognizerTest):
                     lines=[
                         _models.DocumentLine(
                             content="sample line",
-                            bounding_box=[
+                            polygon=[
                                 _models.Point(1427.0, 1669.0),
                                 _models.Point(1527.0, 1669.0),
                                 _models.Point(1527.0, 1698.0),
@@ -1079,6 +1241,34 @@ class TestToDict(FormRecognizerTest):
                             spans=[_models.DocumentSpan(offset=5, length=2)],
                         ),
                     ],
+                    barcodes=[
+                        _models.DocumentBarcode(
+                            kind="QRCode",
+                            value="15",
+                            polygon=[
+                                _models.Point(1427.0, 1669.0),
+                                _models.Point(1527.0, 1669.0),
+                                _models.Point(1527.0, 1698.0),
+                                _models.Point(1427.0, 1698.0),
+                            ],
+                            span=_models.DocumentSpan(offset=5, length=2),
+                            confidence=0.8
+                        )
+                    ],
+                    formulas=[
+                        _models.DocumentFormula(
+                            kind="inline",
+                            value="2+2=4",
+                            polygon=[
+                                _models.Point(1427.0, 1669.0),
+                                _models.Point(1527.0, 1669.0),
+                                _models.Point(1527.0, 1698.0),
+                                _models.Point(1427.0, 1698.0),
+                            ],
+                            span=_models.DocumentSpan(offset=5, length=2),
+                            confidence=0.8
+                        )
+                    ]
                 ),
             ],
             tables=[
@@ -1095,7 +1285,7 @@ class TestToDict(FormRecognizerTest):
                             content="cell content",
                             bounding_regions=[
                                 _models.BoundingRegion(
-                                    bounding_box=[
+                                    polygon=[
                                         _models.Point(1, 2),
                                         _models.Point(3, 4),
                                     ],
@@ -1107,7 +1297,7 @@ class TestToDict(FormRecognizerTest):
                     ],
                     bounding_regions=[
                         _models.BoundingRegion(
-                            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                            polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                             page_number=1,
                         ),
                     ],
@@ -1120,7 +1310,7 @@ class TestToDict(FormRecognizerTest):
                         content="key",
                         bounding_regions=[
                             _models.BoundingRegion(
-                                bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                                polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                                 page_number=1,
                             ),
                         ],
@@ -1135,7 +1325,7 @@ class TestToDict(FormRecognizerTest):
                         content="value",
                         bounding_regions=[
                             _models.BoundingRegion(
-                                bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                                polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                                 page_number=1,
                             ),
                         ],
@@ -1149,34 +1339,6 @@ class TestToDict(FormRecognizerTest):
                     confidence=0.89,
                 ),
             ],
-            entities=[
-                _models.DocumentEntity(
-                    category="category",
-                    sub_category="sub_category",
-                    content="content",
-                    bounding_regions=[
-                        _models.BoundingRegion(
-                            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
-                            page_number=1,
-                        ),
-                        _models.BoundingRegion(
-                            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
-                            page_number=1,
-                        ),
-                    ],
-                    spans=[
-                        _models.DocumentSpan(
-                            offset=5,
-                            length=2,
-                        ),
-                        _models.DocumentSpan(
-                            offset=5,
-                            length=2,
-                        ),
-                    ],
-                    confidence=0.99,
-                ),
-            ],
             styles=[
                 _models.DocumentStyle(
                     is_handwritten=True,
@@ -1187,6 +1349,12 @@ class TestToDict(FormRecognizerTest):
                         ),
                     ],
                     confidence=1.0,
+                    similar_font_family="Arial",
+                    font_style="italic",
+                    font_weight="bold",
+                    color="#FF0000",
+                    background_color="#FFFFFF"
+
                 ),
             ],
             documents=[
@@ -1194,11 +1362,11 @@ class TestToDict(FormRecognizerTest):
                     doc_type="test:doc",
                     bounding_regions=[
                         _models.BoundingRegion(
-                            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                            polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                             page_number=1,
                         ),
                         _models.BoundingRegion(
-                            bounding_box=[_models.Point(1, 2), _models.Point(3, 4)],
+                            polygon=[_models.Point(1, 2), _models.Point(3, 4)],
                             page_number=1,
                         ),
                     ],
@@ -1219,14 +1387,14 @@ class TestToDict(FormRecognizerTest):
                             content="0.1",
                             bounding_regions=[
                                 _models.BoundingRegion(
-                                    bounding_box=[
+                                    polygon=[
                                         _models.Point(1, 2),
                                         _models.Point(3, 4),
                                     ],
                                     page_number=1,
                                 ),
                                 _models.BoundingRegion(
-                                    bounding_box=[
+                                    polygon=[
                                         _models.Point(1, 2),
                                         _models.Point(3, 4),
                                     ],
@@ -1254,12 +1422,12 @@ class TestToDict(FormRecognizerTest):
         d = model.to_dict()
 
         final = {
-            "api_version": "2021-07-30-preview",
+            "api_version": "2022-08-31",
             "model_id": "modelId1",
             "content": "Sample\nFile content.",
             "languages": [
                 {
-                    "language_code": "en",
+                    "locale": "en",
                     "spans": [
                         {
                             "offset": 5,
@@ -1285,7 +1453,7 @@ class TestToDict(FormRecognizerTest):
                     "words": [
                         {
                             "content": "example",
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1427.0, "y": 1669.0},
                                 {"x": 1527.0, "y": 1669.0},
                                 {"x": 1527.0, "y": 1698.0},
@@ -1296,14 +1464,12 @@ class TestToDict(FormRecognizerTest):
                                 "length": 2,
                             },
                             "confidence": 0.62,
-                            "kind": "word",
                         },
                     ],
                     "selection_marks": [
                         {
-                            "content": None,
                             "state": "unselected",
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1427.0, "y": 1669.0},
                                 {"x": 1527.0, "y": 1669.0},
                                 {"x": 1527.0, "y": 1698.0},
@@ -1313,14 +1479,13 @@ class TestToDict(FormRecognizerTest):
                                 "offset": 5,
                                 "length": 2,
                             },
-                            "kind": "selectionMark",
                             "confidence": 1.0,
                         },
                     ],
                     "lines": [
                         {
                             "content": "sample line",
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1427.0, "y": 1669.0},
                                 {"x": 1527.0, "y": 1669.0},
                                 {"x": 1527.0, "y": 1698.0},
@@ -1334,7 +1499,65 @@ class TestToDict(FormRecognizerTest):
                             ],
                         },
                     ],
+                    "barcodes": [
+                        {
+                            "kind": "QRCode",
+                            "polygon": [
+                                {"x": 1427.0, "y": 1669.0},
+                                {"x": 1527.0, "y": 1669.0},
+                                {"x": 1527.0, "y": 1698.0},
+                                {"x": 1427.0, "y": 1698.0}
+                            ],
+                            "confidence": 0.8,
+                            "span": {
+                                "offset": 5,
+                                "length": 2
+                            },
+                            "value": "15"
+                        }
+                    ],
+                    "formulas": [
+                        {
+                            "kind": "inline",
+                            "polygon": [
+                                {"x": 1427.0, "y": 1669.0},
+                                {"x": 1527.0, "y": 1669.0},
+                                {"x": 1527.0, "y": 1698.0},
+                                {"x": 1427.0, "y": 1698.0}
+                            ],
+                            "confidence": 0.8,
+                            "span": {
+                                "offset": 5,
+                                "length": 2
+                            },
+                            "value": "2+2=4"
+                        }
+                    ]
                 },
+            ],
+            "paragraphs": [
+                {
+                    "role": "pageNumber",
+                    "content": "a paragraph",
+                    "bounding_regions": [
+                        {
+                            "page_number": 1,
+                            "polygon": [
+                                {"x": 1, "y": 2},
+                                {
+                                    "x": 3,
+                                    "y": 4,
+                                },
+                            ],
+                        },
+                    ],
+                    "spans": [
+                        {
+                            "offset": 5,
+                            "length": 2,
+                        },
+                    ],
+                }
             ],
             "tables": [
                 {
@@ -1351,7 +1574,7 @@ class TestToDict(FormRecognizerTest):
                             "bounding_regions": [
                                 {
                                     "page_number": 1,
-                                    "bounding_box": [
+                                    "polygon": [
                                         {"x": 1, "y": 2},
                                         {
                                             "x": 3,
@@ -1371,7 +1594,7 @@ class TestToDict(FormRecognizerTest):
                     "bounding_regions": [
                         {
                             "page_number": 1,
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1, "y": 2},
                                 {
                                     "x": 3,
@@ -1395,7 +1618,7 @@ class TestToDict(FormRecognizerTest):
                         "bounding_regions": [
                             {
                                 "page_number": 1,
-                                "bounding_box": [
+                                "polygon": [
                                     {"x": 1, "y": 2},
                                     {
                                         "x": 3,
@@ -1416,7 +1639,7 @@ class TestToDict(FormRecognizerTest):
                         "bounding_regions": [
                             {
                                 "page_number": 1,
-                                "bounding_box": [
+                                "polygon": [
                                     {"x": 1, "y": 2},
                                     {
                                         "x": 3,
@@ -1432,47 +1655,7 @@ class TestToDict(FormRecognizerTest):
                             },
                         ],
                     },
-                    "confidence": 0.89,
-                },
-            ],
-            "entities": [
-                {
-                    "category": "category",
-                    "sub_category": "sub_category",
-                    "content": "content",
-                    "bounding_regions": [
-                        {
-                            "page_number": 1,
-                            "bounding_box": [
-                                {"x": 1, "y": 2},
-                                {
-                                    "x": 3,
-                                    "y": 4,
-                                },
-                            ],
-                        },
-                        {
-                            "page_number": 1,
-                            "bounding_box": [
-                                {"x": 1, "y": 2},
-                                {
-                                    "x": 3,
-                                    "y": 4,
-                                },
-                            ],
-                        },
-                    ],
-                    "spans": [
-                        {
-                            "offset": 5,
-                            "length": 2,
-                        },
-                        {
-                            "offset": 5,
-                            "length": 2,
-                        },
-                    ],
-                    "confidence": 0.99,
+                    "confidence": 0.89
                 },
             ],
             "styles": [
@@ -1485,6 +1668,11 @@ class TestToDict(FormRecognizerTest):
                         }
                     ],
                     "confidence": 1.0,
+                    'similar_font_family': 'Arial',
+                    'font_style': 'italic',
+                    'font_weight': 'bold',
+                    'color': '#FF0000',
+                    'background_color': '#FFFFFF',
                 },
             ],
             "documents": [
@@ -1493,7 +1681,7 @@ class TestToDict(FormRecognizerTest):
                     "bounding_regions": [
                         {
                             "page_number": 1,
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1, "y": 2},
                                 {
                                     "x": 3,
@@ -1503,7 +1691,7 @@ class TestToDict(FormRecognizerTest):
                         },
                         {
                             "page_number": 1,
-                            "bounding_box": [
+                            "polygon": [
                                 {"x": 1, "y": 2},
                                 {
                                     "x": 3,
@@ -1530,7 +1718,7 @@ class TestToDict(FormRecognizerTest):
                             "bounding_regions": [
                                 {
                                     "page_number": 1,
-                                    "bounding_box": [
+                                    "polygon": [
                                         {"x": 1, "y": 2},
                                         {
                                             "x": 3,
@@ -1540,7 +1728,7 @@ class TestToDict(FormRecognizerTest):
                                 },
                                 {
                                     "page_number": 1,
-                                    "bounding_box": [
+                                    "polygon": [
                                         {"x": 1, "y": 2},
                                         {
                                             "x": 3,
@@ -1570,8 +1758,8 @@ class TestToDict(FormRecognizerTest):
         assert d == final
 
     def test_model_operation_to_dict(self):
-        model = _models.ModelOperation(
-            api_version="2022-01-30-preview",
+        model = _models.OperationDetails(
+            api_version="2022-08-31",
             tags={},
             operation_id="id123",
             status="succeeded",
@@ -1580,14 +1768,15 @@ class TestToDict(FormRecognizerTest):
             last_updated_on="1994-11-05T13:20:30Z",
             kind="documentModelBuild",
             resource_location="https://contoso.com/resource",
-            result=_models.DocumentModel(
-                api_version="2022-01-30-preview",
+            result=_models.DocumentModelDetails(
+                api_version="2022-08-31",
                 tags={},
                 description="my description",
                 created_on="1994-11-05T13:15:30Z",
+                expires_on="2024-11-05T13:15:30Z",
                 model_id="prebuilt-invoice",
                 doc_types={
-                    "prebuilt-invoice": _models.DocTypeInfo(
+                    "prebuilt-invoice": _models.DocumentTypeDetails(
                         build_mode="template",
                         description="my description",
                         field_confidence={"CustomerName": 95},
@@ -1663,7 +1852,7 @@ class TestToDict(FormRecognizerTest):
         d = model.to_dict()
 
         final = {
-            "api_version": "2022-01-30-preview",
+            "api_version": "2022-08-31",
             "tags": {},
             "operation_id": "id123",
             "status": "succeeded",
@@ -1673,10 +1862,11 @@ class TestToDict(FormRecognizerTest):
             "kind": "documentModelBuild",
             "resource_location": "https://contoso.com/resource",
             "result": {
-                "api_version": "2022-01-30-preview",
+                "api_version": "2022-08-31",
                 "tags": {},
                 "description": "my description",
                 "created_on": "1994-11-05T13:15:30Z",
+                "expires_on": "2024-11-05T13:15:30Z",
                 "model_id": "prebuilt-invoice",
                 "doc_types": {
                     "prebuilt-invoice": {
@@ -1760,7 +1950,7 @@ class TestToDict(FormRecognizerTest):
         assert d == final
 
     def test_doc_type_info_to_dict(self):
-        model = _models.DocTypeInfo(
+        model = _models.DocumentTypeDetails(
             description="my description",
             build_mode="neural",
             field_confidence={"CustomerName": 95},
@@ -1869,14 +2059,15 @@ class TestToDict(FormRecognizerTest):
         assert d == final
 
     def test_document_model_to_dict(self):
-        model = _models.DocumentModel(
+        model = _models.DocumentModelDetails(
             description="my description",
             created_on="1994-11-05T13:15:30Z",
+            expires_on="2024-11-05T13:15:30Z",
             model_id="prebuilt-invoice",
-            api_version="2022-01-30-preview",
+            api_version="2022-08-31",
             tags={"test": "value"},
             doc_types={
-                "prebuilt-invoice": _models.DocTypeInfo(
+                "prebuilt-invoice": _models.DocumentTypeDetails(
                     build_mode="template",
                     description="my description",
                     field_confidence={"CustomerName": 95},
@@ -1935,8 +2126,9 @@ class TestToDict(FormRecognizerTest):
         final = {
             "description": "my description",
             "created_on": "1994-11-05T13:15:30Z",
+            "expires_on": "2024-11-05T13:15:30Z",
             "model_id": "prebuilt-invoice",
-            "api_version": "2022-01-30-preview",
+            "api_version": "2022-08-31",
             "tags": {"test": "value"},
             "doc_types": {
                 "prebuilt-invoice": {
@@ -1995,12 +2187,63 @@ class TestToDict(FormRecognizerTest):
 
         assert d == final
 
-    def test_document_model_info_to_dict(self):
-        model = _models.DocumentModelInfo(
+    def test_document_classifier_details_to_dict(self):
+        model = _models.DocumentClassifierDetails(
+            classifier_id="custom-classifier",
             description="my description",
             created_on="1994-11-05T13:15:30Z",
+            expires_on="2024-11-05T13:15:30Z",
+            api_version="2023-07-31",
+            doc_types={
+                "form-A": _models.ClassifierDocumentTypeDetails(
+                    source=_models.BlobSource(
+                        container_url="https://myaccount.blob.core.windows.net/blob-sas-url"
+                    )
+                ),
+                "form-B": _models.ClassifierDocumentTypeDetails(
+                    source=_models.BlobFileListSource(
+                        container_url="https://myaccount.blob.core.windows.net/blob-sas-url",
+                        file_list="filelist.jsonl"
+                    )
+                ),
+            },
+        )
+
+        d = model.to_dict()
+
+        final = {
+            "classifier_id": "custom-classifier",
+            "description": "my description",
+            "created_on": "1994-11-05T13:15:30Z",
+            "expires_on": "2024-11-05T13:15:30Z",
+            "api_version": "2023-07-31",
+            "doc_types": {
+                "form-A": {
+                    "source_kind": "azureBlob",
+                    "source": {
+                        "container_url": "https://myaccount.blob.core.windows.net/blob-sas-url",
+                        "prefix": None,
+                    },
+                },
+                "form-B": {
+                    "source_kind": "azureBlobFileList",
+                    "source": {
+                        "container_url": "https://myaccount.blob.core.windows.net/blob-sas-url",
+                        "file_list": "filelist.jsonl",
+                    },
+                },
+            },
+        }
+
+        assert d == final
+
+    def test_document_model_info_to_dict(self):
+        model = _models.DocumentModelSummary(
+            description="my description",
+            created_on="1994-11-05T13:15:30Z",
+            expires_on="2024-11-05T13:15:30Z",
             model_id="prebuilt-invoice",
-            api_version="2022-01-30-preview",
+            api_version="2022-08-31",
             tags={"test": "value"},
         )
 
@@ -2009,19 +2252,27 @@ class TestToDict(FormRecognizerTest):
         final = {
             "description": "my description",
             "created_on": "1994-11-05T13:15:30Z",
+            "expires_on": "2024-11-05T13:15:30Z",
             "model_id": "prebuilt-invoice",
-            "api_version": "2022-01-30-preview",
+            "api_version": "2022-08-31",
             "tags": {"test": "value"},
         }
 
         assert d == final
 
-    def test_account_info_to_dict(self):
-        model = _models.AccountInfo(document_model_limit=5000, document_model_count=10)
+    def test_resource_details_to_dict(self):
+        model = _models.ResourceDetails(
+            custom_document_models=_models.CustomDocumentModelsDetails(limit=5000, count=10),
+            neural_document_model_quota=_models.QuotaDetails(
+                used=0,
+                quota=20,
+                quota_resets_on="1994-11-05T13:15:30Z"
+            )
+        )
 
         d = model.to_dict()
 
-        final = {"document_model_limit": 5000, "document_model_count": 10}
+        final = {'custom_document_models': {'count': 10, 'limit': 5000}, 'neural_document_model_quota': {'used': 0, 'quota': 20, 'quota_resets_on': '1994-11-05T13:15:30Z'}}
         assert d == final
 
     def test_document_analysis_inner_error_to_dict(self):

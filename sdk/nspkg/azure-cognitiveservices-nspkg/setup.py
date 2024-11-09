@@ -32,13 +32,14 @@ if sys.version_info[0] < 3:
 
 setup(
     name='azure-cognitiveservices-nspkg',
-    version='3.0.1',
+    version='3.1.0b1',
     description='Microsoft Azure Cognitive Services Namespace Package [Internal]',
     long_description=open('README.md', 'r').read(),
     license='MIT License',
     author='Microsoft Corporation',
     author_email='azpysdkhelp@microsoft.com',
     url='https://github.com/Azure/azure-sdk-for-python',
+    keywords="azure, azure sdk",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python',

@@ -9,10 +9,10 @@ import base64
 import json
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import Any, Optional, Iterable, Dict
+from urllib.parse import urlparse
 
-import six
-from azure.core.credentials import AccessToken
+from azure.core.credentials import AccessToken, AccessTokenInfo, TokenRequestOptions
 from azure.core.exceptions import ClientAuthenticationError
 
 from .msal_credentials import MsalCredential
@@ -21,27 +21,24 @@ from .._constants import KnownAuthorities
 from .._exceptions import AuthenticationRequiredError, CredentialUnavailableError
 from .._internal import wrap_exceptions
 
-try:
-    ABC = abc.ABC
-except AttributeError:  # Python 2.7, abc exists, but not ABC
-    ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})  # type: ignore
-
-if TYPE_CHECKING:
-    # pylint:disable=ungrouped-imports,unused-import
-    from typing import Any, Optional
+ABC = abc.ABC
 
 _LOGGER = logging.getLogger(__name__)
 
 _DEFAULT_AUTHENTICATE_SCOPES = {
     "https://" + KnownAuthorities.AZURE_CHINA: ("https://management.core.chinacloudapi.cn//.default",),
-    "https://" + KnownAuthorities.AZURE_GERMANY: ("https://management.core.cloudapi.de//.default",),
     "https://" + KnownAuthorities.AZURE_GOVERNMENT: ("https://management.core.usgovcloudapi.net//.default",),
     "https://" + KnownAuthorities.AZURE_PUBLIC_CLOUD: ("https://management.core.windows.net//.default",),
 }
 
 
-def _decode_client_info(raw):
-    """Taken from msal.oauth2cli.oidc"""
+def _decode_client_info(raw) -> str:
+    """Decode client info. Taken from msal.oauth2cli.oidc.
+
+    :param str raw: base64-encoded client info
+    :return: decoded client info
+    :rtype: str
+    """
 
     raw += "=" * (-len(raw) % 4)
     raw = str(raw)  # On Python 2.7, argument of urlsafe_b64decode must be str, not unicode.
@@ -49,7 +46,14 @@ def _decode_client_info(raw):
 
 
 def _build_auth_record(response):
-    """Build an AuthenticationRecord from the result of an MSAL ClientApplication token request"""
+    """Build an AuthenticationRecord from the result of an MSAL ClientApplication token request.
+
+    :param response: The result of a token request
+    :type response: dict[str, typing.Any]
+    :return: An AuthenticationRecord
+    :rtype: ~azure.identity.AuthenticationRecord
+    :raises ~azure.core.exceptions.ClientAuthenticationError: If the response doesn't contain expected data
+    """
 
     try:
         id_token = response["id_token_claims"]
@@ -62,12 +66,12 @@ def _build_auth_record(response):
             home_account_id = id_token["sub"]
 
         # "iss" is the URL of the issuing tenant e.g. https://authority/tenant
-        issuer = six.moves.urllib_parse.urlparse(id_token["iss"])
+        issuer = urlparse(id_token["iss"])
 
         # tenant which issued the token, not necessarily user's home tenant
         tenant_id = id_token.get("tid") or issuer.path.strip("/")
 
-        # AAD returns "preferred_username", ADFS returns "upn"
+        # Microsoft Entra ID returns "preferred_username", ADFS returns "upn"
         username = id_token.get("preferred_username") or id_token["upn"]
 
         return AuthenticationRecord(
@@ -81,13 +85,19 @@ def _build_auth_record(response):
         auth_error = ClientAuthenticationError(
             message="Failed to build AuthenticationRecord from unexpected identity token"
         )
-        six.raise_from(auth_error, ex)
+        raise auth_error from ex
 
 
 class InteractiveCredential(MsalCredential, ABC):
-    def __init__(self, **kwargs):
-        self._disable_automatic_authentication = kwargs.pop("disable_automatic_authentication", False)
-        self._auth_record = kwargs.pop("authentication_record", None)  # type: Optional[AuthenticationRecord]
+    def __init__(
+        self,
+        *,
+        authentication_record: Optional[AuthenticationRecord] = None,
+        disable_automatic_authentication: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        self._disable_automatic_authentication = disable_automatic_authentication
+        self._auth_record = authentication_record
         if self._auth_record:
             kwargs.pop("client_id", None)  # authentication_record overrides client_id argument
             tenant_id = kwargs.pop("tenant_id", None) or self._auth_record.tenant_id
@@ -95,23 +105,63 @@ class InteractiveCredential(MsalCredential, ABC):
                 client_id=self._auth_record.client_id,
                 authority=self._auth_record.authority,
                 tenant_id=tenant_id,
-                **kwargs
+                **kwargs,
             )
         else:
             super(InteractiveCredential, self).__init__(**kwargs)
 
-    def get_token(self, *scopes, **kwargs):
-        # type: (*str, **Any) -> AccessToken
+    def get_token(
+        self,
+        *scopes: str,
+        claims: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        enable_cae: bool = False,
+        **kwargs: Any,
+    ) -> AccessToken:
         """Request an access token for `scopes`.
 
         This method is called automatically by Azure SDK clients.
 
         :param str scopes: desired scopes for the access token. This method requires at least one scope.
+            For more information about scopes, see
+            https://learn.microsoft.com/entra/identity-platform/scopes-oidc.
         :keyword str claims: additional claims required in the token, such as those returned in a resource provider's
-          claims challenge following an authorization failure
+            claims challenge following an authorization failure
         :keyword str tenant_id: optional tenant to include in the token request.
+        :keyword bool enable_cae: indicates whether to enable Continuous Access Evaluation (CAE) for the requested
+            token. Defaults to False.
+        :return: An access token with the desired scopes.
+        :rtype: ~azure.core.credentials.AccessToken
+        :raises CredentialUnavailableError: the credential is unable to attempt authentication because it lacks
+            required data, state, or platform support
+        :raises ~azure.core.exceptions.ClientAuthenticationError: authentication failed. The error's ``message``
+            attribute gives a reason.
+        :raises AuthenticationRequiredError: user interaction is necessary to acquire a token, and the credential is
+            configured not to begin this automatically. Call :func:`authenticate` to begin interactive authentication.
+        """
+        options: TokenRequestOptions = {}
+        if claims:
+            options["claims"] = claims
+        if tenant_id:
+            options["tenant_id"] = tenant_id
+        options["enable_cae"] = enable_cae
 
-        :rtype: :class:`azure.core.credentials.AccessToken`
+        token_info = self._get_token_base(*scopes, options=options, base_method_name="get_token", **kwargs)
+        return AccessToken(token_info.token, token_info.expires_on)
+
+    def get_token_info(self, *scopes: str, options: Optional[TokenRequestOptions] = None) -> AccessTokenInfo:
+        """Request an access token for `scopes`.
+
+        This is an alternative to `get_token` to enable certain scenarios that require additional properties
+        on the token. This method is called automatically by Azure SDK clients.
+
+        :param str scopes: desired scopes for the access token. This method requires at least one scope.
+            For more information about scopes, see https://learn.microsoft.com/entra/identity-platform/scopes-oidc.
+        :keyword options: A dictionary of options for the token request. Unknown options will be ignored. Optional.
+        :paramtype options: ~azure.core.credentials.TokenRequestOptions
+
+        :rtype: AccessTokenInfo
+        :return: An AccessTokenInfo instance containing information about the token.
 
         :raises CredentialUnavailableError: the credential is unable to attempt authentication because it lacks
             required data, state, or platform support
@@ -120,21 +170,43 @@ class InteractiveCredential(MsalCredential, ABC):
         :raises AuthenticationRequiredError: user interaction is necessary to acquire a token, and the credential is
             configured not to begin this automatically. Call :func:`authenticate` to begin interactive authentication.
         """
+        return self._get_token_base(*scopes, options=options, base_method_name="get_token_info")
+
+    def _get_token_base(
+        self,
+        *scopes: str,
+        options: Optional[TokenRequestOptions] = None,
+        base_method_name: str = "get_token_info",
+        **kwargs: Any,
+    ) -> AccessTokenInfo:
         if not scopes:
-            message = "'get_token' requires at least one scope"
-            _LOGGER.warning("%s.get_token failed: %s", self.__class__.__name__, message)
+            message = f"'{base_method_name}' requires at least one scope"
+            _LOGGER.warning("%s.%s failed: %s", self.__class__.__name__, base_method_name, message)
             raise ValueError(message)
 
         allow_prompt = kwargs.pop("_allow_prompt", not self._disable_automatic_authentication)
+        options = options or {}
+        claims = options.get("claims")
+        tenant_id = options.get("tenant_id")
+        enable_cae = options.get("enable_cae", False)
+
+        # Check for arbitrary additional options to enable intermediary support for PoP tokens.
+        for key in options:
+            if key not in TokenRequestOptions.__annotations__:  # pylint:disable=no-member
+                kwargs.setdefault(key, options[key])  # type: ignore
+
         try:
-            token = self._acquire_token_silent(*scopes, **kwargs)
-            _LOGGER.info("%s.get_token succeeded", self.__class__.__name__)
+            token = self._acquire_token_silent(
+                *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+            )
+            _LOGGER.info("%s.%s succeeded", self.__class__.__name__, base_method_name)
             return token
         except Exception as ex:  # pylint:disable=broad-except
             if not (isinstance(ex, AuthenticationRequiredError) and allow_prompt):
                 _LOGGER.warning(
-                    "%s.get_token failed: %s",
+                    "%s.%s failed: %s",
                     self.__class__.__name__,
+                    base_method_name,
                     ex,
                     exc_info=_LOGGER.isEnabledFor(logging.DEBUG),
                 )
@@ -144,7 +216,7 @@ class InteractiveCredential(MsalCredential, ABC):
         now = int(time.time())
 
         try:
-            result = self._request_token(*scopes, **kwargs)
+            result = self._request_token(*scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs)
             if "access_token" not in result:
                 message = "Authentication failed: {}".format(result.get("error_description") or result.get("error"))
                 response = self._client.get_error_response(result)
@@ -154,19 +226,27 @@ class InteractiveCredential(MsalCredential, ABC):
             self._auth_record = _build_auth_record(result)
         except Exception as ex:  # pylint:disable=broad-except
             _LOGGER.warning(
-                "%s.get_token failed: %s",
+                "%s.%s failed: %s",
                 self.__class__.__name__,
+                base_method_name,
                 ex,
                 exc_info=_LOGGER.isEnabledFor(logging.DEBUG),
             )
             raise
 
-        _LOGGER.info("%s.get_token succeeded", self.__class__.__name__)
-        return AccessToken(result["access_token"], now + int(result["expires_in"]))
+        _LOGGER.info("%s.%s succeeded", self.__class__.__name__, base_method_name)
+        refresh_on = int(result["refresh_on"]) if "refresh_on" in result else None
+        return AccessTokenInfo(
+            result["access_token"],
+            now + int(result["expires_in"]),
+            token_type=result.get("token_type", "Bearer"),
+            refresh_on=refresh_on,
+        )
 
-    def authenticate(self, **kwargs):
-        # type: (**Any) -> AuthenticationRecord
-        """Interactively authenticate a user.
+    def authenticate(
+        self, *, scopes: Optional[Iterable[str]] = None, claims: Optional[str] = None, **kwargs: Any
+    ) -> AuthenticationRecord:
+        """Interactively authenticate a user. This method will always generate a challenge to the user.
 
         :keyword Iterable[str] scopes: scopes to request during authentication, such as those provided by
           :func:`AuthenticationRequiredError.scopes`. If provided, successful authentication will cache an access token
@@ -178,7 +258,6 @@ class InteractiveCredential(MsalCredential, ABC):
           attribute gives a reason.
         """
 
-        scopes = kwargs.pop("scopes", None)
         if not scopes:
             if self._authority not in _DEFAULT_AUTHENTICATE_SCOPES:
                 # the credential is configured to use a cloud whose ARM scope we can't determine
@@ -188,12 +267,11 @@ class InteractiveCredential(MsalCredential, ABC):
 
             scopes = _DEFAULT_AUTHENTICATE_SCOPES[self._authority]
 
-        _ = self.get_token(*scopes, _allow_prompt=True, **kwargs)
+        _ = self.get_token(*scopes, _allow_prompt=True, claims=claims, **kwargs)
         return self._auth_record  # type: ignore
 
     @wrap_exceptions
-    def _acquire_token_silent(self, *scopes, **kwargs):
-        # type: (*str, **Any) -> AccessToken
+    def _acquire_token_silent(self, *scopes: str, **kwargs: Any) -> AccessTokenInfo:
         result = None
         claims = kwargs.get("claims")
         if self._auth_record:
@@ -205,14 +283,20 @@ class InteractiveCredential(MsalCredential, ABC):
                 now = int(time.time())
                 result = app.acquire_token_silent_with_error(list(scopes), account=account, claims_challenge=claims)
                 if result and "access_token" in result and "expires_in" in result:
-                    return AccessToken(result["access_token"], now + int(result["expires_in"]))
+                    refresh_on = int(result["refresh_on"]) if "refresh_on" in result else None
+                    return AccessTokenInfo(
+                        result["access_token"],
+                        now + int(result["expires_in"]),
+                        token_type=result.get("token_type", "Bearer"),
+                        refresh_on=refresh_on,
+                    )
 
-        # if we get this far, result is either None or the content of an AAD error response
+        # if we get this far, result is either None or the content of a Microsoft Entra ID error response
         if result:
             response = self._client.get_error_response(result)
             raise AuthenticationRequiredError(scopes, claims=claims, response=response)
         raise AuthenticationRequiredError(scopes, claims=claims)
 
     @abc.abstractmethod
-    def _request_token(self, *scopes, **kwargs):
+    def _request_token(self, *scopes, **kwargs) -> Dict:
         pass

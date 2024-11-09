@@ -7,18 +7,20 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Awaitable
-
-from msrest import Deserializer, Serializer
+from typing import Any, Awaitable, Optional, Union
+from typing_extensions import Self
 
 from azure.core import AsyncPipelineClient
+from azure.core.pipeline import policies
 from azure.core.rest import AsyncHttpResponse, HttpRequest
 
-from .. import models
+from .. import models as _models
+from .._serialization import Deserializer, Serializer
 from ._configuration import AzureFileStorageConfiguration
 from .operations import DirectoryOperations, FileOperations, ServiceOperations, ShareOperations
 
-class AzureFileStorage:
+
+class AzureFileStorage:  # pylint: disable=client-accepts-api-version-keyword
     """AzureFileStorage.
 
     :ivar service: ServiceOperations operations
@@ -30,12 +32,20 @@ class AzureFileStorage:
     :ivar file: FileOperations operations
     :vartype file: azure.storage.fileshare.aio.operations.FileOperations
     :param url: The URL of the service account, share, directory or file that is the target of the
-     desired operation.
+     desired operation. Required.
     :type url: str
-    :param base_url: Service URL. Default value is "".
+    :param base_url: Service URL. Required. Default value is "".
     :type base_url: str
+    :param file_request_intent: Valid value is backup. "backup" Default value is None.
+    :type file_request_intent: str or ~azure.storage.fileshare.models.ShareTokenIntent
+    :param allow_trailing_dot: If true, the trailing dot will not be trimmed from the target URI.
+     Default value is None.
+    :type allow_trailing_dot: bool
+    :param allow_source_trailing_dot: If true, the trailing dot will not be trimmed from the source
+     URI. Default value is None.
+    :type allow_source_trailing_dot: bool
     :keyword version: Specifies the version of the operation to use for this request. Default value
-     is "2021-04-10". Note that overriding this default value may result in unsupported behavior.
+     is "2025-01-05". Note that overriding this default value may result in unsupported behavior.
     :paramtype version: str
     :keyword file_range_write_from_url: Only update is supported: - Update: Writes the bytes
      downloaded from the source url into the specified range. Default value is "update". Note that
@@ -43,16 +53,42 @@ class AzureFileStorage:
     :paramtype file_range_write_from_url: str
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=missing-client-constructor-parameter-credential
         self,
         url: str,
         base_url: str = "",
+        file_request_intent: Optional[Union[str, _models.ShareTokenIntent]] = None,
+        allow_trailing_dot: Optional[bool] = None,
+        allow_source_trailing_dot: Optional[bool] = None,
         **kwargs: Any
     ) -> None:
-        self._config = AzureFileStorageConfiguration(url=url, **kwargs)
-        self._client = AsyncPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = AzureFileStorageConfiguration(
+            url=url,
+            file_request_intent=file_request_intent,
+            allow_trailing_dot=allow_trailing_dot,
+            allow_source_trailing_dot=allow_source_trailing_dot,
+            **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: AsyncPipelineClient = AsyncPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
@@ -61,11 +97,8 @@ class AzureFileStorage:
         self.directory = DirectoryOperations(self._client, self._config, self._serialize, self._deserialize)
         self.file = FileOperations(self._client, self._config, self._serialize, self._deserialize)
 
-
     def _send_request(
-        self,
-        request: HttpRequest,
-        **kwargs: Any
+        self, request: HttpRequest, *, stream: bool = False, **kwargs: Any
     ) -> Awaitable[AsyncHttpResponse]:
         """Runs the network request through the client's chained policies.
 
@@ -75,7 +108,7 @@ class AzureFileStorage:
         >>> response = await client._send_request(request)
         <AsyncHttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -86,14 +119,14 @@ class AzureFileStorage:
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
     async def close(self) -> None:
         await self._client.close()
 
-    async def __aenter__(self) -> "AzureFileStorage":
+    async def __aenter__(self) -> Self:
         await self._client.__aenter__()
         return self
 
-    async def __aexit__(self, *exc_details) -> None:
+    async def __aexit__(self, *exc_details: Any) -> None:
         await self._client.__aexit__(*exc_details)

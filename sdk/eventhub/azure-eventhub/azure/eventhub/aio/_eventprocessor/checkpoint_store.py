@@ -60,9 +60,7 @@ class CheckpointStore(ABC):
         """
 
     @abstractmethod
-    async def update_checkpoint(
-        self, checkpoint: Dict[str, Optional[Union[str, int]]], **kwargs: Any
-    ) -> None:
+    async def update_checkpoint(self, checkpoint: Dict[str, Optional[Union[str, int]]], **kwargs: Any) -> None:
         """Updates the checkpoint using the given information for the offset, associated partition and
         consumer group in the chosen storage service.
 

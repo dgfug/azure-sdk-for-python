@@ -35,7 +35,7 @@ The modern Event Grid client library also provides the ability to share in some 
 
 The v4.x major version comes with support for [CloudEvents](https://github.com/cloudevents/spec). Now the cloud native Cloud Events can be directly published using the `CloudEvent` constructor or as a dictionary as follows:
 
-```Python
+```python
 from azure.core.messaging import CloudEvent
 
 cloud_event = CloudEvent(
@@ -64,7 +64,7 @@ cloud_event = {
 
 | In v1.3 | Equivalent in v4.0 | Sample |
 |---|---|---|
-|`EventGridClient(credentials)`|`EventGridPublisherClient(endpoint, credential)`|[Sample for client construction](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventgrid/azure-eventgrid/samples/sync_samples/sample_publish_events_using_cloud_events_1.0_schema.py)|
+|`EventGridClient(credentials)`|`EventGridPublisherClient(endpoint, credential)`|[Sample for client construction](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventgrid/azure-eventgrid/samples/basic/sync_samples/sample_publish_events_using_cloud_events_1.0_schema.py)|
 
 ### Publishing Events
 
@@ -72,7 +72,7 @@ The `publish_events` API is replaced with `send` in v4.0. Additionally, `send` A
 
 | In v1.3 | Equivalent in v4.0 | Sample |
 |---|---|---|
-|`EventGridClient(credentials).publish_events(topic_hostname, events)`|`EventGridPublisherClient(endpoint, credential).send(events)`|[Sample for client construction](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventgrid/azure-eventgrid/samples/sync_samples/sample_publish_events_using_cloud_events_1.0_schema.py)|
+|`EventGridClient(credentials).publish_events(topic_hostname, events)`|`EventGridPublisherClient(endpoint, credential).send(events)`|[Sample for client construction](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/eventgrid/azure-eventgrid/samples/basic/sync_samples/sample_publish_events_using_cloud_events_1.0_schema.py)|
 
 ### Consuming Events
 
@@ -80,7 +80,7 @@ The v4.x major version supports deserializing dictionaries into strongly typed o
 
 This example consumes a payload message received from ServiceBus and deserializes it to an EventGridEvent object.
 
-```Python
+```python
 from azure.eventgrid import EventGridEvent
 from azure.servicebus import ServiceBusClient
 import os

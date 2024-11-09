@@ -2,29 +2,29 @@
 
 The Azure Monitor Query client library is used to execute read-only queries against [Azure Monitor][azure_monitor_overview]'s two data platforms:
 
-- [Logs](https://docs.microsoft.com/azure/azure-monitor/logs/data-platform-logs) - Collects and organizes log and performance data from monitored resources. Data from different sources such as platform logs from Azure services, log and performance data from virtual machines agents, and usage and performance data from apps can be consolidated into a single [Azure Log Analytics workspace](https://docs.microsoft.com/azure/azure-monitor/logs/data-platform-logs#log-analytics-and-workspaces). The various data types can be analyzed together using the [Kusto Query Language][kusto_query_language].
-- [Metrics](https://docs.microsoft.com/azure/azure-monitor/essentials/data-platform-metrics) - Collects numeric data from monitored resources into a time series database. Metrics are numerical values that are collected at regular intervals and describe some aspect of a system at a particular time. Metrics are lightweight and capable of supporting near real-time scenarios, making them particularly useful for alerting and fast detection of issues.
+- [Logs](https://learn.microsoft.com/azure/azure-monitor/logs/data-platform-logs) - Collects and organizes log and performance data from monitored resources. Data from different sources such as platform logs from Azure services, log and performance data from virtual machines agents, and usage and performance data from apps can be consolidated into a single [Azure Log Analytics workspace](https://learn.microsoft.com/azure/azure-monitor/logs/data-platform-logs#log-analytics-and-workspaces). The various data types can be analyzed together using the [Kusto Query Language][kusto_query_language].
+- [Metrics](https://learn.microsoft.com/azure/azure-monitor/essentials/data-platform-metrics) - Collects numeric data from monitored resources into a time series database. Metrics are numerical values that are collected at regular intervals and describe some aspect of a system at a particular time. Metrics are lightweight and capable of supporting near real-time scenarios, making them useful for alerting and fast detection of issues.
 
 **Resources:**
 
 - [Source code][source]
 - [Package (PyPI)][package]
+- [Package (Conda)](https://anaconda.org/microsoft/azure-monitor-query/)
 - [API reference documentation][python-query-ref-docs]
 - [Service documentation][azure_monitor_overview]
 - [Samples][samples]
 - [Change log][changelog]
 
-## _Disclaimer_
-
-_Azure SDK Python packages support for Python 2.7 has ended on 01 January 2022. For more information and questions, please refer to https://github.com/Azure/azure-sdk-for-python/issues/20691_
-
 ## Getting started
 
 ### Prerequisites
 
-- Python 3.6 or later
+- Python 3.8 or later
 - An [Azure subscription][azure_subscription]
-- To query Logs, you need an [Azure Log Analytics workspace][azure_monitor_create_using_portal].
+- A [TokenCredential](https://learn.microsoft.com/python/api/azure-core/azure.core.credentials.tokencredential?view=azure-python) implementation, such as an [Azure Identity library credential type](https://learn.microsoft.com/python/api/overview/azure/identity-readme?view=azure-python#credential-classes).
+- To query Logs, you need one of the following things:
+  - An [Azure Log Analytics workspace][azure_monitor_create_using_portal]
+  - An Azure resource of any kind (Storage Account, Key Vault, Cosmos DB, etc.)
 - To query Metrics, you need an Azure resource of any kind (Storage Account, Key Vault, Cosmos DB, etc.).
 
 ### Install the package
@@ -37,7 +37,7 @@ pip install azure-monitor-query
 
 ### Create the client
 
-An authenticated client is required to query Logs or Metrics. The library includes both synchronous and asynchronous forms of the clients. To authenticate, create an instance of a token credential. Use that instance when creating a `LogsQueryClient` or `MetricsQueryClient`. The following examples use `DefaultAzureCredential` from the [azure-identity](https://pypi.org/project/azure-identity/) package.
+An authenticated client is required to query Logs or Metrics. The library includes both synchronous and asynchronous forms of the clients. To authenticate, create an instance of a token credential. Use that instance when creating a `LogsQueryClient`, `MetricsQueryClient`, or `MetricsClient`. The following examples use `DefaultAzureCredential` from the [azure-identity](https://pypi.org/project/azure-identity/) package.
 
 #### Synchronous clients
 
@@ -45,11 +45,12 @@ Consider the following example, which creates synchronous clients for both Logs 
 
 ```python
 from azure.identity import DefaultAzureCredential
-from azure.monitor.query import LogsQueryClient, MetricsQueryClient
+from azure.monitor.query import LogsQueryClient, MetricsQueryClient, MetricsClient
 
 credential = DefaultAzureCredential()
-logs_client = LogsQueryClient(credential)
-metrics_client = MetricsQueryClient(credential)
+logs_query_client = LogsQueryClient(credential)
+metrics_query_client = MetricsQueryClient(credential)
+metrics_client = MetricsClient("https://<regional endpoint>", credential)
 ```
 
 #### Asynchronous clients
@@ -58,12 +59,33 @@ The asynchronous forms of the query client APIs are found in the `.aio`-suffixed
 
 ```python
 from azure.identity.aio import DefaultAzureCredential
-from azure.monitor.query.aio import LogsQueryClient, MetricsQueryClient
+from azure.monitor.query.aio import LogsQueryClient, MetricsQueryClient, MetricsClient
 
 credential = DefaultAzureCredential()
-async_logs_client = LogsQueryClient(credential)
-async_metrics_client = MetricsQueryClient(credential)
+async_logs_query_client = LogsQueryClient(credential)
+async_metrics_query_client = MetricsQueryClient(credential)
+async_metrics_client = MetricsClient("https://<regional endpoint>", credential)
 ```
+
+#### Configure client for Azure sovereign cloud
+
+By default, all clients are configured to use the Azure public cloud. To use a sovereign cloud, provide the correct `endpoint` argument when using `LogsQueryClient` or `MetricsQueryClient`. For `MetricsClient`, provide the correct `audience` argument instead. For example:
+
+```python
+from azure.identity import AzureAuthorityHosts, DefaultAzureCredential
+from azure.monitor.query import LogsQueryClient, MetricsQueryClient, MetricsClient
+
+# Authority can also be set via the AZURE_AUTHORITY_HOST environment variable.
+credential = DefaultAzureCredential(authority=AzureAuthorityHosts.AZURE_GOVERNMENT)
+
+logs_query_client = LogsQueryClient(credential, endpoint="https://api.loganalytics.us/v1")
+metrics_query_client = MetricsQueryClient(credential, endpoint="https://management.usgovcloudapi.net")
+metrics_client = MetricsClient(
+    "https://usgovvirginia.metrics.monitor.azure.us", credential, audience="https://metrics.monitor.azure.us"
+)
+```
+
+**Note**: Currently, `MetricsQueryClient` uses the Azure Resource Manager (ARM) endpoint for querying metrics. You need the corresponding management endpoint for your cloud when using this client. This detail is subject to change in the future.
 
 ### Execute the query
 
@@ -73,9 +95,9 @@ For examples of Logs and Metrics queries, see the [Examples](#examples) section.
 
 ### Logs query rate limits and throttling
 
-The Log Analytics service applies throttling when the request rate is too high. Limits, such as the maximum number of rows returned, are also applied on the Kusto queries. For more information, see [Query API](https://docs.microsoft.com/azure/azure-monitor/service-limits#la-query-api).
+The Log Analytics service applies throttling when the request rate is too high. Limits, such as the maximum number of rows returned, are also applied on the Kusto queries. For more information, see [Query API](https://learn.microsoft.com/azure/azure-monitor/service-limits#la-query-api).
 
-If you're executing a batch logs query, a throttled request will return a `LogsQueryError` object. That object's `code` value will be `ThrottledError`.
+If you're executing a batch logs query, a throttled request returns a `LogsQueryError` object. That object's `code` value is `ThrottledError`.
 
 ### Metrics data structure
 
@@ -86,32 +108,71 @@ Each set of metric values is a time series with the following characteristics:
 - A namespace that acts like a category for the metric
 - A metric name
 - The value itself
-- Some metrics may have multiple dimensions as described in multi-dimensional metrics. Custom metrics can have up to 10 dimensions.
+- Some metrics have multiple dimensions as described in multi-dimensional metrics. Custom metrics can have up to 10 dimensions.
 
 ## Examples
 
 - [Logs query](#logs-query)
+  - [Resource-centric logs query](#resource-centric-logs-query)
   - [Specify timespan](#specify-timespan)
   - [Handle logs query response](#handle-logs-query-response)
 - [Batch logs query](#batch-logs-query)
 - [Advanced logs query scenarios](#advanced-logs-query-scenarios)
   - [Set logs query timeout](#set-logs-query-timeout)
   - [Query multiple workspaces](#query-multiple-workspaces)
+  - [Include statistics](#include-statistics)
+  - [Include visualization](#include-visualization)
 - [Metrics query](#metrics-query)
   - [Handle metrics query response](#handle-metrics-query-response)
   - [Example of handling response](#example-of-handling-response)
+  - [Query metrics for multiple resources](#query-metrics-for-multiple-resources)
 
 ### Logs query
 
-This example shows getting a logs query. To handle the response and view it in a tabular form, the [pandas](https://pypi.org/project/pandas/) library is used. See the [samples][samples] if you choose not to use pandas.
+This example shows how to query a Log Analytics workspace. To handle the response and view it in a tabular form, the [`pandas`](https://pypi.org/project/pandas/) library is used. See the [samples][samples] if you choose not to use `pandas`.
+
+#### Resource-centric logs query
+
+The following example demonstrates how to query logs directly from an Azure resource without the use of a Log Analytics workspace. Here, the `query_resource` method is used instead of `query_workspace`. Instead of a workspace ID, an Azure resource identifier is passed in. For example, `/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/{resource-provider}/{resource-type}/{resource-name}`.
+
+```python
+import os
+import pandas as pd
+from datetime import timedelta
+from azure.monitor.query import LogsQueryClient, LogsQueryStatus
+from azure.core.exceptions import HttpResponseError
+from azure.identity import DefaultAzureCredential
+
+credential  = DefaultAzureCredential()
+client = LogsQueryClient(credential)
+
+query = """AzureActivity | take 5"""
+
+try:
+    response = client.query_resource(os.environ['LOGS_RESOURCE_ID'], query, timespan=timedelta(days=1))
+    if response.status == LogsQueryStatus.SUCCESS:
+        data = response.tables
+    else:
+        # LogsQueryPartialResult
+        error = response.partial_error
+        data = response.partial_data
+        print(error)
+
+    for table in data:
+        df = pd.DataFrame(data=table.rows, columns=table.columns)
+        print(df)
+except HttpResponseError as err:
+    print("something fatal happened")
+    print(err)
+```
 
 #### Specify timespan
 
-The `timespan` parameter specifies the time duration for which to query the data. This value can be one of the following:
+The `timespan` parameter specifies the time duration for which to query the data. This value can take one of the following forms:
 
 - a `timedelta`
-- a `timedelta` and a start datetime
-- a start datetime/end datetime
+- a `timedelta` and a start `datetime`
+- a start `datetime`/end `datetime`
 
 For example:
 
@@ -119,8 +180,9 @@ For example:
 import os
 import pandas as pd
 from datetime import datetime, timezone
-from azure.monitor.query import LogsQueryClient
+from azure.monitor.query import LogsQueryClient, LogsQueryResult
 from azure.identity import DefaultAzureCredential
+from azure.core.exceptions import HttpResponseError
 
 credential = DefaultAzureCredential()
 client = LogsQueryClient(credential)
@@ -136,23 +198,25 @@ try:
         query=query,
         timespan=(start_time, end_time)
         )
-    if response.status == LogsQueryStatus.PARTIAL:
+    if response.status == LogsQueryStatus.SUCCESS:
+        data = response.tables
+    else:
+        # LogsQueryPartialResult
         error = response.partial_error
         data = response.partial_data
-        print(error.message)
-    elif response.status == LogsQueryStatus.SUCCESS:
-        data = response.tables
+        print(error)
+
     for table in data:
         df = pd.DataFrame(data=table.rows, columns=table.columns)
         print(df)
 except HttpResponseError as err:
     print("something fatal happened")
-    print (err)
+    print(err)
 ```
 
 #### Handle logs query response
 
-The `query_workspace` API returns either a `LogsQueryResult` or a `LogsQueryPartialResult` object. The `batch_query` API returns a list that may contain `LogsQueryResult`, `LogsQueryPartialResult`, and `LogsQueryError` objects. Here's a hierarchy of the response:
+The `query_workspace` API returns either a `LogsQueryResult` or a `LogsQueryPartialResult` object. The `batch_query` API returns a list that can contain `LogsQueryResult`, `LogsQueryPartialResult`, and `LogsQueryError` objects. Here's a hierarchy of the response:
 
 ```
 LogsQueryResult
@@ -162,7 +226,7 @@ LogsQueryResult
     |---name
     |---rows
     |---columns
-    |---column_types
+    |---columns_types
 
 LogsQueryPartialResult
 |---statistics
@@ -170,15 +234,16 @@ LogsQueryPartialResult
 |---partial_error (a `LogsQueryError` object)
     |---code
     |---message
+    |---details
     |---status
 |---partial_data (list of `LogsTable` objects)
     |---name
     |---rows
     |---columns
-    |---column_types
+    |---columns_types
 ```
 
-The `LogsQueryResult` directly iterates over the table as a convenience. For example, to handle a logs query response with tables and display it using pandas:
+The `LogsQueryResult` directly iterates over the table as a convenience. For example, to handle a logs query response with tables and display it using `pandas`:
 
 ```python
 response = client.query(...)
@@ -217,18 +282,18 @@ requests = [
     LogsBatchQuery(
         query="AzureActivity | summarize count()",
         timespan=timedelta(hours=1),
-        workspace_id= os.environ['LOG_WORKSPACE_ID']
+        workspace_id=os.environ['LOG_WORKSPACE_ID']
     ),
     LogsBatchQuery(
         query= """bad query""",
         timespan=timedelta(days=1),
-        workspace_id= os.environ['LOG_WORKSPACE_ID']
+        workspace_id=os.environ['LOG_WORKSPACE_ID']
     ),
     LogsBatchQuery(
         query= """let Weight = 92233720368547758;
         range x from 1 to 3 step 1
         | summarize percentilesw(x, Weight * 100, 50)""",
-        workspace_id= os.environ['LOG_WORKSPACE_ID'],
+        workspace_id=os.environ['LOG_WORKSPACE_ID'],
         timespan=(datetime(2021, 6, 2, tzinfo=timezone.utc), datetime(2021, 6, 5, tzinfo=timezone.utc)), # (start, end)
         include_statistics=True
     ),
@@ -236,12 +301,9 @@ requests = [
 results = client.query_batch(requests)
 
 for res in results:
-    if res.status == LogsQueryStatus.FAILURE:
-        # this will be a LogsQueryError
-        print(res.message)
-    elif res.status == LogsQueryStatus.PARTIAL:
+    if res.status == LogsQueryStatus.PARTIAL:
         ## this will be a LogsQueryPartialResult
-        print(res.partial_error.message)
+        print(res.partial_error)
         for table in res.partial_data:
             df = pd.DataFrame(table.rows, columns=table.columns)
             print(df)
@@ -250,6 +312,9 @@ for res in results:
         table = res.tables[0]
         df = pd.DataFrame(table.rows, columns=table.columns)
         print(df)
+    else:
+        # this will be a LogsQueryError
+        print(res.message)
 
 ```
 
@@ -261,6 +326,7 @@ The following example shows setting a server timeout in seconds. A gateway timeo
 
 ```python
 import os
+from datetime import timedelta
 from azure.monitor.query import LogsQueryClient
 from azure.identity import DefaultAzureCredential
 
@@ -270,8 +336,8 @@ client = LogsQueryClient(credential)
 response = client.query_workspace(
     os.environ['LOG_WORKSPACE_ID'],
     "range x from 1 to 10000000000 step 1 | count",
-    timespan=None,
-    server_timeout=1,
+    timespan=timedelta(days=1),
+    server_timeout=600 # sets the timeout to 10 minutes
     )
 ```
 
@@ -279,8 +345,8 @@ response = client.query_workspace(
 
 The same logs query can be executed across multiple Log Analytics workspaces. In addition to the Kusto query, the following parameters are required:
 
-- `workspace_id` - The first (primary) workspace ID.
-- `additional_workspaces` - A list of workspaces, excluding the workspace provided in the `workspace_id` parameter. The parameter's list items may consist of the following identifier formats:
+- `workspace_id` - The first (primary) workspace ID
+- `additional_workspaces` - A list of workspaces, excluding the workspace provided in the `workspace_id` parameter. The parameter's list items can consist of the following identifier formats:
   - Qualified workspace names
   - Workspace IDs
   - Azure resource IDs
@@ -291,25 +357,114 @@ For example, the following query executes in three workspaces:
 client.query_workspace(
     <workspace_id>,
     query,
+    timespan=timedelta(days=1),
     additional_workspaces=['<workspace 2>', '<workspace 3>']
     )
 ```
 
 A full sample can be found [here](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/sample_log_query_multiple_workspaces.py).
 
+#### Include statistics
+
+To get logs query execution statistics, such as CPU and memory consumption:
+
+1. Set the `include_statistics` parameter to `True`.
+1. Access the `statistics` field inside the `LogsQueryResult` object.
+
+The following example prints the query execution time:
+
+```python
+query = "AzureActivity | top 10 by TimeGenerated"
+result = client.query_workspace(
+    <workspace_id>,
+    query,
+    timespan=timedelta(days=1),
+    include_statistics=True
+    )
+
+execution_time = result.statistics.get("query", {}).get("executionTime")
+print(f"Query execution time: {execution_time}")
+```
+
+The `statistics` field is a `dict` that corresponds to the raw JSON response, and its structure can vary by query. The statistics are found within the `query` property. For example:
+
+```python
+{
+  "query": {
+    "executionTime": 0.0156478,
+    "resourceUsage": {...},
+    "inputDatasetStatistics": {...},
+    "datasetStatistics": [{...}]
+  }
+}
+```
+
+#### Include visualization
+
+To get visualization data for logs queries using the [render operator](https://learn.microsoft.com/azure/data-explorer/kusto/query/renderoperator?pivots=azuremonitor):
+
+1. Set the `include_visualization` property to `True`.
+1. Access the `visualization` field inside the `LogsQueryResult` object.
+
+For example:
+
+```python
+query = (
+    "StormEvents"
+    "| summarize event_count = count() by State"
+    "| where event_count > 10"
+    "| project State, event_count"
+    "| render columnchart"
+)
+result = client.query_workspace(
+    <workspace_id>,
+    query,
+    timespan=timedelta(days=1),
+    include_visualization=True
+    )
+
+print(f"Visualization result: {result.visualization}")
+```
+
+The `visualization` field is a `dict` that corresponds to the raw JSON response, and its structure can vary by query. For example:
+
+```python
+{
+  "visualization": "columnchart",
+  "title": "the chart title",
+  "accumulate": False,
+  "isQuerySorted": False,
+  "kind": None,
+  "legend": None,
+  "series": None,
+  "yMin": "NaN",
+  "yMax": "NaN",
+  "xAxis": None,
+  "xColumn": None,
+  "xTitle": "x axis title",
+  "yAxis": None,
+  "yColumns": None,
+  "ySplit": None,
+  "yTitle": None,
+  "anomalyColumns": None
+}
+```
+
+Interpretation of the visualization data is left to the library consumer. To use this data with the [Plotly graphing library](https://plotly.com/python/), see the [synchronous](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/sample_logs_query_visualization.py) or [asynchronous](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/async_samples/sample_logs_query_visualization_async.py) code samples.
+
 ### Metrics query
 
-The following example gets metrics for an Event Grid subscription. The resource URI is that of an Event Grid topic.
+The following example gets metrics for an Event Grid subscription. The resource ID (also known as resource URI) is that of an Event Grid topic.
 
-The resource URI must be that of the resource for which metrics are being queried. It's normally of the format `/subscriptions/<id>/resourceGroups/<rg-name>/providers/<source>/topics/<resource-name>`.
+The resource ID must be that of the resource for which metrics are being queried. It's normally of the format `/subscriptions/<id>/resourceGroups/<rg-name>/providers/<source>/topics/<resource-name>`.
 
-To find the resource URI:
+To find the resource ID/URI:
 
 1. Navigate to your resource's page in the Azure portal.
-2. From the **Overview** blade, select the **JSON View** link.
-3. In the resulting JSON, copy the value of the `id` property.
+1. Select the **JSON View** link in the **Overview** section.
+1. Copy the value in the **Resource ID** text box at the top of the JSON view.
 
-**NOTE**: The metrics are returned in the order of the metric_names sent.
+**NOTE**: The metrics are returned in the order of the `metric_names` sent.
 
 ```python
 import os
@@ -386,21 +541,56 @@ for metric in response.metrics:
                 )
 ```
 
+#### Query metrics for multiple resources
+
+To query metrics for multiple Azure resources in a single request, use the `query_resources` method of `MetricsClient`. This method:
+
+- Calls a different API than the `MetricsQueryClient` methods.
+- Requires a regional endpoint when creating the client. For example, "https://westus3.metrics.monitor.azure.com".
+
+Each Azure resource must reside in:
+
+- The same region as the endpoint specified when creating the client.
+- The same Azure subscription.
+
+Furthermore:
+
+- The user must be authorized to read monitoring data at the Azure subscription level. For example, the [Monitoring Reader role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-reader) on the subscription to be queried.
+- The metric namespace containing the metrics to be queried must be provided. For a list of metric namespaces, see [Supported metrics and log categories by resource type][metric_namespaces].
+
+```python
+from datetime import timedelta
+import os
+
+from azure.core.exceptions import HttpResponseError
+from azure.identity import DefaultAzureCredential
+from azure.monitor.query import MetricsClient, MetricAggregationType
+
+endpoint = "https://westus3.metrics.monitor.azure.com"
+credential = DefaultAzureCredential()
+client = MetricsClient(endpoint, credential)
+
+resource_ids = [
+    "/subscriptions/<id>/resourceGroups/<rg-name>/providers/<source>/storageAccounts/<resource-name-1>",
+    "/subscriptions/<id>/resourceGroups/<rg-name>/providers/<source>/storageAccounts/<resource-name-2>"
+]
+
+response = client.query_resources(
+    resource_ids=resource_ids,
+    metric_namespace="Microsoft.Storage/storageAccounts",
+    metric_names=["Ingress"],
+    timespan=timedelta(hours=2),
+    granularity=timedelta(minutes=5),
+    aggregations=[MetricAggregationType.AVERAGE],
+)
+
+for metrics_query_result in response:
+    print(metrics_query_result.timespan)
+```
+
 ## Troubleshooting
 
-Enable the `azure.monitor.query` logger to collect traces from the library.
-
-### General
-
-Monitor Query client library will raise exceptions defined in [Azure Core][azure_core_exceptions].
-
-### Logging
-
-This library uses the standard [logging][python_logging] library for logging. Basic information about HTTP sessions, such as URLs and headers, is logged at the `INFO` level.
-
-### Optional configuration
-
-Optional keyword arguments can be passed in at the client and per-operation level. The `azure-core` [reference documentation][azure_core_ref_docs] describes available configurations for retries, logging, transport protocols, and more.
+See our [troubleshooting guide][troubleshooting_guide] for details on how to diagnose various failure scenarios.
 
 ## Next steps
 
@@ -422,6 +612,7 @@ The following code samples show common scenarios with the Azure Monitor Query cl
 #### Metrics query samples
 
 - [Send a query using MetricsQueryClient](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/sample_metrics_query.py) ([async sample](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/async_samples/sample_metrics_query_async.py))
+- [Send a query to multiple resources in a region and subscription using MetricsClient](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/sample_metrics_query_multiple.py) ([async sample](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/async_samples/sample_metrics_query_multiple_async.py))
 - [Get a list of metric namespaces](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/sample_metric_namespaces.py) ([async sample](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/async_samples/sample_metric_namespaces_async.py))
 - [Get a list of metric definitions](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/sample_metric_definitions.py) ([async sample](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/samples/async_samples/sample_metric_definitions_async.py))
 
@@ -437,17 +628,19 @@ This project has adopted the [Microsoft Open Source Code of Conduct][code_of_con
 
 [azure_core_exceptions]: https://aka.ms/azsdk/python/core/docs#module-azure.core.exceptions
 [azure_core_ref_docs]: https://aka.ms/azsdk/python/core/docs
-[azure_monitor_create_using_portal]: https://docs.microsoft.com/azure/azure-monitor/logs/quick-create-workspace
-[azure_monitor_overview]: https://docs.microsoft.com/azure/azure-monitor/
+[azure_monitor_create_using_portal]: https://learn.microsoft.com/azure/azure-monitor/logs/quick-create-workspace
+[azure_monitor_overview]: https://learn.microsoft.com/azure/azure-monitor/
 [azure_subscription]: https://azure.microsoft.com/free/python/
 [changelog]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/monitor/azure-monitor-query/CHANGELOG.md
-[kusto_query_language]: https://docs.microsoft.com/azure/data-explorer/kusto/query/
+[kusto_query_language]: https://learn.microsoft.com/azure/data-explorer/kusto/query/
+[metric_namespaces]: https://learn.microsoft.com/azure/azure-monitor/reference/supported-metrics/metrics-index#supported-metrics-and-log-categories-by-resource-type
 [package]: https://aka.ms/azsdk-python-monitor-query-pypi
 [pip]: https://pypi.org/project/pip/
 [python_logging]: https://docs.python.org/3/library/logging.html
 [python-query-ref-docs]: https://aka.ms/azsdk/python/monitor-query/docs
 [samples]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/monitor/azure-monitor-query/samples
 [source]: https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/
+[troubleshooting_guide]: https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/monitor/azure-monitor-query/TROUBLESHOOTING.md
 
 [cla]: https://cla.microsoft.com
 [code_of_conduct]: https://opensource.microsoft.com/codeofconduct/

@@ -4,33 +4,19 @@
 # ------------------------------------
 import functools
 import os
-from typing import TYPE_CHECKING
-
+from typing import Optional, Dict, Any
 from azure.core.pipeline.transport import HttpRequest
 
 from .._constants import EnvironmentVariables
-from .._internal.managed_identity_base import ManagedIdentityBase
-from .._internal.managed_identity_client import ManagedIdentityClient
-
-if TYPE_CHECKING:
-    from typing import Any, Optional
+from .._internal.msal_managed_identity_client import MsalManagedIdentityClient
 
 
-class AppServiceCredential(ManagedIdentityBase):
-    def get_client(self, **kwargs):
-        # type: (**Any) -> Optional[ManagedIdentityClient]
-        client_args = _get_client_args(**kwargs)
-        if client_args:
-            return ManagedIdentityClient(**client_args)
-        return None
-
-    def get_unavailable_message(self):
-        # type: () -> str
-        return "App Service managed identity configuration not found in environment"
+class AppServiceCredential(MsalManagedIdentityClient):
+    def get_unavailable_message(self, desc: str = "") -> str:
+        return f"App Service managed identity configuration not found in environment. {desc}"
 
 
-def _get_client_args(**kwargs):
-    # type: (dict) -> Optional[dict]
+def _get_client_args(**kwargs: Any) -> Optional[Dict]:
     identity_config = kwargs.pop("identity_config", None) or {}
 
     url = os.environ.get(EnvironmentVariables.IDENTITY_ENDPOINT)
@@ -38,9 +24,6 @@ def _get_client_args(**kwargs):
     if not (url and secret):
         # App Service managed identity isn't available in this environment
         return None
-
-    if kwargs.get("resource_id"):
-        identity_config["mi_res_id"] = kwargs.pop("resource_id")
 
     return dict(
         kwargs,
@@ -50,8 +33,7 @@ def _get_client_args(**kwargs):
     )
 
 
-def _get_request(url, scope, identity_config):
-    # type: (str, str, dict) -> HttpRequest
+def _get_request(url: str, scope: str, identity_config: Dict) -> HttpRequest:
     request = HttpRequest("GET", url)
     request.format_parameters(dict({"api-version": "2019-08-01", "resource": scope}, **identity_config))
     return request

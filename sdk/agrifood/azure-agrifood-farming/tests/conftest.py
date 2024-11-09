@@ -1,15 +1,8 @@
-# coding: utf-8
-# -------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See License.txt in the project root for
-# license information.
-# --------------------------------------------------------------------------
+import pytest
+from devtools_testutils import set_custom_default_matcher
 
-import sys
-
-# fixture needs to be visible from conftest
-
-# Ignore async tests for Python < 3.5
-collect_ignore_glob = []
-if sys.version_info < (3, 5):
-    collect_ignore_glob.append("*_async.py")
+# autouse=True will trigger this fixture on each pytest run, even if it's not explicitly used by a test method
+@pytest.fixture(scope="session", autouse=True)
+def start_proxy(test_proxy):
+    set_custom_default_matcher(ignored_headers="Accept-Encoding")
+    return

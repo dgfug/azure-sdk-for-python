@@ -1,6 +1,3 @@
-## _Disclaimer_
-_Azure SDK Python packages support for Python 2.7 has ended 01 January 2022. For more information and questions, please refer to https://github.com/Azure/azure-sdk-for-python/issues/20691_
-
 # Azure Storage Queues client library for Python
 
 Azure Queue storage is a service for storing large numbers of messages that can be accessed from anywhere in the world via authenticated calls using HTTP or HTTPS. A single queue message can be up to 64 KiB in size, and a queue can contain millions of messages, up to the total capacity limit of a storage account.
@@ -10,12 +7,17 @@ Common uses of Queue storage include:
 * Creating a backlog of work to process asynchronously
 * Passing messages between different parts of a distributed application
 
-[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-queue/azure/storage/queue) | [Package (PyPI)](https://pypi.org/project/azure-storage-queue/) | [API reference documentation](https://aka.ms/azsdk-python-storage-queue-ref) | [Product documentation](https://docs.microsoft.com/azure/storage/) | [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-queue/samples)
+[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-queue/azure/storage/queue)
+| [Package (PyPI)](https://pypi.org/project/azure-storage-queue/)
+| [Package (Conda)](https://anaconda.org/microsoft/azure-storage/)
+| [API reference documentation](https://aka.ms/azsdk-python-storage-queue-ref)
+| [Product documentation](https://docs.microsoft.com/azure/storage/)
+| [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-queue/samples)
 
 ## Getting started
 
 ### Prerequisites
-* Python 3.6 or later is required to use this package.
+* Python 3.8 or later is required to use this package. For more details, please read our page on [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
 * You must have an [Azure subscription](https://azure.microsoft.com/free/) and an
 [Azure storage account](https://docs.microsoft.com/azure/storage/common/storage-account-overview) to use this package.
 
@@ -81,6 +83,7 @@ The `credential` parameter may be provided in a number of different forms, depen
         account_key="<account-access-key>",
         resource_types=ResourceTypes(service=True),
         permission=AccountSasPermissions(read=True),
+        start=datetime.utcnow(),
         expiry=datetime.utcnow() + timedelta(hours=1)
     )
 
@@ -114,14 +117,14 @@ The `credential` parameter may be provided in a number of different forms, depen
 
    Use the returned token credential to authenticate the client:
     ```python
-        from azure.identity import DefaultAzureCredential
-        from azure.storage.queue import QueueServiceClient
-        token_credential = DefaultAzureCredential()
+    from azure.identity import DefaultAzureCredential
+    from azure.storage.queue import QueueServiceClient
+    token_credential = DefaultAzureCredential()
 
-        queue_service_client = QueueServiceClient(
-            account_url="https://<my_account_name>.queue.core.windows.net",
-            credential=token_credential
-        )
+    queue_service_client = QueueServiceClient(
+        account_url="https://<my_account_name>.queue.core.windows.net",
+        credential=token_credential
+    )
     ```
 
 #### Creating the client from a connection string
@@ -196,7 +199,7 @@ Create a queue in your storage account
 ```python
 from azure.storage.queue import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 queue.create_queue()
 ```
 
@@ -204,7 +207,7 @@ Use the async client to create a queue
 ```python
 from azure.storage.queue.aio import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 await queue.create_queue()
 ```
 
@@ -214,7 +217,7 @@ Send messages to your queue
 ```python
 from azure.storage.queue import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 queue.send_message("I'm using queues!")
 queue.send_message("This is my second message")
 ```
@@ -225,7 +228,7 @@ Send messages asynchronously
 import asyncio
 from azure.storage.queue.aio import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 await asyncio.gather(
     queue.send_message("I'm using queues!"),
     queue.send_message("This is my second message")
@@ -238,7 +241,7 @@ Receive and process messages from your queue
 ```python
 from azure.storage.queue import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 response = queue.receive_messages()
 
 for message in response:
@@ -255,7 +258,7 @@ Receive and process messages in batches
 ```python
 from azure.storage.queue import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 response = queue.receive_messages(messages_per_page=10)
 
 for message_batch in response.by_page():
@@ -269,7 +272,7 @@ Receive and process messages asynchronously
 ```python
 from azure.storage.queue.aio import QueueClient
 
-queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="my_queue")
+queue = QueueClient.from_connection_string(conn_str="<connection_string>", queue_name="myqueue")
 response = queue.receive_messages()
 
 async for message in response:
@@ -300,7 +303,11 @@ Other optional configuration keyword arguments that can be specified on the clie
 
 **Client keyword arguments:**
 
-* __connection_timeout__ (int): Optionally sets the connect and read timeout value, in seconds.
+* __connection_timeout__ (int): The number of seconds the client will wait to establish a connection to the server.
+Defaults to 20 seconds.
+* __read_timeout__ (int): The number of seconds the client will wait, between consecutive read operations, for a
+response from the server. This is a socket level timeout and is not affected by overall data size. Client-side read 
+timeouts will be automatically retried. Defaults to 60 seconds.
 * __transport__ (Any): User-provided transport to send the HTTP request.
 
 **Per-operation keyword arguments:**
@@ -349,7 +356,7 @@ service_client = QueueServiceClient.from_connection_string("your_connection_stri
 
 Similarly, `logging_enable` can enable detailed logging for a single operation,
 even when it isn't enabled for the client:
-```py
+```python
 service_client.get_service_stats(logging_enable=True)
 ```
 

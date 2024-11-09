@@ -5,7 +5,7 @@ languages:
 products:
 - azure
 - azure-cognitive-services
-- azure-qna-maker
+- language-service
 urlFragment: languagequestionanswering-samples
 ---
 
@@ -14,7 +14,6 @@ urlFragment: languagequestionanswering-samples
 Question Answering is a cloud-based API service that lets you create a conversational question-and-answer layer over your existing data. Use it to build a knowledge base by extracting questions and answers from your semi-structured content, including FAQ, manuals, and documents. Answer users' questions with the best answers from the QnAs in your knowledge base—automatically. Your knowledge base gets smarter, too, as it continually learns from user behavior.
 
 These code samples show common scenario operations with the Azure Language QuestionAnswering client library.
-The async versions of the samples require Python 3.6 or later.
 You can authenticate your client with a QuestionAnswering API key.
 
 These sample programs show common scenarios for the QuestionAnswering client's offerings.
@@ -32,16 +31,16 @@ These sample programs show common scenarios for the QuestionAnswering client's o
 
 ### Prerequisites
 
-* Python 2.7, or 3.6 or later is required to use this package.
+* Python 3.7 or later is required to use this package.
 * An [Azure subscription][azure_subscription]
-* An existing Question Answering resource
+* A [Language Service][language_service] resource
 
 
 ## Setup
 
 1. Install the Azure QuestionAnswering client library for Python with [pip][pip]:
 ```bash
-pip install --pre azure-ai-language-questionanswering
+pip install azure-ai-language-questionanswering
 ```
 2. Clone or download this sample repository
 3. Open the sample folder in Visual Studio Code or your IDE of choice.
@@ -67,5 +66,6 @@ pip install --pre azure-ai-language-questionanswering
 [add_knowledge_sources]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cognitivelanguage/azure-ai-language-questionanswering/samples/authoring/sample_update_knowledge_sources.py
 [add_knowledge_sources_async]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cognitivelanguage/azure-ai-language-questionanswering/samples/authoring/async_samples/sample_update_knowledge_sources_async.py
 
+[language_service]: https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesTextAnalytics
 [pip]: https://pypi.org/project/pip/
 [azure_subscription]: https://azure.microsoft.com/free/

@@ -1,5 +1,79 @@
 # Release History
 
+## 2.0.0 (2024-05-20)
+
+### Features Added
+
+  - Added operation group ImportJobsOperations
+  - Model AmlFilesystem has a new parameter root_squash_settings
+  - Model AmlFilesystemHsmSettings has a new parameter import_prefixes_initial
+  - Model AmlFilesystemUpdate has a new parameter root_squash_settings
+  - Model ErrorResponse has a new parameter error
+  - Model AscOperation.error changes type from ErrorResponse to AscOperationErrorResponse
+
+### Breaking Changes
+
+  - Model ErrorResponse no longer has parameter code
+  - Model ErrorResponse no longer has parameter message
+
+## 1.6.0b1 (2024-02-22)
+
+### Features Added
+
+  - Model AmlFilesystem has a new parameter root_squash_settings
+  - Model AmlFilesystemUpdate has a new parameter root_squash_settings
+
+## 1.5.0 (2023-06-16)
+
+### Features Added
+
+  - Added operation group AmlFilesystemsOperations
+  - Added operation group StorageCacheManagementClientOperationsMixin
+
+## 1.4.0 (2023-02-15)
+
+### Features Added
+
+  - Added operation StorageTargetsOperations.begin_restore_defaults
+  - Model BlobNfsTarget has a new parameter verification_timer
+  - Model BlobNfsTarget has a new parameter write_back_timer
+  - Model Nfs3Target has a new parameter verification_timer
+  - Model Nfs3Target has a new parameter write_back_timer
+
+### Breaking Changes
+
+  - Renamed operation CachesOperations.update to CachesOperations.begin_update
+
+## 1.4.0b1 (2022-12-12)
+
+### Other Changes
+
+  - Added generated samples in github repo
+  - Drop support for python<3.7.0
+
+## 1.3.0 (2022-07-07)
+
+**Features**
+
+  - Added operation CachesOperations.begin_pause_priming_job
+  - Added operation CachesOperations.begin_resume_priming_job
+  - Added operation CachesOperations.begin_space_allocation
+  - Added operation CachesOperations.begin_start_priming_job
+  - Added operation CachesOperations.begin_stop_priming_job
+  - Model ApiOperationPropertiesServiceSpecification has a new parameter log_specifications
+  - Model Cache has a new parameter priming_jobs
+  - Model Cache has a new parameter space_allocation
+  - Model Cache has a new parameter upgrade_settings
+  - Model StorageTarget has a new parameter allocation_percentage
+
+## 1.2.0 (2022-03-22)
+
+**Features**
+
+  - Added operation StorageTargetOperations.begin_invalidate
+  - Added operation group AscUsagesOperations
+  - Model Cache has a new parameter zones
+
 ## 1.1.0 (2021-09-30)
 
 **Features**

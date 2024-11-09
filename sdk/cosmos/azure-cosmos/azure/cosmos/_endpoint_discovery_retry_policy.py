@@ -60,12 +60,15 @@ class EndpointDiscoveryRetryPolicy(object):
             self.request.route_to_location(self.location_endpoint)
 
     def ShouldRetry(self, exception):  # pylint: disable=unused-argument
-        """Returns true if should retry based on the passed-in exception.
+        """Returns true if the request should retry based on the passed-in exception.
 
-        :param (exceptions.CosmosHttpResponseError instance) exception:
-        :rtype: boolean
-
+        :param exceptions.CosmosHttpResponseError exception:
+        :returns: a boolean stating whether the request should be retried
+        :rtype: bool
         """
+        if not self.request:
+            return False
+
         if not self.connection_policy.EnableEndpointDiscovery:
             return False
 
@@ -93,8 +96,4 @@ class EndpointDiscoveryRetryPolicy(object):
         # is set to false
         self.request.route_to_location_with_preferred_location_flag(self.failover_retry_count, False)
 
-        # Resolve the endpoint for the request and pin the resolution to the resolved endpoint
-        # This enables marking the endpoint unavailability on endpoint failover/unreachability
-        self.location_endpoint = self.global_endpoint_manager.resolve_service_endpoint(self.request)
-        self.request.route_to_location(self.location_endpoint)
         return True

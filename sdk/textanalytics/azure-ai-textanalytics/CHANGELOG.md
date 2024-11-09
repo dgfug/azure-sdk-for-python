@@ -1,6 +1,6 @@
 # Release History
 
-## 5.2.0b4 (Unreleased)
+## 5.3.1 (Unreleased)
 
 ### Features Added
 
@@ -9,6 +9,147 @@
 ### Bugs Fixed
 
 ### Other Changes
+
+## 5.3.0 (2023-06-15)
+
+This version of the client library defaults to the service API version `2023-04-01`.
+
+### Breaking Changes
+
+> Note: The following changes are only breaking from the previous beta. They are not breaking against previous stable versions.
+
+- Renamed model `ExtractSummaryAction` to `ExtractiveSummaryAction`.
+- Renamed model `ExtractSummaryResult` to `ExtractiveSummaryResult`.
+- Renamed client method `begin_abstractive_summary` to `begin_abstract_summary`.
+- Removed `dynamic_classification` client method and related types: `DynamicClassificationResult` and `ClassificationType`.
+- Removed keyword arguments `fhir_version` and `document_type` from `begin_analyze_healthcare_entities` and `AnalyzeHealthcareEntitiesAction`.
+- Removed property `fhir_bundle` from `AnalyzeHealthcareEntitiesResult`. 
+- Removed enum `HealthcareDocumentType`.
+- Removed property `resolutions` from `CategorizedEntity`.
+- Removed models and enums related to resolutions: `ResolutionKind`, `AgeResolution`, `AreaResolution`,
+  `CurrencyResolution`, `DateTimeResolution`, `InformationResolution`, `LengthResolution`,
+  `NumberResolution`, `NumericRangeResolution`, `OrdinalResolution`, `SpeedResolution`, `TemperatureResolution`,
+  `TemporalSpanResolution`, `VolumeResolution`, `WeightResolution`, `AgeUnit`, `AreaUnit`, `TemporalModifier`,
+  `InformationUnit`, `LengthUnit`, `NumberKind`, `RangeKind`, `RelativeTo`, `SpeedUnit`, `TemperatureUnit`,
+  `VolumeUnit`, `DateTimeSubKind`, and `WeightUnit`.
+- Removed property `detected_language` from `RecognizeEntitiesResult`, `RecognizePiiEntitiesResult`, `AnalyzeHealthcareEntitiesResult`,
+  `ExtractKeyPhrasesResult`, `RecognizeLinkedEntitiesResult`, `AnalyzeSentimentResult`, `RecognizeCustomEntitiesResult`,
+  `ClassifyDocumentResult`, `ExtractSummaryResult`, and `AbstractSummaryResult`.
+- Removed property `script` from `DetectedLanguage`.
+
+### Features Added
+
+- New enum values added for `HealthcareEntityCategory` and `HealthcareEntityRelation`.
+
+## 5.3.0b2 (2023-03-07)
+
+This version of the client library defaults to the service API version `2022-10-01-preview`.
+
+### Features Added
+
+- Added `begin_extract_summary` client method to perform extractive summarization on documents.
+- Added `begin_abstractive_summary` client method to perform abstractive summarization on documents.
+
+### Breaking Changes
+
+- Removed models `BaseResolution` and `BooleanResolution`.
+- Removed enum value `BooleanResolution` from `ResolutionKind`.
+- Renamed model `AbstractSummaryAction` to `AbstractiveSummaryAction`.
+- Renamed model `AbstractSummaryResult` to `AbstractiveSummaryResult`.
+- Removed keyword argument `autodetect_default_language` from long-running operation APIs.
+
+### Other Changes
+
+ - Improved static typing in the client library. 
+
+## 5.3.0b1 (2022-11-17)
+
+This version of the client library defaults to the service API version `2022-10-01-preview`.
+
+### Features Added
+- Added the Extractive Summarization feature and related models: `ExtractSummaryAction`, `ExtractSummaryResult`, and `SummarySentence`.
+  Access the feature through the `begin_analyze_actions` API.
+- Added keyword arguments `fhir_version` and `document_type` to `begin_analyze_healthcare_entities` and `AnalyzeHealthcareEntitiesAction`.
+- Added property `fhir_bundle` to `AnalyzeHealthcareEntitiesResult`.
+- Added property `confidence_score` to `HealthcareRelation`.
+- Added enum `HealthcareDocumentType`.
+- Added property `resolutions` to `CategorizedEntity`.
+- Added models and enums related to resolutions: `BaseResolution`, `ResolutionKind`, `AgeResolution`, `AreaResolution`, 
+  `BooleanResolution`, `CurrencyResolution`, `DateTimeResolution`, `InformationResolution`, `LengthResolution`,
+  `NumberResolution`, `NumericRangeResolution`, `OrdinalResolution`, `SpeedResolution`, `TemperatureResolution`,
+  `TemporalSpanResolution`, `VolumeResolution`, `WeightResolution`, `AgeUnit`, `AreaUnit`, `TemporalModifier`,
+  `InformationUnit`, `LengthUnit`, `NumberKind`, `RangeKind`, `RelativeTo`, `SpeedUnit`, `TemperatureUnit`,
+  `VolumeUnit`, `DateTimeSubKind`, and `WeightUnit`.
+- Added the Abstractive Summarization feature and related models: `AbstractSummaryAction`, `AbstractSummaryResult`, `AbstractiveSummary`,
+  and `SummaryContext`. Access the feature through the `begin_analyze_actions` API.
+- Added automatic language detection to long-running operation APIs. Pass `auto` into the document `language` hint to use this feature.
+- Added `autodetect_default_language` to long-running operation APIs. Pass as the default/fallback language for automatic language detection.
+- Added property `detected_language` to `RecognizeEntitiesResult`, `RecognizePiiEntitiesResult`, `AnalyzeHealthcareEntitiesResult`,
+  `ExtractKeyPhrasesResult`, `RecognizeLinkedEntitiesResult`, `AnalyzeSentimentResult`, `RecognizeCustomEntitiesResult`,
+  `ClassifyDocumentResult`, `ExtractSummaryResult`, and `AbstractSummaryResult` to indicate the language detected by automatic language detection.
+- Added property `script` to `DetectedLanguage` to indicate the script of the input document.
+- Added the `dynamic_classification` client method to perform dynamic classification on documents without needing to train a model.
+
+### Other Changes
+- Removed dependency on `msrest`.
+
+## 5.2.1 (2022-10-26)
+
+### Bugs Fixed
+- Returns a more helpful message in the document error when all documents fail for an action in the `begin_analyze_actions` API.
+
+## 5.2.0 (2022-09-08)
+
+### Other Changes
+
+This version of the client library marks a stable release and defaults to the service API version `2022-05-01`.
+Includes all changes from `5.2.0b1` to `5.2.0b5`.
+
+## 5.2.0b5 (2022-08-11)
+
+The version of this client library defaults to the API version `2022-05-01`.
+
+### Features Added
+
+- Added `begin_recognize_custom_entities` client method to recognize custom named entities in documents.
+- Added `begin_single_label_classify` client method to perform custom single label classification on documents.
+- Added `begin_multi_label_classify` client method to perform custom multi label classification on documents.
+- Added property `details` on returned poller objects which contain long-running operation metadata.
+- Added `TextAnalysisLROPoller` and `AsyncTextAnalysisLROPoller` protocols to describe the return types from long-running operations.
+- Added `cancel` method on the poller objects. Call it to cancel a long-running operation that's in progress.
+- Added property `kind` to `RecognizeEntitiesResult`, `RecognizePiiEntitiesResult`, `AnalyzeHealthcareEntitiesResult`,
+  `DetectLanguageResult`, `ExtractKeyPhrasesResult`, `RecognizeLinkedEntitiesResult`, `AnalyzeSentimentResult`,
+  `RecognizeCustomEntitiesResult`, `ClassifyDocumentResult`, and `DocumentError`.
+- Added enum `TextAnalysisKind`.
+
+### Breaking Changes
+
+- Removed the Extractive Text Summarization feature and related models: `ExtractSummaryAction`, `ExtractSummaryResult`, and `SummarySentence`. To access this beta feature, install the `5.2.0b4` version of the client library.
+- Removed the `FHIR` feature and related keyword argument and property: `fhir_version` and `fhir_bundle`. To access this beta feature, install the `5.2.0b4` version of the client library.
+- `SingleCategoryClassifyResult` and `MultiCategoryClassifyResult` models have been merged into one model: `ClassifyDocumentResult`.
+- Renamed `SingleCategoryClassifyAction` to `SingleLabelClassifyAction`
+- Renamed `MultiCategoryClassifyAction` to `MultiLabelClassifyAction`.
+
+### Bugs Fixed
+
+- A `HttpResponseError` will be immediately raised when the call quota volume is exceeded in a `F0` tier Language resource.
+
+### Other Changes
+
+- Python 3.6 is no longer supported. Please use Python version 3.7 or later. For more details, see [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
+
+
+## 5.2.0b4 (2022-05-18)
+
+Note that this is the first version of the client library that targets the Azure Cognitive Service for Language APIs which includes the existing text analysis and natural language processing features found in the Text Analytics client library.
+In addition, the service API has changed from semantic to date-based versioning. This version of the client library defaults to the latest supported API version, which currently is `2022-04-01-preview`. Support for `v3.2-preview.2` is removed, however, all functionalities are included in the latest version.
+
+### Features Added
+
+- Added support for Healthcare Entities Analysis through the `begin_analyze_actions` API with the `AnalyzeHealthcareEntitiesAction` type.
+- Added keyword argument `fhir_version` to `begin_analyze_healthcare_entities` and `AnalyzeHealthcareEntitiesAction`. Use the keyword to indicate the version for the `fhir_bundle` contained on the `AnalyzeHealthcareEntitiesResult`.
+- Added property `fhir_bundle` to `AnalyzeHealthcareEntitiesResult`.
+- Added keyword argument `display_name` to `begin_analyze_healthcare_entities`.
 
 ## 5.2.0b3 (2022-03-08)
 

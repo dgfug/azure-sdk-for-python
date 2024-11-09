@@ -9,7 +9,7 @@ import time
 from azure.core.exceptions import HttpResponseError
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.aio import SearchIndexingBufferedSender, SearchClient
-from devtools_testutils import AzureRecordedTestCase
+from devtools_testutils import AzureRecordedTestCase, get_credential
 from devtools_testutils.aio import recorded_by_proxy_async
 from search_service_preparer import SearchEnvVarPreparer, search_decorator
 
@@ -17,13 +17,14 @@ TIME_TO_SLEEP = 3
 
 
 class TestSearchIndexingBufferedSenderAsync(AzureRecordedTestCase):
-
     @SearchEnvVarPreparer()
     @search_decorator(schema="hotel_schema.json", index_batch="hotel_small.json")
     @recorded_by_proxy_async
-    async def test_search_client_index_buffered_sender(self, endpoint, api_key, index_name):
-        client = SearchClient(endpoint, index_name, api_key)
-        batch_client = SearchIndexingBufferedSender(endpoint, index_name, api_key)
+    async def test_search_client_index_buffered_sender(self, endpoint, index_name):
+        client = SearchClient(endpoint, index_name, get_credential(is_async=True), retry_backoff_factor=60)
+        batch_client = SearchIndexingBufferedSender(
+            endpoint, index_name, get_credential(is_async=True), retry_backoff_factor=60
+        )
         try:
             async with client:
                 async with batch_client:
@@ -36,7 +37,7 @@ class TestSearchIndexingBufferedSenderAsync(AzureRecordedTestCase):
                     doc_count = await self._test_merge_documents_missing(client, batch_client, doc_count)
                     doc_count = await self._test_merge_or_upload_documents(client, batch_client, doc_count)
         finally:
-            batch_client.close()
+            await batch_client.close()
 
     async def _test_upload_documents_new(self, client, batch_client, doc_count):
         batch_client._batch_action_count = 2

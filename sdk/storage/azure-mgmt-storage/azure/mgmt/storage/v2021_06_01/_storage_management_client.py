@@ -7,21 +7,44 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
+from azure.core.pipeline import policies
 from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
 
-from . import models
+from . import models as _models
+from .._serialization import Deserializer, Serializer
 from ._configuration import StorageManagementClientConfiguration
-from .operations import BlobContainersOperations, BlobInventoryPoliciesOperations, BlobServicesOperations, DeletedAccountsOperations, EncryptionScopesOperations, FileServicesOperations, FileSharesOperations, ManagementPoliciesOperations, ObjectReplicationPoliciesOperations, Operations, PrivateEndpointConnectionsOperations, PrivateLinkResourcesOperations, QueueOperations, QueueServicesOperations, SkusOperations, StorageAccountsOperations, TableOperations, TableServicesOperations, UsagesOperations
+from .operations import (
+    BlobContainersOperations,
+    BlobInventoryPoliciesOperations,
+    BlobServicesOperations,
+    DeletedAccountsOperations,
+    EncryptionScopesOperations,
+    FileServicesOperations,
+    FileSharesOperations,
+    ManagementPoliciesOperations,
+    ObjectReplicationPoliciesOperations,
+    Operations,
+    PrivateEndpointConnectionsOperations,
+    PrivateLinkResourcesOperations,
+    QueueOperations,
+    QueueServicesOperations,
+    SkusOperations,
+    StorageAccountsOperations,
+    TableOperations,
+    TableServicesOperations,
+    UsagesOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials import TokenCredential
 
-class StorageManagementClient:
+
+class StorageManagementClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """The Azure Storage Management API.
 
     :ivar operations: Operations operations
@@ -68,12 +91,15 @@ class StorageManagementClient:
     :vartype table_services: azure.mgmt.storage.v2021_06_01.operations.TableServicesOperations
     :ivar table: TableOperations operations
     :vartype table: azure.mgmt.storage.v2021_06_01.operations.TableOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: The ID of the target subscription.
+    :param subscription_id: The ID of the target subscription. Required.
     :type subscription_id: str
-    :param base_url: Service URL. Default value is 'https://management.azure.com'.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
+    :keyword api_version: Api Version. Default value is "2021-06-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
     :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
      Retry-After header is present.
     """
@@ -85,39 +111,82 @@ class StorageManagementClient:
         base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        self._config = StorageManagementClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = StorageManagementClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
-        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
-        self.skus = SkusOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.storage_accounts = StorageAccountsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.deleted_accounts = DeletedAccountsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.usages = UsagesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.management_policies = ManagementPoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.blob_inventory_policies = BlobInventoryPoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.private_endpoint_connections = PrivateEndpointConnectionsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.private_link_resources = PrivateLinkResourcesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.object_replication_policies = ObjectReplicationPoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.encryption_scopes = EncryptionScopesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.blob_services = BlobServicesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.blob_containers = BlobContainersOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.file_services = FileServicesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.file_shares = FileSharesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.queue_services = QueueServicesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.queue = QueueOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.table_services = TableServicesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.table = TableOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize, "2021-06-01")
+        self.skus = SkusOperations(self._client, self._config, self._serialize, self._deserialize, "2021-06-01")
+        self.storage_accounts = StorageAccountsOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.deleted_accounts = DeletedAccountsOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.usages = UsagesOperations(self._client, self._config, self._serialize, self._deserialize, "2021-06-01")
+        self.management_policies = ManagementPoliciesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.blob_inventory_policies = BlobInventoryPoliciesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.private_endpoint_connections = PrivateEndpointConnectionsOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.private_link_resources = PrivateLinkResourcesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.object_replication_policies = ObjectReplicationPoliciesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.encryption_scopes = EncryptionScopesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.blob_services = BlobServicesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.blob_containers = BlobContainersOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.file_services = FileServicesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.file_shares = FileSharesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.queue_services = QueueServicesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.queue = QueueOperations(self._client, self._config, self._serialize, self._deserialize, "2021-06-01")
+        self.table_services = TableServicesOperations(
+            self._client, self._config, self._serialize, self._deserialize, "2021-06-01"
+        )
+        self.table = TableOperations(self._client, self._config, self._serialize, self._deserialize, "2021-06-01")
 
-
-    def _send_request(
-        self,
-        request,  # type: HttpRequest
-        **kwargs: Any
-    ) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
@@ -126,7 +195,7 @@ class StorageManagementClient:
         >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -137,17 +206,14 @@ class StorageManagementClient:
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> StorageManagementClient
+    def __enter__(self) -> "StorageManagementClient":
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

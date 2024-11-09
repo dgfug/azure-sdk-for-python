@@ -6,18 +6,24 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from ._galleries_operations import GalleriesOperations
-from ._gallery_images_operations import GalleryImagesOperations
-from ._gallery_image_versions_operations import GalleryImageVersionsOperations
-from ._gallery_applications_operations import GalleryApplicationsOperations
-from ._gallery_application_versions_operations import GalleryApplicationVersionsOperations
-from ._gallery_sharing_profile_operations import GallerySharingProfileOperations
+from ._operations import GalleriesOperations
+from ._operations import GalleryImagesOperations
+from ._operations import GalleryImageVersionsOperations
+from ._operations import GalleryApplicationsOperations
+from ._operations import GalleryApplicationVersionsOperations
+from ._operations import GallerySharingProfileOperations
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'GalleriesOperations',
-    'GalleryImagesOperations',
-    'GalleryImageVersionsOperations',
-    'GalleryApplicationsOperations',
-    'GalleryApplicationVersionsOperations',
-    'GallerySharingProfileOperations',
+    "GalleriesOperations",
+    "GalleryImagesOperations",
+    "GalleryImageVersionsOperations",
+    "GalleryApplicationsOperations",
+    "GalleryApplicationVersionsOperations",
+    "GallerySharingProfileOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

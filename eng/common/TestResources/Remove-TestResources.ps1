@@ -16,8 +16,8 @@ param (
     [ValidatePattern('^[-a-zA-Z0-9\.\(\)_]{0,80}(?<=[a-zA-Z0-9\(\)])$')]
     [string] $BaseName,
 
-    [Parameter(ParameterSetName = 'ResourceGroup', Mandatory = $true)]
-    [Parameter(ParameterSetName = 'ResourceGroup+Provisioner', Mandatory = $true)]
+    [Parameter(ParameterSetName = 'ResourceGroup')]
+    [Parameter(ParameterSetName = 'ResourceGroup+Provisioner')]
     [string] $ResourceGroupName,
 
     [Parameter(ParameterSetName = 'Default+Provisioner', Mandatory = $true)]
@@ -34,8 +34,8 @@ param (
     [ValidatePattern('^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$')]
     [string] $ProvisionerApplicationId,
 
-    [Parameter(ParameterSetName = 'Default+Provisioner', Mandatory = $true)]
-    [Parameter(ParameterSetName = 'ResourceGroup+Provisioner', Mandatory = $true)]
+    [Parameter(ParameterSetName = 'Default+Provisioner')]
+    [Parameter(ParameterSetName = 'ResourceGroup+Provisioner')]
     [string] $ProvisionerApplicationSecret,
 
     [Parameter(ParameterSetName = 'Default', Position = 0)]
@@ -48,6 +48,32 @@ param (
     [ValidateSet('AzureCloud', 'AzureUSGovernment', 'AzureChinaCloud', 'Dogfood')]
     [string] $Environment = 'AzureCloud',
 
+    [Parameter(ParameterSetName = 'ResourceGroup')]
+    [Parameter(ParameterSetName = 'ResourceGroup+Provisioner')]
+    [switch] $CI,
+
+    [Parameter()]
+    [ValidateSet('test', 'perf')]
+    [string] $ResourceType = 'test',
+
+    [Parameter(ParameterSetName = 'Default+Provisioner')]
+    [Parameter(ParameterSetName = 'ResourceGroup+Provisioner')]
+    [Parameter()]
+    [switch] $ServicePrincipalAuth,
+
+    # List of CIDR ranges to add to specific resource firewalls, e.g. @(10.100.0.0/16, 10.200.0.0/16)
+    [Parameter()]
+    [ValidateCount(0,399)]
+    [Validatescript({
+        foreach ($range in $PSItem) {
+            if ($range -like '*/31' -or $range -like '*/32') {
+                throw "Firewall IP Ranges cannot contain a /31 or /32 CIDR"
+            }
+        }
+        return $true
+    })]
+    [array] $AllowIpRanges = @(),
+
     [Parameter()]
     [switch] $Force,
 
@@ -55,6 +81,9 @@ param (
     [Parameter(ValueFromRemainingArguments = $true)]
     $RemoveTestResourcesRemainingArguments
 )
+
+. (Join-Path $PSScriptRoot .. scripts Helpers Resource-Helpers.ps1)
+. (Join-Path $PSScriptRoot TestResources-Helpers.ps1)
 
 # By default stop for any error.
 if (!$PSBoundParameters.ContainsKey('ErrorAction')) {
@@ -73,6 +102,7 @@ trap {
     $exitActions.Invoke()
 }
 
+. $PSScriptRoot/SubConfig-Helpers.ps1
 # Source helpers to purge resources.
 . "$PSScriptRoot\..\scripts\Helpers\Resource-Helpers.ps1"
 
@@ -101,7 +131,7 @@ function Retry([scriptblock] $Action, [int] $Attempts = 5) {
     }
 }
 
-if ($ProvisionerApplicationId) {
+if ($ProvisionerApplicationId -and $ServicePrincipalAuth) {
     $null = Disable-AzContextAutosave -Scope Process
 
     Log "Logging into service principal '$ProvisionerApplicationId'"
@@ -126,18 +156,26 @@ if ($ProvisionerApplicationId) {
 $context = Get-AzContext
 
 if (!$ResourceGroupName) {
-    # Make sure $BaseName is set.
-    if (!$BaseName) {
-        $UserName = if ($env:USER) { $env:USER } else { "${env:USERNAME}" }
-        # Remove spaces, etc. that may be in $UserName
-        $UserName = $UserName -replace '\W'
-
-        $BaseName = "$UserName$ServiceDirectory"
-        Log "BaseName was not set. Using default base name '$BaseName'"
+    if ($CI) {
+        if (!$ServiceDirectory) {
+            Write-Warning "ServiceDirectory parameter is empty, nothing to remove"
+            exit 0
+        }
+        $envVarName = (BuildServiceDirectoryPrefix (GetServiceLeafDirectoryName $ServiceDirectory)) + "RESOURCE_GROUP"
+        $ResourceGroupName = [Environment]::GetEnvironmentVariable($envVarName)
+        if (!$ResourceGroupName) {
+            Write-Error "Could not find resource group name environment variable '$envVarName'. This is likely due to an earlier failure in the 'Deploy Test Resources' step above."
+            exit 0
+        }
+    } else {
+        $serviceName = GetServiceLeafDirectoryName $ServiceDirectory
+        $BaseName, $ResourceGroupName = GetBaseAndResourceGroupNames `
+            -baseNameDefault $BaseName `
+            -resourceGroupNameDefault $ResourceGroupName `
+            -user (GetUserName) `
+            -serviceDirectoryName $serviceName `
+            -CI $CI
     }
-
-    # Format the resource group name like in New-TestResources.ps1.
-    $ResourceGroupName = "rg-$BaseName"
 }
 
 # If no subscription was specified, try to select the Azure SDK Developer Playground subscription.
@@ -184,7 +222,7 @@ Log "Selected subscription '$subscriptionName'"
 
 if ($ServiceDirectory) {
     $root = [System.IO.Path]::Combine("$PSScriptRoot/../../../sdk", $ServiceDirectory) | Resolve-Path
-    $preRemovalScript = Join-Path -Path $root -ChildPath 'remove-test-resources-pre.ps1'
+    $preRemovalScript = Join-Path -Path $root -ChildPath "remove-$ResourceType-resources-pre.ps1"
     if (Test-Path $preRemovalScript) {
         Log "Invoking pre resource removal script '$preRemovalScript'"
 
@@ -196,7 +234,7 @@ if ($ServiceDirectory) {
     }
 
     # Make sure environment files from New-TestResources -OutFile are removed.
-    Get-ChildItem -Path $root -Filter test-resources.json.env -Recurse | Remove-Item -Force:$Force
+    Get-ChildItem -Path $root -Filter "$ResourceType-resources.json.env" -Recurse | Remove-Item -Force:$Force
 }
 
 $verifyDeleteScript = {
@@ -218,6 +256,9 @@ $verifyDeleteScript = {
 
 # Get any resources that can be purged after the resource group is deleted coerced into a collection even if empty.
 $purgeableResources = Get-PurgeableGroupResources $ResourceGroupName
+
+SetResourceNetworkAccessRules -ResourceGroupName $ResourceGroupName -AllowIpRanges $AllowIpRanges -SetFirewall -CI:$CI
+Remove-WormStorageAccounts -GroupPrefix $ResourceGroupName -CI:$CI
 
 Log "Deleting resource group '$ResourceGroupName'"
 if ($Force -and !$purgeableResources) {
@@ -282,8 +323,14 @@ specified - in which to discover pre removal script named 'remove-test-resources
 Name of the cloud environment. The default is the Azure Public Cloud
 ('PublicCloud')
 
+.PARAMETER CI
+Run script in CI mode. Infers various environment variable names based on CI convention.
+
 .PARAMETER Force
 Force removal of resource group without asking for user confirmation
+
+.PARAMETER ServicePrincipalAuth
+Log in with provided Provisioner application credentials.
 
 .EXAMPLE
 Remove-TestResources.ps1 keyvault -Force

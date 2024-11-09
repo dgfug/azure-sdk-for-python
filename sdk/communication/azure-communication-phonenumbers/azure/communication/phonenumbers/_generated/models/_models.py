@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -6,20 +7,26 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from azure.core.exceptions import HttpResponseError
-import msrest.serialization
+import datetime
+from typing import Any, List, Optional, TYPE_CHECKING, Union
+
+from .. import _serialization
+
+if TYPE_CHECKING:
+    # pylint: disable=unused-import,ungrouped-imports
+    from .. import models as _models
 
 
-class CommunicationError(msrest.serialization.Model):
+class CommunicationError(_serialization.Model):
     """The Communication Services error.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar code: Required. The error code.
+    :ivar code: The error code. Required.
     :vartype code: str
-    :ivar message: Required. The error message.
+    :ivar message: The error message. Required.
     :vartype message: str
     :ivar target: The error target.
     :vartype target: str
@@ -30,262 +37,798 @@ class CommunicationError(msrest.serialization.Model):
     """
 
     _validation = {
-        'code': {'required': True},
-        'message': {'required': True},
-        'target': {'readonly': True},
-        'details': {'readonly': True},
-        'inner_error': {'readonly': True},
+        "code": {"required": True},
+        "message": {"required": True},
+        "target": {"readonly": True},
+        "details": {"readonly": True},
+        "inner_error": {"readonly": True},
     }
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
-        'details': {'key': 'details', 'type': '[CommunicationError]'},
-        'inner_error': {'key': 'innererror', 'type': 'CommunicationError'},
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
+        "details": {"key": "details", "type": "[CommunicationError]"},
+        "inner_error": {"key": "innererror", "type": "CommunicationError"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
+    def __init__(self, *, code: str, message: str, **kwargs: Any) -> None:
         """
-        :keyword code: Required. The error code.
+        :keyword code: The error code. Required.
         :paramtype code: str
-        :keyword message: Required. The error message.
+        :keyword message: The error message. Required.
         :paramtype message: str
         """
-        super(CommunicationError, self).__init__(**kwargs)
-        self.code = kwargs['code']
-        self.message = kwargs['message']
+        super().__init__(**kwargs)
+        self.code = code
+        self.message = message
         self.target = None
         self.details = None
         self.inner_error = None
 
 
-class CommunicationErrorResponse(msrest.serialization.Model):
+class CommunicationErrorResponse(_serialization.Model):
     """The Communication Services error.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar error: Required. The Communication Services error.
+    :ivar error: The Communication Services error. Required.
     :vartype error: ~azure.communication.phonenumbers.models.CommunicationError
     """
 
     _validation = {
-        'error': {'required': True},
+        "error": {"required": True},
     }
 
     _attribute_map = {
-        'error': {'key': 'error', 'type': 'CommunicationError'},
+        "error": {"key": "error", "type": "CommunicationError"},
+    }
+
+    def __init__(self, *, error: "_models.CommunicationError", **kwargs: Any) -> None:
+        """
+        :keyword error: The Communication Services error. Required.
+        :paramtype error: ~azure.communication.phonenumbers.models.CommunicationError
+        """
+        super().__init__(**kwargs)
+        self.error = error
+
+
+class OfferingsResponse(_serialization.Model):
+    """Represents a wrapper around a list of offerings.
+
+    :ivar phone_number_offerings: Represents the underlying list of offerings.
+    :vartype phone_number_offerings:
+     list[~azure.communication.phonenumbers.models.PhoneNumberOffering]
+    :ivar next_link: Represents the URL link to the next page.
+    :vartype next_link: str
+    """
+
+    _attribute_map = {
+        "phone_number_offerings": {"key": "phoneNumberOfferings", "type": "[PhoneNumberOffering]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        phone_number_offerings: Optional[List["_models.PhoneNumberOffering"]] = None,
+        next_link: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword error: Required. The Communication Services error.
-        :paramtype error: ~azure.communication.phonenumbers.models.CommunicationError
+        :keyword phone_number_offerings: Represents the underlying list of offerings.
+        :paramtype phone_number_offerings:
+         list[~azure.communication.phonenumbers.models.PhoneNumberOffering]
+        :keyword next_link: Represents the URL link to the next page.
+        :paramtype next_link: str
         """
-        super(CommunicationErrorResponse, self).__init__(**kwargs)
-        self.error = kwargs['error']
+        super().__init__(**kwargs)
+        self.phone_number_offerings = phone_number_offerings
+        self.next_link = next_link
 
 
-class PhoneNumberCapabilities(msrest.serialization.Model):
+class OperatorDetails(_serialization.Model):
+    """Represents metadata describing the operator of a phone number.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar name: Name of the phone operator. Required.
+    :vartype name: str
+    :ivar mobile_network_code: Mobile Network Code.
+    :vartype mobile_network_code: str
+    :ivar mobile_country_code: Mobile Country Code.
+    :vartype mobile_country_code: str
+    """
+
+    _validation = {
+        "name": {"required": True},
+    }
+
+    _attribute_map = {
+        "name": {"key": "name", "type": "str"},
+        "mobile_network_code": {"key": "mobileNetworkCode", "type": "str"},
+        "mobile_country_code": {"key": "mobileCountryCode", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        mobile_network_code: Optional[str] = None,
+        mobile_country_code: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword name: Name of the phone operator. Required.
+        :paramtype name: str
+        :keyword mobile_network_code: Mobile Network Code.
+        :paramtype mobile_network_code: str
+        :keyword mobile_country_code: Mobile Country Code.
+        :paramtype mobile_country_code: str
+        """
+        super().__init__(**kwargs)
+        self.name = name
+        self.mobile_network_code = mobile_network_code
+        self.mobile_country_code = mobile_country_code
+
+
+class OperatorInformation(_serialization.Model):
+    """Represents metadata about a phone number that is controlled/provided by that phone number's
+    operator.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar phone_number: E.164 formatted string representation of the phone number. Required.
+    :vartype phone_number: str
+    :ivar national_format: National format of the phone number.
+    :vartype national_format: str
+    :ivar international_format: International format of the phone number.
+    :vartype international_format: str
+    :ivar iso_country_code: ISO 3166-1 two character ('alpha-2') code associated with the phone
+     number.
+    :vartype iso_country_code: str
+    :ivar number_type: Type of service associated with the phone number. Known values are:
+     "unknown", "other", "geographic", and "mobile".
+    :vartype number_type: str or ~azure.communication.phonenumbers.models.OperatorNumberType
+    :ivar operator_details: Represents metadata describing the operator of a phone number.
+    :vartype operator_details: ~azure.communication.phonenumbers.models.OperatorDetails
+    """
+
+    _validation = {
+        "phone_number": {"required": True},
+    }
+
+    _attribute_map = {
+        "phone_number": {"key": "phoneNumber", "type": "str"},
+        "national_format": {"key": "nationalFormat", "type": "str"},
+        "international_format": {"key": "internationalFormat", "type": "str"},
+        "iso_country_code": {"key": "isoCountryCode", "type": "str"},
+        "number_type": {"key": "numberType", "type": "str"},
+        "operator_details": {"key": "operatorDetails", "type": "OperatorDetails"},
+    }
+
+    def __init__(
+        self,
+        *,
+        phone_number: str,
+        national_format: Optional[str] = None,
+        international_format: Optional[str] = None,
+        iso_country_code: Optional[str] = None,
+        number_type: Optional[Union[str, "_models.OperatorNumberType"]] = None,
+        operator_details: Optional["_models.OperatorDetails"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword phone_number: E.164 formatted string representation of the phone number. Required.
+        :paramtype phone_number: str
+        :keyword national_format: National format of the phone number.
+        :paramtype national_format: str
+        :keyword international_format: International format of the phone number.
+        :paramtype international_format: str
+        :keyword iso_country_code: ISO 3166-1 two character ('alpha-2') code associated with the phone
+         number.
+        :paramtype iso_country_code: str
+        :keyword number_type: Type of service associated with the phone number. Known values are:
+         "unknown", "other", "geographic", and "mobile".
+        :paramtype number_type: str or ~azure.communication.phonenumbers.models.OperatorNumberType
+        :keyword operator_details: Represents metadata describing the operator of a phone number.
+        :paramtype operator_details: ~azure.communication.phonenumbers.models.OperatorDetails
+        """
+        super().__init__(**kwargs)
+        self.phone_number = phone_number
+        self.national_format = national_format
+        self.international_format = international_format
+        self.iso_country_code = iso_country_code
+        self.number_type = number_type
+        self.operator_details = operator_details
+
+
+class OperatorInformationOptions(_serialization.Model):
+    """Represents options to modify a search request for operator information.
+
+    :ivar include_additional_operator_details: Includes the fields operatorDetails, numberType, and
+     isoCountryCode in the response.  Please note: use of this option will result in additional
+     costs.
+    :vartype include_additional_operator_details: bool
+    """
+
+    _attribute_map = {
+        "include_additional_operator_details": {"key": "includeAdditionalOperatorDetails", "type": "bool"},
+    }
+
+    def __init__(self, *, include_additional_operator_details: Optional[bool] = None, **kwargs: Any) -> None:
+        """
+        :keyword include_additional_operator_details: Includes the fields operatorDetails, numberType,
+         and isoCountryCode in the response.  Please note: use of this option will result in additional
+         costs.
+        :paramtype include_additional_operator_details: bool
+        """
+        super().__init__(**kwargs)
+        self.include_additional_operator_details = include_additional_operator_details
+
+
+class OperatorInformationRequest(_serialization.Model):
+    """Represents a search request for operator information for the given phone numbers.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar phone_numbers: Phone number(s) whose operator information is being requested. Required.
+    :vartype phone_numbers: list[str]
+    :ivar options: Represents options to modify a search request for operator information.
+    :vartype options: ~azure.communication.phonenumbers.models.OperatorInformationOptions
+    """
+
+    _validation = {
+        "phone_numbers": {"required": True},
+    }
+
+    _attribute_map = {
+        "phone_numbers": {"key": "phoneNumbers", "type": "[str]"},
+        "options": {"key": "options", "type": "OperatorInformationOptions"},
+    }
+
+    def __init__(
+        self, *, phone_numbers: List[str], options: Optional["_models.OperatorInformationOptions"] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword phone_numbers: Phone number(s) whose operator information is being requested.
+         Required.
+        :paramtype phone_numbers: list[str]
+        :keyword options: Represents options to modify a search request for operator information.
+        :paramtype options: ~azure.communication.phonenumbers.models.OperatorInformationOptions
+        """
+        super().__init__(**kwargs)
+        self.phone_numbers = phone_numbers
+        self.options = options
+
+
+class OperatorInformationResult(_serialization.Model):
+    """Represents a search result containing format and operator information associated with the
+    requested phone numbers.
+
+    :ivar values: Results of a search.
+     This array will have one entry per requested phone number which will contain the relevant
+     operator information.
+    :vartype values: list[~azure.communication.phonenumbers.models.OperatorInformation]
+    """
+
+    _attribute_map = {
+        "values": {"key": "values", "type": "[OperatorInformation]"},
+    }
+
+    def __init__(self, *, values: Optional[List["_models.OperatorInformation"]] = None, **kwargs: Any) -> None:
+        """
+        :keyword values: Results of a search.
+         This array will have one entry per requested phone number which will contain the relevant
+         operator information.
+        :paramtype values: list[~azure.communication.phonenumbers.models.OperatorInformation]
+        """
+        super().__init__(**kwargs)
+        self.values = values
+
+
+class PhoneNumberAdministrativeDivision(_serialization.Model):
+    """Represents an administrative division. e.g. state or province.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar localized_name: Represents the localized name of the administrative division of the
+     locality. e.g. state or province localized name. Required.
+    :vartype localized_name: str
+    :ivar abbreviated_name: Represents the abbreviated name of the administrative division of the
+     locality. e.g. state or province abbreviation such as WA (Washington). Required.
+    :vartype abbreviated_name: str
+    """
+
+    _validation = {
+        "localized_name": {"required": True},
+        "abbreviated_name": {"required": True},
+    }
+
+    _attribute_map = {
+        "localized_name": {"key": "localizedName", "type": "str"},
+        "abbreviated_name": {"key": "abbreviatedName", "type": "str"},
+    }
+
+    def __init__(self, *, localized_name: str, abbreviated_name: str, **kwargs: Any) -> None:
+        """
+        :keyword localized_name: Represents the localized name of the administrative division of the
+         locality. e.g. state or province localized name. Required.
+        :paramtype localized_name: str
+        :keyword abbreviated_name: Represents the abbreviated name of the administrative division of
+         the locality. e.g. state or province abbreviation such as WA (Washington). Required.
+        :paramtype abbreviated_name: str
+        """
+        super().__init__(**kwargs)
+        self.localized_name = localized_name
+        self.abbreviated_name = abbreviated_name
+
+
+class PhoneNumberAreaCode(_serialization.Model):
+    """Represents an Area Code.
+
+    :ivar area_code: An area code.
+    :vartype area_code: str
+    """
+
+    _attribute_map = {
+        "area_code": {"key": "areaCode", "type": "str"},
+    }
+
+    def __init__(self, *, area_code: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        :keyword area_code: An area code.
+        :paramtype area_code: str
+        """
+        super().__init__(**kwargs)
+        self.area_code = area_code
+
+
+class PhoneNumberAreaCodes(_serialization.Model):
+    """The list of available area codes.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar area_codes: Represents a list of available toll-free area codes. Required.
+    :vartype area_codes: list[~azure.communication.phonenumbers.models.PhoneNumberAreaCode]
+    :ivar next_link: Represents the URL link to the next page.
+    :vartype next_link: str
+    """
+
+    _validation = {
+        "area_codes": {"required": True},
+    }
+
+    _attribute_map = {
+        "area_codes": {"key": "areaCodes", "type": "[PhoneNumberAreaCode]"},
+        "next_link": {"key": "nextLink", "type": "str"},
+    }
+
+    def __init__(
+        self, *, area_codes: List["_models.PhoneNumberAreaCode"], next_link: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword area_codes: Represents a list of available toll-free area codes. Required.
+        :paramtype area_codes: list[~azure.communication.phonenumbers.models.PhoneNumberAreaCode]
+        :keyword next_link: Represents the URL link to the next page.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
+        self.area_codes = area_codes
+        self.next_link = next_link
+
+
+class PhoneNumberCapabilities(_serialization.Model):
     """Capabilities of a phone number.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar calling: Required. Capability value for calling. Possible values include: "none",
-     "inbound", "outbound", "inbound+outbound".
+    :ivar calling: Capability value for calling. Required. Known values are: "none", "inbound",
+     "outbound", and "inbound+outbound".
     :vartype calling: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
-    :ivar sms: Required. Capability value for SMS. Possible values include: "none", "inbound",
-     "outbound", "inbound+outbound".
+    :ivar sms: Capability value for SMS. Required. Known values are: "none", "inbound", "outbound",
+     and "inbound+outbound".
     :vartype sms: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
     """
 
     _validation = {
-        'calling': {'required': True},
-        'sms': {'required': True},
+        "calling": {"required": True},
+        "sms": {"required": True},
     }
 
     _attribute_map = {
-        'calling': {'key': 'calling', 'type': 'str'},
-        'sms': {'key': 'sms', 'type': 'str'},
+        "calling": {"key": "calling", "type": "str"},
+        "sms": {"key": "sms", "type": "str"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        calling: Union[str, "_models.PhoneNumberCapabilityType"],
+        sms: Union[str, "_models.PhoneNumberCapabilityType"],
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword calling: Required. Capability value for calling. Possible values include: "none",
-         "inbound", "outbound", "inbound+outbound".
+        :keyword calling: Capability value for calling. Required. Known values are: "none", "inbound",
+         "outbound", and "inbound+outbound".
         :paramtype calling: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
-        :keyword sms: Required. Capability value for SMS. Possible values include: "none", "inbound",
-         "outbound", "inbound+outbound".
+        :keyword sms: Capability value for SMS. Required. Known values are: "none", "inbound",
+         "outbound", and "inbound+outbound".
         :paramtype sms: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
         """
-        super(PhoneNumberCapabilities, self).__init__(**kwargs)
-        self.calling = kwargs['calling']
-        self.sms = kwargs['sms']
+        super().__init__(**kwargs)
+        self.calling = calling
+        self.sms = sms
 
 
-class PhoneNumberCapabilitiesRequest(msrest.serialization.Model):
+class PhoneNumberCapabilitiesRequest(_serialization.Model):
     """Capabilities of a phone number.
 
-    :ivar calling: Capability value for calling. Possible values include: "none", "inbound",
-     "outbound", "inbound+outbound".
+    :ivar calling: Capability value for calling. Known values are: "none", "inbound", "outbound",
+     and "inbound+outbound".
     :vartype calling: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
-    :ivar sms: Capability value for SMS. Possible values include: "none", "inbound", "outbound",
+    :ivar sms: Capability value for SMS. Known values are: "none", "inbound", "outbound", and
      "inbound+outbound".
     :vartype sms: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
     """
 
     _attribute_map = {
-        'calling': {'key': 'calling', 'type': 'str'},
-        'sms': {'key': 'sms', 'type': 'str'},
+        "calling": {"key": "calling", "type": "str"},
+        "sms": {"key": "sms", "type": "str"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        calling: Optional[Union[str, "_models.PhoneNumberCapabilityType"]] = None,
+        sms: Optional[Union[str, "_models.PhoneNumberCapabilityType"]] = None,
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword calling: Capability value for calling. Possible values include: "none", "inbound",
-         "outbound", "inbound+outbound".
+        :keyword calling: Capability value for calling. Known values are: "none", "inbound",
+         "outbound", and "inbound+outbound".
         :paramtype calling: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
-        :keyword sms: Capability value for SMS. Possible values include: "none", "inbound", "outbound",
+        :keyword sms: Capability value for SMS. Known values are: "none", "inbound", "outbound", and
          "inbound+outbound".
         :paramtype sms: str or ~azure.communication.phonenumbers.models.PhoneNumberCapabilityType
         """
-        super(PhoneNumberCapabilitiesRequest, self).__init__(**kwargs)
-        self.calling = kwargs.get('calling', None)
-        self.sms = kwargs.get('sms', None)
+        super().__init__(**kwargs)
+        self.calling = calling
+        self.sms = sms
 
 
-class PhoneNumberCost(msrest.serialization.Model):
+class PhoneNumberCost(_serialization.Model):
     """The incurred cost for a single phone number.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar amount: Required. The cost amount.
+    :ivar amount: The cost amount. Required.
     :vartype amount: float
-    :ivar currency_code: Required. The ISO 4217 currency code for the cost amount, e.g. USD.
+    :ivar currency_code: The ISO 4217 currency code for the cost amount, e.g. USD. Required.
     :vartype currency_code: str
-    :ivar billing_frequency: Required. The frequency with which the cost gets billed. Possible
-     values include: "monthly".
+    :ivar billing_frequency: The frequency with which the cost gets billed. Required. "monthly"
     :vartype billing_frequency: str or ~azure.communication.phonenumbers.models.BillingFrequency
     """
 
     _validation = {
-        'amount': {'required': True},
-        'currency_code': {'required': True},
-        'billing_frequency': {'required': True},
+        "amount": {"required": True},
+        "currency_code": {"required": True},
+        "billing_frequency": {"required": True},
     }
 
     _attribute_map = {
-        'amount': {'key': 'amount', 'type': 'float'},
-        'currency_code': {'key': 'currencyCode', 'type': 'str'},
-        'billing_frequency': {'key': 'billingFrequency', 'type': 'str'},
+        "amount": {"key": "amount", "type": "float"},
+        "currency_code": {"key": "currencyCode", "type": "str"},
+        "billing_frequency": {"key": "billingFrequency", "type": "str"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        amount: float,
+        currency_code: str,
+        billing_frequency: Union[str, "_models.BillingFrequency"],
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword amount: Required. The cost amount.
+        :keyword amount: The cost amount. Required.
         :paramtype amount: float
-        :keyword currency_code: Required. The ISO 4217 currency code for the cost amount, e.g. USD.
+        :keyword currency_code: The ISO 4217 currency code for the cost amount, e.g. USD. Required.
         :paramtype currency_code: str
-        :keyword billing_frequency: Required. The frequency with which the cost gets billed. Possible
-         values include: "monthly".
+        :keyword billing_frequency: The frequency with which the cost gets billed. Required. "monthly"
         :paramtype billing_frequency: str or ~azure.communication.phonenumbers.models.BillingFrequency
         """
-        super(PhoneNumberCost, self).__init__(**kwargs)
-        self.amount = kwargs['amount']
-        self.currency_code = kwargs['currency_code']
-        self.billing_frequency = kwargs['billing_frequency']
+        super().__init__(**kwargs)
+        self.amount = amount
+        self.currency_code = currency_code
+        self.billing_frequency = billing_frequency
 
 
-class PhoneNumberOperation(msrest.serialization.Model):
-    """Long running operation.
+class PhoneNumberCountries(_serialization.Model):
+    """Represents a wrapper around a list of countries.
+
+    :ivar countries: Represents the underlying list of countries.
+    :vartype countries: list[~azure.communication.phonenumbers.models.PhoneNumberCountry]
+    :ivar next_link: Represents the URL link to the next page.
+    :vartype next_link: str
+    """
+
+    _attribute_map = {
+        "countries": {"key": "countries", "type": "[PhoneNumberCountry]"},
+        "next_link": {"key": "nextLink", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        countries: Optional[List["_models.PhoneNumberCountry"]] = None,
+        next_link: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword countries: Represents the underlying list of countries.
+        :paramtype countries: list[~azure.communication.phonenumbers.models.PhoneNumberCountry]
+        :keyword next_link: Represents the URL link to the next page.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
+        self.countries = countries
+        self.next_link = next_link
+
+
+class PhoneNumberCountry(_serialization.Model):
+    """Represents a country.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar localized_name: Represents the name of the country. Required.
+    :vartype localized_name: str
+    :ivar country_code: Represents the abbreviated name of the country. Required.
+    :vartype country_code: str
+    """
+
+    _validation = {
+        "localized_name": {"required": True},
+        "country_code": {"required": True},
+    }
+
+    _attribute_map = {
+        "localized_name": {"key": "localizedName", "type": "str"},
+        "country_code": {"key": "countryCode", "type": "str"},
+    }
+
+    def __init__(self, *, localized_name: str, country_code: str, **kwargs: Any) -> None:
+        """
+        :keyword localized_name: Represents the name of the country. Required.
+        :paramtype localized_name: str
+        :keyword country_code: Represents the abbreviated name of the country. Required.
+        :paramtype country_code: str
+        """
+        super().__init__(**kwargs)
+        self.localized_name = localized_name
+        self.country_code = country_code
+
+
+class PhoneNumberLocalities(_serialization.Model):
+    """Represents a wrapper around a list of cities or towns.
+
+    :ivar phone_number_localities: Represents the underlying list of localities, e.g. cities or
+     town.
+    :vartype phone_number_localities:
+     list[~azure.communication.phonenumbers.models.PhoneNumberLocality]
+    :ivar next_link: Represents the URL link to the next page.
+    :vartype next_link: str
+    """
+
+    _attribute_map = {
+        "phone_number_localities": {"key": "phoneNumberLocalities", "type": "[PhoneNumberLocality]"},
+        "next_link": {"key": "nextLink", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        phone_number_localities: Optional[List["_models.PhoneNumberLocality"]] = None,
+        next_link: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword phone_number_localities: Represents the underlying list of localities, e.g. cities or
+         town.
+        :paramtype phone_number_localities:
+         list[~azure.communication.phonenumbers.models.PhoneNumberLocality]
+        :keyword next_link: Represents the URL link to the next page.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
+        self.phone_number_localities = phone_number_localities
+        self.next_link = next_link
+
+
+class PhoneNumberLocality(_serialization.Model):
+    """Represents a locality.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar localized_name: Represents the localized name of the locality. Required.
+    :vartype localized_name: str
+    :ivar administrative_division: Represents an administrative division. e.g. state or province.
+    :vartype administrative_division:
+     ~azure.communication.phonenumbers.models.PhoneNumberAdministrativeDivision
+    """
+
+    _validation = {
+        "localized_name": {"required": True},
+    }
+
+    _attribute_map = {
+        "localized_name": {"key": "localizedName", "type": "str"},
+        "administrative_division": {"key": "administrativeDivision", "type": "PhoneNumberAdministrativeDivision"},
+    }
+
+    def __init__(
+        self,
+        *,
+        localized_name: str,
+        administrative_division: Optional["_models.PhoneNumberAdministrativeDivision"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword localized_name: Represents the localized name of the locality. Required.
+        :paramtype localized_name: str
+        :keyword administrative_division: Represents an administrative division. e.g. state or
+         province.
+        :paramtype administrative_division:
+         ~azure.communication.phonenumbers.models.PhoneNumberAdministrativeDivision
+        """
+        super().__init__(**kwargs)
+        self.localized_name = localized_name
+        self.administrative_division = administrative_division
+
+
+class PhoneNumberOffering(_serialization.Model):
+    """Represents a phone number capability offering.
+
+    All required parameters must be populated in order to send to server.
+
+    :ivar phone_number_type: Represents the number type of the offering. Known values are:
+     "geographic" and "tollFree".
+    :vartype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
+    :ivar assignment_type: Represents the assignment type of the offering. Known values are:
+     "person" and "application".
+    :vartype assignment_type: str or
+     ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
+    :ivar available_capabilities: Capabilities of a phone number.
+    :vartype available_capabilities:
+     ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
+    :ivar cost: The incurred cost for a single phone number. Required.
+    :vartype cost: ~azure.communication.phonenumbers.models.PhoneNumberCost
+    """
+
+    _validation = {
+        "cost": {"required": True},
+    }
+
+    _attribute_map = {
+        "phone_number_type": {"key": "phoneNumberType", "type": "str"},
+        "assignment_type": {"key": "assignmentType", "type": "str"},
+        "available_capabilities": {"key": "availableCapabilities", "type": "PhoneNumberCapabilities"},
+        "cost": {"key": "cost", "type": "PhoneNumberCost"},
+    }
+
+    def __init__(
+        self,
+        *,
+        cost: "_models.PhoneNumberCost",
+        phone_number_type: Optional[Union[str, "_models.PhoneNumberType"]] = None,
+        assignment_type: Optional[Union[str, "_models.PhoneNumberAssignmentType"]] = None,
+        available_capabilities: Optional["_models.PhoneNumberCapabilities"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword phone_number_type: Represents the number type of the offering. Known values are:
+         "geographic" and "tollFree".
+        :paramtype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
+        :keyword assignment_type: Represents the assignment type of the offering. Known values are:
+         "person" and "application".
+        :paramtype assignment_type: str or
+         ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
+        :keyword available_capabilities: Capabilities of a phone number.
+        :paramtype available_capabilities:
+         ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
+        :keyword cost: The incurred cost for a single phone number. Required.
+        :paramtype cost: ~azure.communication.phonenumbers.models.PhoneNumberCost
+        """
+        super().__init__(**kwargs)
+        self.phone_number_type = phone_number_type
+        self.assignment_type = assignment_type
+        self.available_capabilities = available_capabilities
+        self.cost = cost
+
+
+class PhoneNumberOperation(_serialization.Model):
+    """PhoneNumberOperation.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar status: Required. Status of operation. Possible values include: "notStarted", "running",
-     "succeeded", "failed".
+    :ivar operation_type: The type of operation, e.g. Search. Required. Known values are:
+     "purchase", "releasePhoneNumber", "search", and "updatePhoneNumberCapabilities".
+    :vartype operation_type: str or
+     ~azure.communication.phonenumbers.models.PhoneNumberOperationType
+    :ivar status: Status of operation. Required. Known values are: "notStarted", "running",
+     "succeeded", and "failed".
     :vartype status: str or ~azure.communication.phonenumbers.models.PhoneNumberOperationStatus
     :ivar resource_location: URL for retrieving the result of the operation, if any.
     :vartype resource_location: str
-    :ivar created_date_time: Required. The date that the operation was created.
+    :ivar created_date_time: The date that the operation was created. Required.
     :vartype created_date_time: ~datetime.datetime
     :ivar error: The Communication Services error.
     :vartype error: ~azure.communication.phonenumbers.models.CommunicationError
-    :ivar id: Required. Id of operation.
+    :ivar id: Id of operation. Required.
     :vartype id: str
-    :ivar operation_type: Required. The type of operation, e.g. Search. Possible values include:
-     "purchase", "releasePhoneNumber", "search", "updatePhoneNumberCapabilities".
-    :vartype operation_type: str or
-     ~azure.communication.phonenumbers.models.PhoneNumberOperationType
     :ivar last_action_date_time: The most recent date that the operation was changed.
     :vartype last_action_date_time: ~datetime.datetime
     """
 
     _validation = {
-        'status': {'required': True},
-        'created_date_time': {'required': True},
-        'id': {'required': True},
-        'operation_type': {'required': True},
-        'last_action_date_time': {'readonly': True},
+        "operation_type": {"required": True},
+        "status": {"required": True},
+        "created_date_time": {"required": True},
+        "id": {"required": True},
+        "last_action_date_time": {"readonly": True},
     }
 
     _attribute_map = {
-        'status': {'key': 'status', 'type': 'str'},
-        'resource_location': {'key': 'resourceLocation', 'type': 'str'},
-        'created_date_time': {'key': 'createdDateTime', 'type': 'iso-8601'},
-        'error': {'key': 'error', 'type': 'CommunicationError'},
-        'id': {'key': 'id', 'type': 'str'},
-        'operation_type': {'key': 'operationType', 'type': 'str'},
-        'last_action_date_time': {'key': 'lastActionDateTime', 'type': 'iso-8601'},
+        "operation_type": {"key": "operationType", "type": "str"},
+        "status": {"key": "status", "type": "str"},
+        "resource_location": {"key": "resourceLocation", "type": "str"},
+        "created_date_time": {"key": "createdDateTime", "type": "iso-8601"},
+        "error": {"key": "error", "type": "CommunicationError"},
+        "id": {"key": "id", "type": "str"},
+        "last_action_date_time": {"key": "lastActionDateTime", "type": "iso-8601"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        operation_type: Union[str, "_models.PhoneNumberOperationType"],
+        status: Union[str, "_models.PhoneNumberOperationStatus"],
+        created_date_time: datetime.datetime,
+        id: str,  # pylint: disable=redefined-builtin
+        resource_location: Optional[str] = None,
+        error: Optional["_models.CommunicationError"] = None,
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword status: Required. Status of operation. Possible values include: "notStarted",
-         "running", "succeeded", "failed".
+        :keyword operation_type: The type of operation, e.g. Search. Required. Known values are:
+         "purchase", "releasePhoneNumber", "search", and "updatePhoneNumberCapabilities".
+        :paramtype operation_type: str or
+         ~azure.communication.phonenumbers.models.PhoneNumberOperationType
+        :keyword status: Status of operation. Required. Known values are: "notStarted", "running",
+         "succeeded", and "failed".
         :paramtype status: str or ~azure.communication.phonenumbers.models.PhoneNumberOperationStatus
         :keyword resource_location: URL for retrieving the result of the operation, if any.
         :paramtype resource_location: str
-        :keyword created_date_time: Required. The date that the operation was created.
+        :keyword created_date_time: The date that the operation was created. Required.
         :paramtype created_date_time: ~datetime.datetime
         :keyword error: The Communication Services error.
         :paramtype error: ~azure.communication.phonenumbers.models.CommunicationError
-        :keyword id: Required. Id of operation.
+        :keyword id: Id of operation. Required.
         :paramtype id: str
-        :keyword operation_type: Required. The type of operation, e.g. Search. Possible values include:
-         "purchase", "releasePhoneNumber", "search", "updatePhoneNumberCapabilities".
-        :paramtype operation_type: str or
-         ~azure.communication.phonenumbers.models.PhoneNumberOperationType
         """
-        super(PhoneNumberOperation, self).__init__(**kwargs)
-        self.status = kwargs['status']
-        self.resource_location = kwargs.get('resource_location', None)
-        self.created_date_time = kwargs['created_date_time']
-        self.error = kwargs.get('error', None)
-        self.id = kwargs['id']
-        self.operation_type = kwargs['operation_type']
+        super().__init__(**kwargs)
+        self.operation_type = operation_type
+        self.status = status
+        self.resource_location = resource_location
+        self.created_date_time = created_date_time
+        self.error = error
+        self.id = id
         self.last_action_date_time = None
 
 
-class PhoneNumberPurchaseRequest(msrest.serialization.Model):
+class PhoneNumberPurchaseRequest(_serialization.Model):
     """The phone number search purchase request.
 
     :ivar search_id: The search id.
@@ -293,35 +836,33 @@ class PhoneNumberPurchaseRequest(msrest.serialization.Model):
     """
 
     _attribute_map = {
-        'search_id': {'key': 'searchId', 'type': 'str'},
+        "search_id": {"key": "searchId", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
+    def __init__(self, *, search_id: Optional[str] = None, **kwargs: Any) -> None:
         """
         :keyword search_id: The search id.
         :paramtype search_id: str
         """
-        super(PhoneNumberPurchaseRequest, self).__init__(**kwargs)
-        self.search_id = kwargs.get('search_id', None)
+        super().__init__(**kwargs)
+        self.search_id = search_id
 
 
-class PhoneNumberSearchRequest(msrest.serialization.Model):
-    """Represents a phone number search request to find phone numbers. Found phone numbers are temporarily held for a following purchase.
+class PhoneNumberSearchRequest(_serialization.Model):
+    """Represents a phone number search request to find phone numbers. Found phone numbers are
+    temporarily held for a following purchase.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar phone_number_type: Required. The type of phone numbers to search for, e.g. geographic, or
-     tollFree. Possible values include: "geographic", "tollFree".
+    :ivar phone_number_type: The type of phone numbers to search for, e.g. geographic, or tollFree.
+     Required. Known values are: "geographic" and "tollFree".
     :vartype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
-    :ivar assignment_type: Required. The assignment type of the phone numbers to search for. A
-     phone number can be assigned to a person, or to an application. Possible values include:
-     "person", "application".
+    :ivar assignment_type: The assignment type of the phone numbers to search for. A phone number
+     can be assigned to a person, or to an application. Required. Known values are: "person" and
+     "application".
     :vartype assignment_type: str or
      ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
-    :ivar capabilities: Required. Capabilities of a phone number.
+    :ivar capabilities: Capabilities of a phone number. Required.
     :vartype capabilities: ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
     :ivar area_code: The area code of the desired phone number, e.g. 425.
     :vartype area_code: str
@@ -330,248 +871,292 @@ class PhoneNumberSearchRequest(msrest.serialization.Model):
     """
 
     _validation = {
-        'phone_number_type': {'required': True},
-        'assignment_type': {'required': True},
-        'capabilities': {'required': True},
-        'quantity': {'maximum': 2147483647, 'minimum': 1},
+        "phone_number_type": {"required": True},
+        "assignment_type": {"required": True},
+        "capabilities": {"required": True},
+        "quantity": {"maximum": 2147483647, "minimum": 1},
     }
 
     _attribute_map = {
-        'phone_number_type': {'key': 'phoneNumberType', 'type': 'str'},
-        'assignment_type': {'key': 'assignmentType', 'type': 'str'},
-        'capabilities': {'key': 'capabilities', 'type': 'PhoneNumberCapabilities'},
-        'area_code': {'key': 'areaCode', 'type': 'str'},
-        'quantity': {'key': 'quantity', 'type': 'int'},
+        "phone_number_type": {"key": "phoneNumberType", "type": "str"},
+        "assignment_type": {"key": "assignmentType", "type": "str"},
+        "capabilities": {"key": "capabilities", "type": "PhoneNumberCapabilities"},
+        "area_code": {"key": "areaCode", "type": "str"},
+        "quantity": {"key": "quantity", "type": "int"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        phone_number_type: Union[str, "_models.PhoneNumberType"],
+        assignment_type: Union[str, "_models.PhoneNumberAssignmentType"],
+        capabilities: "_models.PhoneNumberCapabilities",
+        area_code: Optional[str] = None,
+        quantity: int = 1,
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword phone_number_type: Required. The type of phone numbers to search for, e.g. geographic,
-         or tollFree. Possible values include: "geographic", "tollFree".
+        :keyword phone_number_type: The type of phone numbers to search for, e.g. geographic, or
+         tollFree. Required. Known values are: "geographic" and "tollFree".
         :paramtype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
-        :keyword assignment_type: Required. The assignment type of the phone numbers to search for. A
-         phone number can be assigned to a person, or to an application. Possible values include:
-         "person", "application".
+        :keyword assignment_type: The assignment type of the phone numbers to search for. A phone
+         number can be assigned to a person, or to an application. Required. Known values are: "person"
+         and "application".
         :paramtype assignment_type: str or
          ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
-        :keyword capabilities: Required. Capabilities of a phone number.
+        :keyword capabilities: Capabilities of a phone number. Required.
         :paramtype capabilities: ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
         :keyword area_code: The area code of the desired phone number, e.g. 425.
         :paramtype area_code: str
         :keyword quantity: The quantity of desired phone numbers. The default value is 1.
         :paramtype quantity: int
         """
-        super(PhoneNumberSearchRequest, self).__init__(**kwargs)
-        self.phone_number_type = kwargs['phone_number_type']
-        self.assignment_type = kwargs['assignment_type']
-        self.capabilities = kwargs['capabilities']
-        self.area_code = kwargs.get('area_code', None)
-        self.quantity = kwargs.get('quantity', 1)
+        super().__init__(**kwargs)
+        self.phone_number_type = phone_number_type
+        self.assignment_type = assignment_type
+        self.capabilities = capabilities
+        self.area_code = area_code
+        self.quantity = quantity
 
 
-class PhoneNumberSearchResult(msrest.serialization.Model):
+class PhoneNumberSearchResult(_serialization.Model):
     """The result of a phone number search operation.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar search_id: Required. The search id.
+    :ivar search_id: The search id. Required.
     :vartype search_id: str
-    :ivar phone_numbers: Required. The phone numbers that are available. Can be fewer than the
-     desired search quantity.
+    :ivar phone_numbers: The phone numbers that are available. Can be fewer than the desired search
+     quantity. Required.
     :vartype phone_numbers: list[str]
-    :ivar phone_number_type: Required. The phone number's type, e.g. geographic, or tollFree.
-     Possible values include: "geographic", "tollFree".
+    :ivar phone_number_type: The phone number's type, e.g. geographic, or tollFree. Required. Known
+     values are: "geographic" and "tollFree".
     :vartype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
-    :ivar assignment_type: Required. Phone number's assignment type. Possible values include:
-     "person", "application".
+    :ivar assignment_type: Phone number's assignment type. Required. Known values are: "person" and
+     "application".
     :vartype assignment_type: str or
      ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
-    :ivar capabilities: Required. Capabilities of a phone number.
+    :ivar capabilities: Capabilities of a phone number. Required.
     :vartype capabilities: ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
-    :ivar cost: Required. The incurred cost for a single phone number.
+    :ivar cost: The incurred cost for a single phone number. Required.
     :vartype cost: ~azure.communication.phonenumbers.models.PhoneNumberCost
-    :ivar search_expires_by: Required. The date that this search result expires and phone numbers
-     are no longer on hold. A search result expires in less than 15min, e.g.
-     2020-11-19T16:31:49.048Z.
+    :ivar search_expires_by: The date that this search result expires and phone numbers are no
+     longer on hold. A search result expires in less than 15min, e.g. 2020-11-19T16:31:49.048Z.
+     Required.
     :vartype search_expires_by: ~datetime.datetime
+    :ivar error_code: The error code of the search.
+    :vartype error_code: int
+    :ivar error: Mapping Error Messages to Codes. Known values are: "NoError", "UnknownErrorCode",
+     "OutOfStock", "AuthorizationDenied", "MissingAddress", "InvalidAddress", "InvalidOfferModel",
+     "NotEnoughLicenses", "NoWallet", "NotEnoughCredit", "NumbersPartiallyAcquired",
+     "AllNumbersNotAcquired", "ReservationExpired", "PurchaseFailed", "BillingUnavailable",
+     "ProvisioningFailed", and "UnknownSearchError".
+    :vartype error: str or ~azure.communication.phonenumbers.models.PhoneNumberSearchResultError
     """
 
     _validation = {
-        'search_id': {'required': True},
-        'phone_numbers': {'required': True},
-        'phone_number_type': {'required': True},
-        'assignment_type': {'required': True},
-        'capabilities': {'required': True},
-        'cost': {'required': True},
-        'search_expires_by': {'required': True},
+        "search_id": {"required": True},
+        "phone_numbers": {"required": True},
+        "phone_number_type": {"required": True},
+        "assignment_type": {"required": True},
+        "capabilities": {"required": True},
+        "cost": {"required": True},
+        "search_expires_by": {"required": True},
     }
 
     _attribute_map = {
-        'search_id': {'key': 'searchId', 'type': 'str'},
-        'phone_numbers': {'key': 'phoneNumbers', 'type': '[str]'},
-        'phone_number_type': {'key': 'phoneNumberType', 'type': 'str'},
-        'assignment_type': {'key': 'assignmentType', 'type': 'str'},
-        'capabilities': {'key': 'capabilities', 'type': 'PhoneNumberCapabilities'},
-        'cost': {'key': 'cost', 'type': 'PhoneNumberCost'},
-        'search_expires_by': {'key': 'searchExpiresBy', 'type': 'iso-8601'},
+        "search_id": {"key": "searchId", "type": "str"},
+        "phone_numbers": {"key": "phoneNumbers", "type": "[str]"},
+        "phone_number_type": {"key": "phoneNumberType", "type": "str"},
+        "assignment_type": {"key": "assignmentType", "type": "str"},
+        "capabilities": {"key": "capabilities", "type": "PhoneNumberCapabilities"},
+        "cost": {"key": "cost", "type": "PhoneNumberCost"},
+        "search_expires_by": {"key": "searchExpiresBy", "type": "iso-8601"},
+        "error_code": {"key": "errorCode", "type": "int"},
+        "error": {"key": "error", "type": "str"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        search_id: str,
+        phone_numbers: List[str],
+        phone_number_type: Union[str, "_models.PhoneNumberType"],
+        assignment_type: Union[str, "_models.PhoneNumberAssignmentType"],
+        capabilities: "_models.PhoneNumberCapabilities",
+        cost: "_models.PhoneNumberCost",
+        search_expires_by: datetime.datetime,
+        error_code: Optional[int] = None,
+        error: Optional[Union[str, "_models.PhoneNumberSearchResultError"]] = None,
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword search_id: Required. The search id.
+        :keyword search_id: The search id. Required.
         :paramtype search_id: str
-        :keyword phone_numbers: Required. The phone numbers that are available. Can be fewer than the
-         desired search quantity.
+        :keyword phone_numbers: The phone numbers that are available. Can be fewer than the desired
+         search quantity. Required.
         :paramtype phone_numbers: list[str]
-        :keyword phone_number_type: Required. The phone number's type, e.g. geographic, or tollFree.
-         Possible values include: "geographic", "tollFree".
+        :keyword phone_number_type: The phone number's type, e.g. geographic, or tollFree. Required.
+         Known values are: "geographic" and "tollFree".
         :paramtype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
-        :keyword assignment_type: Required. Phone number's assignment type. Possible values include:
-         "person", "application".
+        :keyword assignment_type: Phone number's assignment type. Required. Known values are: "person"
+         and "application".
         :paramtype assignment_type: str or
          ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
-        :keyword capabilities: Required. Capabilities of a phone number.
+        :keyword capabilities: Capabilities of a phone number. Required.
         :paramtype capabilities: ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
-        :keyword cost: Required. The incurred cost for a single phone number.
+        :keyword cost: The incurred cost for a single phone number. Required.
         :paramtype cost: ~azure.communication.phonenumbers.models.PhoneNumberCost
-        :keyword search_expires_by: Required. The date that this search result expires and phone
-         numbers are no longer on hold. A search result expires in less than 15min, e.g.
-         2020-11-19T16:31:49.048Z.
+        :keyword search_expires_by: The date that this search result expires and phone numbers are no
+         longer on hold. A search result expires in less than 15min, e.g. 2020-11-19T16:31:49.048Z.
+         Required.
         :paramtype search_expires_by: ~datetime.datetime
+        :keyword error_code: The error code of the search.
+        :paramtype error_code: int
+        :keyword error: Mapping Error Messages to Codes. Known values are: "NoError",
+         "UnknownErrorCode", "OutOfStock", "AuthorizationDenied", "MissingAddress", "InvalidAddress",
+         "InvalidOfferModel", "NotEnoughLicenses", "NoWallet", "NotEnoughCredit",
+         "NumbersPartiallyAcquired", "AllNumbersNotAcquired", "ReservationExpired", "PurchaseFailed",
+         "BillingUnavailable", "ProvisioningFailed", and "UnknownSearchError".
+        :paramtype error: str or ~azure.communication.phonenumbers.models.PhoneNumberSearchResultError
         """
-        super(PhoneNumberSearchResult, self).__init__(**kwargs)
-        self.search_id = kwargs['search_id']
-        self.phone_numbers = kwargs['phone_numbers']
-        self.phone_number_type = kwargs['phone_number_type']
-        self.assignment_type = kwargs['assignment_type']
-        self.capabilities = kwargs['capabilities']
-        self.cost = kwargs['cost']
-        self.search_expires_by = kwargs['search_expires_by']
+        super().__init__(**kwargs)
+        self.search_id = search_id
+        self.phone_numbers = phone_numbers
+        self.phone_number_type = phone_number_type
+        self.assignment_type = assignment_type
+        self.capabilities = capabilities
+        self.cost = cost
+        self.search_expires_by = search_expires_by
+        self.error_code = error_code
+        self.error = error
 
 
-class PurchasedPhoneNumber(msrest.serialization.Model):
+class PurchasedPhoneNumber(_serialization.Model):
     """Represents a purchased phone number.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar id: Required. The id of the phone number, e.g. 11234567890.
+    :ivar id: The id of the phone number, e.g. 11234567890. Required.
     :vartype id: str
-    :ivar phone_number: Required. String of the E.164 format of the phone number, e.g.
-     +11234567890.
+    :ivar phone_number: String of the E.164 format of the phone number, e.g. +11234567890.
+     Required.
     :vartype phone_number: str
-    :ivar country_code: Required. The ISO 3166-2 code of the phone number's country, e.g. US.
+    :ivar country_code: The ISO 3166-2 code of the phone number's country, e.g. US. Required.
     :vartype country_code: str
-    :ivar phone_number_type: Required. The phone number's type, e.g. Geographic, TollFree. Possible
-     values include: "geographic", "tollFree".
+    :ivar phone_number_type: The phone number's type, e.g. geographic, tollFree. Required. Known
+     values are: "geographic" and "tollFree".
     :vartype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
-    :ivar capabilities: Required. Capabilities of a phone number.
+    :ivar capabilities: Capabilities of a phone number. Required.
     :vartype capabilities: ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
-    :ivar assignment_type: Required. The assignment type of the phone number. A phone number can be
-     assigned to a person, or to an application. Possible values include: "person", "application".
+    :ivar assignment_type: The assignment type of the phone number. A phone number can be assigned
+     to a person, or to an application. Required. Known values are: "person" and "application".
     :vartype assignment_type: str or
      ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
-    :ivar purchase_date: Required. The date and time that the phone number was purchased.
+    :ivar purchase_date: The date and time that the phone number was purchased. Required.
     :vartype purchase_date: ~datetime.datetime
-    :ivar cost: Required. The incurred cost for a single phone number.
+    :ivar cost: The incurred cost for a single phone number. Required.
     :vartype cost: ~azure.communication.phonenumbers.models.PhoneNumberCost
     """
 
     _validation = {
-        'id': {'required': True},
-        'phone_number': {'required': True},
-        'country_code': {'required': True},
-        'phone_number_type': {'required': True},
-        'capabilities': {'required': True},
-        'assignment_type': {'required': True},
-        'purchase_date': {'required': True},
-        'cost': {'required': True},
+        "id": {"required": True},
+        "phone_number": {"required": True},
+        "country_code": {"required": True},
+        "phone_number_type": {"required": True},
+        "capabilities": {"required": True},
+        "assignment_type": {"required": True},
+        "purchase_date": {"required": True},
+        "cost": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'phone_number': {'key': 'phoneNumber', 'type': 'str'},
-        'country_code': {'key': 'countryCode', 'type': 'str'},
-        'phone_number_type': {'key': 'phoneNumberType', 'type': 'str'},
-        'capabilities': {'key': 'capabilities', 'type': 'PhoneNumberCapabilities'},
-        'assignment_type': {'key': 'assignmentType', 'type': 'str'},
-        'purchase_date': {'key': 'purchaseDate', 'type': 'iso-8601'},
-        'cost': {'key': 'cost', 'type': 'PhoneNumberCost'},
+        "id": {"key": "id", "type": "str"},
+        "phone_number": {"key": "phoneNumber", "type": "str"},
+        "country_code": {"key": "countryCode", "type": "str"},
+        "phone_number_type": {"key": "phoneNumberType", "type": "str"},
+        "capabilities": {"key": "capabilities", "type": "PhoneNumberCapabilities"},
+        "assignment_type": {"key": "assignmentType", "type": "str"},
+        "purchase_date": {"key": "purchaseDate", "type": "iso-8601"},
+        "cost": {"key": "cost", "type": "PhoneNumberCost"},
     }
 
     def __init__(
         self,
-        **kwargs
-    ):
+        *,
+        id: str,  # pylint: disable=redefined-builtin
+        phone_number: str,
+        country_code: str,
+        phone_number_type: Union[str, "_models.PhoneNumberType"],
+        capabilities: "_models.PhoneNumberCapabilities",
+        assignment_type: Union[str, "_models.PhoneNumberAssignmentType"],
+        purchase_date: datetime.datetime,
+        cost: "_models.PhoneNumberCost",
+        **kwargs: Any
+    ) -> None:
         """
-        :keyword id: Required. The id of the phone number, e.g. 11234567890.
+        :keyword id: The id of the phone number, e.g. 11234567890. Required.
         :paramtype id: str
-        :keyword phone_number: Required. String of the E.164 format of the phone number, e.g.
-         +11234567890.
+        :keyword phone_number: String of the E.164 format of the phone number, e.g. +11234567890.
+         Required.
         :paramtype phone_number: str
-        :keyword country_code: Required. The ISO 3166-2 code of the phone number's country, e.g. US.
+        :keyword country_code: The ISO 3166-2 code of the phone number's country, e.g. US. Required.
         :paramtype country_code: str
-        :keyword phone_number_type: Required. The phone number's type, e.g. Geographic, TollFree.
-         Possible values include: "geographic", "tollFree".
+        :keyword phone_number_type: The phone number's type, e.g. geographic, tollFree. Required. Known
+         values are: "geographic" and "tollFree".
         :paramtype phone_number_type: str or ~azure.communication.phonenumbers.models.PhoneNumberType
-        :keyword capabilities: Required. Capabilities of a phone number.
+        :keyword capabilities: Capabilities of a phone number. Required.
         :paramtype capabilities: ~azure.communication.phonenumbers.models.PhoneNumberCapabilities
-        :keyword assignment_type: Required. The assignment type of the phone number. A phone number can
-         be assigned to a person, or to an application. Possible values include: "person",
+        :keyword assignment_type: The assignment type of the phone number. A phone number can be
+         assigned to a person, or to an application. Required. Known values are: "person" and
          "application".
         :paramtype assignment_type: str or
          ~azure.communication.phonenumbers.models.PhoneNumberAssignmentType
-        :keyword purchase_date: Required. The date and time that the phone number was purchased.
+        :keyword purchase_date: The date and time that the phone number was purchased. Required.
         :paramtype purchase_date: ~datetime.datetime
-        :keyword cost: Required. The incurred cost for a single phone number.
+        :keyword cost: The incurred cost for a single phone number. Required.
         :paramtype cost: ~azure.communication.phonenumbers.models.PhoneNumberCost
         """
-        super(PurchasedPhoneNumber, self).__init__(**kwargs)
-        self.id = kwargs['id']
-        self.phone_number = kwargs['phone_number']
-        self.country_code = kwargs['country_code']
-        self.phone_number_type = kwargs['phone_number_type']
-        self.capabilities = kwargs['capabilities']
-        self.assignment_type = kwargs['assignment_type']
-        self.purchase_date = kwargs['purchase_date']
-        self.cost = kwargs['cost']
+        super().__init__(**kwargs)
+        self.id = id
+        self.phone_number = phone_number
+        self.country_code = country_code
+        self.phone_number_type = phone_number_type
+        self.capabilities = capabilities
+        self.assignment_type = assignment_type
+        self.purchase_date = purchase_date
+        self.cost = cost
 
 
-class PurchasedPhoneNumbers(msrest.serialization.Model):
+class PurchasedPhoneNumbers(_serialization.Model):
     """The list of purchased phone numbers.
 
-    All required parameters must be populated in order to send to Azure.
+    All required parameters must be populated in order to send to server.
 
-    :ivar phone_numbers: Required. Represents a list of phone numbers.
+    :ivar phone_numbers: Represents a list of phone numbers. Required.
     :vartype phone_numbers: list[~azure.communication.phonenumbers.models.PurchasedPhoneNumber]
     :ivar next_link: Represents the URL link to the next page of phone number results.
     :vartype next_link: str
     """
 
     _validation = {
-        'phone_numbers': {'required': True},
+        "phone_numbers": {"required": True},
     }
 
     _attribute_map = {
-        'phone_numbers': {'key': 'phoneNumbers', 'type': '[PurchasedPhoneNumber]'},
-        'next_link': {'key': 'nextLink', 'type': 'str'},
+        "phone_numbers": {"key": "phoneNumbers", "type": "[PurchasedPhoneNumber]"},
+        "next_link": {"key": "nextLink", "type": "str"},
     }
 
     def __init__(
-        self,
-        **kwargs
-    ):
+        self, *, phone_numbers: List["_models.PurchasedPhoneNumber"], next_link: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
-        :keyword phone_numbers: Required. Represents a list of phone numbers.
+        :keyword phone_numbers: Represents a list of phone numbers. Required.
         :paramtype phone_numbers: list[~azure.communication.phonenumbers.models.PurchasedPhoneNumber]
         :keyword next_link: Represents the URL link to the next page of phone number results.
         :paramtype next_link: str
         """
-        super(PurchasedPhoneNumbers, self).__init__(**kwargs)
-        self.phone_numbers = kwargs['phone_numbers']
-        self.next_link = kwargs.get('next_link', None)
+        super().__init__(**kwargs)
+        self.phone_numbers = phone_numbers
+        self.next_link = next_link

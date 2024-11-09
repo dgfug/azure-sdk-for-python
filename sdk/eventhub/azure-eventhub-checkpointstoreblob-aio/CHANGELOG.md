@@ -2,7 +2,9 @@
 
 ## 1.2.0 (Unreleased)
 
-This version and all future versions will require Python 3.6+. Python 2.7 is no longer supported.
+This version and all future versions will require Python 3.7+. Python 2.7 and 3.6 are no longer supported.
+
+- `aiohttp` dependency upper bound raised to `<5.0` to account for the custom built `aiohttp` that supports python 3.12. This change may be reverted prior to release.
 
 ### Bugs Fixed
 

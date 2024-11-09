@@ -7,13 +7,11 @@
 # --------------------------------------------------------------------------
 
 from enum import Enum
-from six import with_metaclass
 from azure.core import CaseInsensitiveEnumMeta
 
 
-class KeyVaultSecretStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Status of the Key Vault secret.
-    """
+class KeyVaultSecretStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the Key Vault secret."""
 
     INITIALIZED = "Initialized"
     WAITING_ON_CERTIFICATE_ORDER = "WaitingOnCertificateOrder"

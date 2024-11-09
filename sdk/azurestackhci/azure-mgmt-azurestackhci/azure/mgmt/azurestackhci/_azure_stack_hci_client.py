@@ -6,99 +6,163 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import TYPE_CHECKING
+from copy import deepcopy
+from typing import Any, TYPE_CHECKING
+from typing_extensions import Self
 
+from azure.core.pipeline import policies
+from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
+
+from . import models as _models
+from ._configuration import AzureStackHCIClientConfiguration
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    ArcSettingsOperations,
+    ClustersOperations,
+    DeploymentSettingsOperations,
+    EdgeDevicesOperations,
+    ExtensionsOperations,
+    OffersOperations,
+    Operations,
+    PublishersOperations,
+    SecuritySettingsOperations,
+    SkusOperations,
+    UpdateRunsOperations,
+    UpdateSummariesOperations,
+    UpdatesOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
-    from typing import Any, Optional
-
     from azure.core.credentials import TokenCredential
-    from azure.core.pipeline.transport import HttpRequest, HttpResponse
-
-from ._configuration import AzureStackHCIClientConfiguration
-from .operations import ArcSettingsOperations
-from .operations import ClustersOperations
-from .operations import ExtensionsOperations
-from .operations import Operations
-from . import models
 
 
-class AzureStackHCIClient(object):
+class AzureStackHCIClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """Azure Stack HCI management service.
 
     :ivar arc_settings: ArcSettingsOperations operations
-    :vartype arc_settings: azure_stack_hci_client.operations.ArcSettingsOperations
+    :vartype arc_settings: azure.mgmt.azurestackhci.operations.ArcSettingsOperations
     :ivar clusters: ClustersOperations operations
-    :vartype clusters: azure_stack_hci_client.operations.ClustersOperations
+    :vartype clusters: azure.mgmt.azurestackhci.operations.ClustersOperations
+    :ivar deployment_settings: DeploymentSettingsOperations operations
+    :vartype deployment_settings: azure.mgmt.azurestackhci.operations.DeploymentSettingsOperations
+    :ivar edge_devices: EdgeDevicesOperations operations
+    :vartype edge_devices: azure.mgmt.azurestackhci.operations.EdgeDevicesOperations
     :ivar extensions: ExtensionsOperations operations
-    :vartype extensions: azure_stack_hci_client.operations.ExtensionsOperations
+    :vartype extensions: azure.mgmt.azurestackhci.operations.ExtensionsOperations
+    :ivar offers: OffersOperations operations
+    :vartype offers: azure.mgmt.azurestackhci.operations.OffersOperations
     :ivar operations: Operations operations
-    :vartype operations: azure_stack_hci_client.operations.Operations
-    :param credential: Credential needed for the client to connect to Azure.
+    :vartype operations: azure.mgmt.azurestackhci.operations.Operations
+    :ivar publishers: PublishersOperations operations
+    :vartype publishers: azure.mgmt.azurestackhci.operations.PublishersOperations
+    :ivar security_settings: SecuritySettingsOperations operations
+    :vartype security_settings: azure.mgmt.azurestackhci.operations.SecuritySettingsOperations
+    :ivar skus: SkusOperations operations
+    :vartype skus: azure.mgmt.azurestackhci.operations.SkusOperations
+    :ivar update_runs: UpdateRunsOperations operations
+    :vartype update_runs: azure.mgmt.azurestackhci.operations.UpdateRunsOperations
+    :ivar update_summaries: UpdateSummariesOperations operations
+    :vartype update_summaries: azure.mgmt.azurestackhci.operations.UpdateSummariesOperations
+    :ivar updates: UpdatesOperations operations
+    :vartype updates: azure.mgmt.azurestackhci.operations.UpdatesOperations
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: The ID of the target subscription.
+    :param subscription_id: The ID of the target subscription. The value must be an UUID. Required.
     :type subscription_id: str
-    :param str base_url: Service URL
-    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no Retry-After header is present.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
+    :keyword api_version: Api Version. Default value is "2024-04-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
+    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
+     Retry-After header is present.
     """
 
     def __init__(
         self,
-        credential,  # type: "TokenCredential"
-        subscription_id,  # type: str
-        base_url=None,  # type: Optional[str]
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> None
-        if not base_url:
-            base_url = 'https://management.azure.com'
-        self._config = AzureStackHCIClientConfiguration(credential, subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        credential: "TokenCredential",
+        subscription_id: str,
+        base_url: str = "https://management.azure.com",
+        **kwargs: Any
+    ) -> None:
+        self._config = AzureStackHCIClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
-        self._serialize.client_side_validation = False
         self._deserialize = Deserializer(client_models)
+        self._serialize.client_side_validation = False
+        self.arc_settings = ArcSettingsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.clusters = ClustersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.deployment_settings = DeploymentSettingsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.edge_devices = EdgeDevicesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.extensions = ExtensionsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.offers = OffersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
+        self.publishers = PublishersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.security_settings = SecuritySettingsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.skus = SkusOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.update_runs = UpdateRunsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.update_summaries = UpdateSummariesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.updates = UpdatesOperations(self._client, self._config, self._serialize, self._deserialize)
 
-        self.arc_settings = ArcSettingsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.clusters = ClustersOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.extensions = ExtensionsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.operations = Operations(
-            self._client, self._config, self._serialize, self._deserialize)
-
-    def _send_request(self, http_request, **kwargs):
-        # type: (HttpRequest, Any) -> HttpResponse
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
-        :param http_request: The network request you want to make. Required.
-        :type http_request: ~azure.core.pipeline.transport.HttpRequest
-        :keyword bool stream: Whether the response payload will be streamed. Defaults to True.
-        :return: The response of your network call. Does not do error handling on your response.
-        :rtype: ~azure.core.pipeline.transport.HttpResponse
-        """
-        path_format_arguments = {
-            'subscriptionId': self._serialize.url("self._config.subscription_id", self._config.subscription_id, 'str', min_length=1),
-        }
-        http_request.url = self._client.format_url(http_request.url, **path_format_arguments)
-        stream = kwargs.pop("stream", True)
-        pipeline_response = self._client._pipeline.run(http_request, stream=stream, **kwargs)
-        return pipeline_response.http_response
+        >>> from azure.core.rest import HttpRequest
+        >>> request = HttpRequest("GET", "https://www.example.org/")
+        <HttpRequest [GET], url: 'https://www.example.org/'>
+        >>> response = client._send_request(request)
+        <HttpResponse: 200 OK>
 
-    def close(self):
-        # type: () -> None
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
+
+        :param request: The network request you want to make. Required.
+        :type request: ~azure.core.rest.HttpRequest
+        :keyword bool stream: Whether the response payload will be streamed. Defaults to False.
+        :return: The response of your network call. Does not do error handling on your response.
+        :rtype: ~azure.core.rest.HttpResponse
+        """
+
+        request_copy = deepcopy(request)
+        request_copy.url = self._client.format_url(request_copy.url)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
+
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> AzureStackHCIClient
+    def __enter__(self) -> Self:
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

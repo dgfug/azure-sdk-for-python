@@ -1,6 +1,6 @@
-# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/cbl-mariner/base/python:3
 
-FROM python:3.8-slim-buster
+RUN yum update -y && yum install -y ca-certificates
 
 WORKDIR /app
 

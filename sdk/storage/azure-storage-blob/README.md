@@ -1,6 +1,3 @@
-## _Disclaimer_
-_Azure SDK Python packages support for Python 2.7 has ended 01 January 2022. For more information and questions, please refer to https://github.com/Azure/azure-sdk-for-python/issues/20691_
-
 # Azure Storage Blobs client library for Python
 Azure Blob storage is Microsoft's object storage solution for the cloud. Blob storage is optimized for storing massive amounts of unstructured data, such as text or binary data.
 
@@ -12,13 +9,18 @@ Blob storage is ideal for:
 * Storing data for backup and restore, disaster recovery, and archiving
 * Storing data for analysis by an on-premises or Azure-hosted service
 
-[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob/azure/storage/blob) | [Package (PyPI)](https://pypi.org/project/azure-storage-blob/) | [API reference documentation](https://aka.ms/azsdk-python-storage-blob-ref) | [Product documentation](https://docs.microsoft.com/azure/storage/) | [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob/samples)
+[Source code](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob/azure/storage/blob)
+| [Package (PyPI)](https://pypi.org/project/azure-storage-blob/)
+| [Package (Conda)](https://anaconda.org/microsoft/azure-storage/)
+| [API reference documentation](https://aka.ms/azsdk-python-storage-blob-ref)
+| [Product documentation](https://docs.microsoft.com/azure/storage/)
+| [Samples](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob/samples)
 
 
 ## Getting started
 
 ### Prerequisites
-* Python 3.6 or later is required to use this package.
+* Python 3.8 or later is required to use this package. For more details, please read our page on [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
 * You must have an [Azure subscription](https://azure.microsoft.com/free/) and an
 [Azure storage account](https://docs.microsoft.com/azure/storage/common/storage-account-overview) to use this package.
 
@@ -85,14 +87,14 @@ The `credential` parameter may be provided in a number of different forms, depen
 
    Use the returned token credential to authenticate the client:
     ```python
-        from azure.identity import DefaultAzureCredential
-        from azure.storage.blob import BlobServiceClient
-        token_credential = DefaultAzureCredential()
+    from azure.identity import DefaultAzureCredential
+    from azure.storage.blob import BlobServiceClient
+    token_credential = DefaultAzureCredential()
 
-        blob_service_client = BlobServiceClient(
-            account_url="https://<my_account_name>.blob.core.windows.net",
-            credential=token_credential
-        )
+    blob_service_client = BlobServiceClient(
+        account_url="https://<my_account_name>.blob.core.windows.net",
+        credential=token_credential
+    )
     ```
 
 2. To use a [shared access signature (SAS) token](https://docs.microsoft.com/azure/storage/common/storage-sas-overview),
@@ -222,17 +224,17 @@ Create a container from where you can upload or download blobs.
 ```python
 from azure.storage.blob import ContainerClient
 
-container_client = ContainerClient.from_connection_string(conn_str="<connection_string>", container_name="my_container")
+container_client = ContainerClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer")
 
 container_client.create_container()
 ```
 
-Use the async client to upload a blob
+Use the async client to create a container
 
 ```python
 from azure.storage.blob.aio import ContainerClient
 
-container_client = ContainerClient.from_connection_string(conn_str="<connection_string>", container_name="my_container")
+container_client = ContainerClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer")
 
 await container_client.create_container()
 ```
@@ -243,7 +245,7 @@ Upload a blob to your container
 ```python
 from azure.storage.blob import BlobClient
 
-blob = BlobClient.from_connection_string(conn_str="<connection_string>", container_name="my_container", blob_name="my_blob")
+blob = BlobClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer", blob_name="my_blob")
 
 with open("./SampleSource.txt", "rb") as data:
     blob.upload_blob(data)
@@ -254,7 +256,7 @@ Use the async client to upload a blob
 ```python
 from azure.storage.blob.aio import BlobClient
 
-blob = BlobClient.from_connection_string(conn_str="<connection_string>", container_name="my_container", blob_name="my_blob")
+blob = BlobClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer", blob_name="my_blob")
 
 with open("./SampleSource.txt", "rb") as data:
     await blob.upload_blob(data)
@@ -266,7 +268,7 @@ Download a blob from your container
 ```python
 from azure.storage.blob import BlobClient
 
-blob = BlobClient.from_connection_string(conn_str="my_connection_string", container_name="my_container", blob_name="my_blob")
+blob = BlobClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer", blob_name="my_blob")
 
 with open("./BlockDestination.txt", "wb") as my_blob:
     blob_data = blob.download_blob()
@@ -278,7 +280,7 @@ Download a blob asynchronously
 ```python
 from azure.storage.blob.aio import BlobClient
 
-blob = BlobClient.from_connection_string(conn_str="my_connection_string", container_name="my_container", blob_name="my_blob")
+blob = BlobClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer", blob_name="my_blob")
 
 with open("./BlockDestination.txt", "wb") as my_blob:
     stream = await blob.download_blob()
@@ -292,7 +294,7 @@ List the blobs in your container
 ```python
 from azure.storage.blob import ContainerClient
 
-container = ContainerClient.from_connection_string(conn_str="my_connection_string", container_name="my_container")
+container = ContainerClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer")
 
 blob_list = container.list_blobs()
 for blob in blob_list:
@@ -304,7 +306,7 @@ List the blobs asynchronously
 ```python
 from azure.storage.blob.aio import ContainerClient
 
-container = ContainerClient.from_connection_string(conn_str="my_connection_string", container_name="my_container")
+container = ContainerClient.from_connection_string(conn_str="<connection_string>", container_name="mycontainer")
 
 blob_list = []
 async for blob in container.list_blobs():
@@ -334,6 +336,8 @@ Defaults to `False`.
 Use the following keyword arguments when instantiating a client to configure encryption:
 
 * __require_encryption__ (bool): If set to True, will enforce that objects are encrypted and decrypt them.
+* __encryption_version__ (str): Specifies the version of encryption to use. Current options are `'2.0'` or `'1.0'` and
+the default value is `'1.0'`. Version 1.0 is deprecated, and it is **highly recommended** to use version 2.0.
 * __key_encryption_key__ (object): The user-provided key-encryption-key. The instance must implement the following methods:
     - `wrap_key(key)`--wraps the specified key using an algorithm of the user's choice.
     - `get_key_wrap_algorithm()`--returns the algorithm used to wrap the specified symmetric key.
@@ -347,7 +351,11 @@ Other optional configuration keyword arguments that can be specified on the clie
 
 **Client keyword arguments:**
 
-* __connection_timeout__ (int): Optionally sets the connect and read timeout value, in seconds.
+* __connection_timeout__ (int): The number of seconds the client will wait to establish a connection to the server.
+Defaults to 20 seconds.
+* __read_timeout__ (int): The number of seconds the client will wait, between consecutive read operations, for a
+response from the server. This is a socket level timeout and is not affected by overall data size. Client-side read 
+timeouts will be automatically retried. Defaults to 60 seconds.
 * __transport__ (Any): User-provided transport to send the HTTP request.
 
 **Per-operation keyword arguments:**
@@ -395,7 +403,7 @@ service_client = BlobServiceClient.from_connection_string("your_connection_strin
 
 Similarly, `logging_enable` can enable detailed logging for a single operation,
 even when it isn't enabled for the client:
-```py
+```python
 service_client.get_service_stats(logging_enable=True)
 ```
 

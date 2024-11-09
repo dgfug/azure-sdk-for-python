@@ -1,5 +1,233 @@
 # Release History
 
+## 13.3.0 (2024-10-21)
+
+### Features Added
+
+  - Model `FilePathAvailabilityRequest` added property `availability_zone`
+  - Model `ReplicationObject` added property `remote_path`
+  - Model `Volume` added property `effective_network_features`
+  - Model `VolumeGroupVolumeProperties` added property `effective_network_features`
+  - Added model `ClusterPeerCommandResponse`
+  - Added model `PeerClusterForVolumeMigrationRequest`
+  - Added model `RemotePath`
+  - Added model `SvmPeerCommandResponse`
+  - Operation group `VolumesOperations` added method `begin_authorize_external_replication`
+  - Operation group `VolumesOperations` added method `begin_finalize_external_replication`
+  - Operation group `VolumesOperations` added method `begin_peer_external_cluster`
+  - Operation group `VolumesOperations` added method `begin_perform_replication_transfer`
+
+## 13.2.0 (2024-08-19)
+
+### Features Added
+
+  - Model Replication has a new parameter replication_id
+
+## 13.1.0 (2024-07-22)
+
+### Features Added
+
+  - Model VolumePatch has a new parameter protocol_types
+
+## 13.0.0 (2024-05-20)
+
+### Features Added
+
+  - Added operation BackupsOperations.begin_create
+  - Added operation BackupsOperations.begin_delete
+  - Added operation BackupsOperations.begin_update
+  - Added operation BackupsOperations.get
+  - Added operation BackupsOperations.get_latest_status
+  - Added operation BackupsOperations.get_volume_latest_restore_status
+  - Added operation BackupsOperations.list_by_vault
+  - Added operation group BackupVaultsOperations
+  - Added operation group BackupsUnderAccountOperations
+  - Added operation group BackupsUnderBackupVaultOperations
+  - Added operation group BackupsUnderVolumeOperations
+  - Added operation group NetAppResourceRegionInfosOperations
+  - Model VolumeBackups has a new parameter volume_resource_id
+  - Model VolumePatchPropertiesDataProtection has a new parameter backup
+  - Model VolumePropertiesDataProtection has a new parameter backup
+
+### Breaking Changes
+
+  - Removed operation BackupsOperations.get_volume_restore_status
+
+## 12.0.0 (2024-03-18)
+
+### Breaking Changes
+
+  - Model VolumeGroupMetaData no longer has parameter deployment_spec_id
+
+## 12.0.0b1 (2023-12-22)
+
+### Features Added
+
+  - Added operation AccountsOperations.begin_migrate_encryption_key
+  - Added operation BackupsOperations.begin_create
+  - Added operation BackupsOperations.begin_delete
+  - Added operation BackupsOperations.begin_update
+  - Added operation BackupsOperations.get
+  - Added operation BackupsOperations.get_latest_status
+  - Added operation BackupsOperations.list_by_vault
+  - Added operation VolumesOperations.begin_split_clone_from_parent
+  - Added operation group AccountBackupsOperations
+  - Added operation group BackupVaultsOperations
+  - Added operation group BackupsUnderAccountOperations
+  - Added operation group BackupsUnderBackupVaultOperations
+  - Added operation group BackupsUnderVolumeOperations
+  - Added operation group NetAppResourceRegionInfosOperations
+  - Model NetAppAccount has a new parameter is_multi_ad_enabled
+  - Model NetAppAccount has a new parameter nfs_v4_id_domain
+  - Model NetAppAccountPatch has a new parameter is_multi_ad_enabled
+  - Model NetAppAccountPatch has a new parameter nfs_v4_id_domain
+  - Model ReplicationObject has a new parameter remote_path
+  - Model Volume has a new parameter inherited_size_in_bytes
+  - Model VolumeGroupVolumeProperties has a new parameter inherited_size_in_bytes
+  - Model VolumePatchPropertiesDataProtection has a new parameter backup
+  - Model VolumePropertiesDataProtection has a new parameter backup
+
+### Breaking Changes
+
+  - Model VolumeGroupMetaData no longer has parameter deployment_spec_id
+
+## 11.0.0 (2023-10-23)
+
+### Features Added
+
+  - Added operation NetAppResourceOperations.begin_update_network_sibling_set
+  - Added operation NetAppResourceOperations.query_network_sibling_set
+  - Added operation VolumesOperations.begin_populate_availability_zone
+  - Model Volume has a new parameter cool_access_retrieval_policy
+  - Model VolumeGroupVolumeProperties has a new parameter cool_access_retrieval_policy
+  - Model VolumeGroupVolumeProperties has a new parameter zones
+  - Model VolumePatch has a new parameter cool_access_retrieval_policy
+  - Model VolumePatch has a new parameter smb_access_based_enumeration
+  - Model VolumePatch has a new parameter smb_non_browsable
+
+### Breaking Changes
+
+  - Model VolumePatchPropertiesDataProtection no longer has parameter backup
+  - Model VolumePropertiesDataProtection no longer has parameter backup
+  - Removed operation BackupsOperations.begin_create
+  - Removed operation BackupsOperations.begin_delete
+  - Removed operation BackupsOperations.begin_restore_files
+  - Removed operation BackupsOperations.begin_update
+  - Removed operation BackupsOperations.get
+  - Removed operation BackupsOperations.get_status
+  - Removed operation BackupsOperations.list
+  - Removed operation group AccountBackupsOperations
+
+## 10.1.0 (2023-07-21)
+
+### Features Added
+
+  - Added operation VolumesOperations.begin_list_get_group_id_list_for_ldap_user
+  - Model NetAppAccountPatch has a new parameter identity
+  - Model Volume has a new parameter actual_throughput_mibps
+  - Model Volume has a new parameter originating_resource_id
+  - Model VolumeGroupVolumeProperties has a new parameter actual_throughput_mibps
+  - Model VolumeGroupVolumeProperties has a new parameter originating_resource_id
+  - Model VolumePatch has a new parameter snapshot_directory_visible
+
+## 10.0.0 (2023-04-20)
+
+### Features Added
+
+  - Added operation BackupsOperations.begin_restore_files
+  - Added operation VolumesOperations.begin_break_file_locks
+  - Model ActiveDirectory has a new parameter preferred_servers_for_ldap_client
+  - Model Backup has a new parameter system_data
+  - Model BackupPolicyDetails has a new parameter system_data
+  - Model Snapshot has a new parameter system_data
+  - Model Volume has a new parameter data_store_resource_id
+  - Model Volume has a new parameter file_access_logs
+  - Model Volume has a new parameter is_large_volume
+  - Model Volume has a new parameter provisioned_availability_zone
+  - Model VolumeGroupVolumeProperties has a new parameter data_store_resource_id
+  - Model VolumeGroupVolumeProperties has a new parameter file_access_logs
+  - Model VolumeGroupVolumeProperties has a new parameter is_large_volume
+  - Model VolumeGroupVolumeProperties has a new parameter provisioned_availability_zone
+  - Model VolumePropertiesDataProtection has a new parameter volume_relocation
+  - Model VolumeQuotaRulePatch has a new parameter tags
+  - Model VolumeRelocationProperties has a new parameter ready_to_be_finalized
+
+### Breaking Changes
+
+  - Model VolumeBackupProperties no longer has parameter vault_id
+  - Model VolumeRelocationProperties no longer has parameter old_bare_metal_tenant_id
+  - Model VolumeRelocationProperties no longer has parameter old_volume_id
+  - Parameter location of model BackupPolicyDetails is now required
+  - Removed operation group VaultsOperations
+
+## 9.0.2b1 (2023-02-16)
+
+### Other Changes
+
+  - Added generated samples in github repo
+  - Drop support for python<3.7.0
+
+## 9.0.1 (2022-10-26)
+
+### Bugs Fixed
+
+  - Added missing parameter `api_version` for operation AccountsOperations.begin_renew_credentials
+
+## 9.0.0 (2022-09-26)
+
+### Features Added
+
+  - Added operation AccountsOperations.begin_renew_credentials
+  - Added operation NetAppResourceOperations.query_region_info
+  - Model AccountEncryption has a new parameter identity
+  - Model AccountEncryption has a new parameter key_vault_properties
+  - Model NetAppAccount has a new parameter disable_showmount
+  - Model NetAppAccount has a new parameter identity
+  - Model NetAppAccountPatch has a new parameter disable_showmount
+  - Model Volume has a new parameter delete_base_snapshot
+  - Model Volume has a new parameter smb_access_based_enumeration
+  - Model Volume has a new parameter smb_non_browsable
+  - Model VolumeGroupVolumeProperties has a new parameter delete_base_snapshot
+  - Model VolumeGroupVolumeProperties has a new parameter smb_access_based_enumeration
+  - Model VolumeGroupVolumeProperties has a new parameter smb_non_browsable
+
+### Breaking Changes
+
+  - Model Vault no longer has parameter location
+  - Operation VolumesOperations.begin_relocate has a new parameter body
+
+## 8.1.0 (2022-08-02)
+
+**Features**
+
+  - Added operation VolumesOperations.begin_reestablish_replication
+  - Model CapacityPoolPatch has a new parameter cool_access
+  - Model Volume has a new parameter key_vault_private_endpoint_resource_id
+  - Model VolumeGroupVolumeProperties has a new parameter key_vault_private_endpoint_resource_id
+  - Model VolumePatch has a new parameter cool_access
+  - Model VolumePatch has a new parameter coolness_period
+
+## 8.0.0 (2022-06-13)
+
+**Features**
+
+  - Added operation VolumesOperations.begin_finalize_relocation
+  - Added operation VolumesOperations.begin_relocate
+  - Added operation VolumesOperations.begin_reset_cifs_password
+  - Added operation VolumesOperations.begin_revert_relocation
+  - Added operation VolumesOperations.list_replications
+  - Added operation group VolumeQuotaRulesOperations
+  - Model ProxyResource has a new parameter system_data
+  - Model Resource has a new parameter system_data
+  - Model Volume has a new parameter encrypted
+  - Model Volume has a new parameter zones
+  - Model VolumeGroupVolumeProperties has a new parameter encrypted
+
+**Breaking changes**
+
+  - Model VolumeGroup no longer has parameter tags
+  - Model VolumeGroupDetails no longer has parameter tags
+
 ## 7.0.0 (2022-03-15)
 
 **Features**

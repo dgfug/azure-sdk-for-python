@@ -2,6 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+from __future__ import annotations
 import random
 from typing import (
     Dict,
@@ -18,17 +19,22 @@ from typing import (
 import uuid
 import asyncio
 import logging
+import time
 from functools import partial
 
 from ..._common import EventData
 from ..._eventprocessor.common import CloseReason, LoadBalancingStrategy
 from ..._eventprocessor._eventprocessor_mixin import EventProcessorMixin
-from ..._utils import get_event_links
+from ..._tracing import (
+    get_span_links_from_received_events,
+    is_tracing_enabled,
+    receive_context_manager,
+    process_context_manager,
+)
 from .partition_context import PartitionContext
 from .in_memory_checkpoint_store import InMemoryCheckpointStore
 from .checkpoint_store import CheckpointStore
 from ._ownership_manager import OwnershipManager
-from .utils import get_running_loop
 from .._async_utils import get_dict_with_loop_if_needed
 
 if TYPE_CHECKING:
@@ -39,9 +45,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-class EventProcessor(
-    EventProcessorMixin
-):  # pylint:disable=too-many-instance-attributes
+class EventProcessor(EventProcessorMixin):  # pylint:disable=too-many-instance-attributes
     """
     An EventProcessor constantly receives events from one or multiple partitions of the Event Hub
     in the context of a given consumer group.
@@ -52,37 +56,32 @@ class EventProcessor(
         self,
         eventhub_client: "EventHubConsumerClient",
         consumer_group: str,
-        event_handler: Callable[[PartitionContext, Union[Optional[EventData], List[EventData]]], Awaitable[None]],
+        event_handler: Callable[
+            [PartitionContext, Union[Optional[EventData], List[EventData]]],
+            Awaitable[None],
+        ],
         *,
-        batch: Optional[bool] = False,
-        max_batch_size: Optional[int] = 300,
+        batch: bool = False,
+        max_batch_size: int = 300,
         max_wait_time: Optional[float] = None,
         partition_id: Optional[str] = None,
         checkpoint_store: Optional[CheckpointStore] = None,
         initial_event_position: Union[str, int, "datetime", Dict[str, Any]] = "@latest",
         initial_event_position_inclusive: Union[bool, Dict[str, bool]] = False,
-        load_balancing_interval: float = 10.0,
+        load_balancing_interval: float = 30.0,
         partition_ownership_expiration_interval: Optional[float] = None,
         load_balancing_strategy: LoadBalancingStrategy = LoadBalancingStrategy.GREEDY,
         owner_level: Optional[int] = None,
         prefetch: Optional[int] = None,
         track_last_enqueued_event_properties: bool = False,
-        error_handler: Optional[
-            Callable[[PartitionContext, Exception], Awaitable[None]]
-        ] = None,
-        partition_initialize_handler: Optional[
-            Callable[[PartitionContext], Awaitable[None]]
-        ] = None,
-        partition_close_handler: Optional[
-            Callable[[PartitionContext, CloseReason], Awaitable[None]]
-        ] = None,
-        loop: Optional[asyncio.AbstractEventLoop] = None
+        error_handler: Optional[Callable[[PartitionContext, Exception], Awaitable[None]]] = None,
+        partition_initialize_handler: Optional[Callable[[PartitionContext], Awaitable[None]]] = None,
+        partition_close_handler: Optional[Callable[[PartitionContext, CloseReason], Awaitable[None]]] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
         self._consumer_group = consumer_group
         self._eventhub_client = eventhub_client
-        self._namespace = (
-            eventhub_client._address.hostname  # pylint: disable=protected-access
-        )
+        self._namespace = eventhub_client._address.hostname  # pylint: disable=protected-access
         self._eventhub_name = eventhub_client.eventhub_name
         self._partition_id = partition_id
         self._event_handler = event_handler
@@ -96,24 +95,24 @@ class EventProcessor(
         self._initial_event_position = initial_event_position
         self._initial_event_position_inclusive = initial_event_position_inclusive
         self._load_balancing_interval = load_balancing_interval
-        self._ownership_timeout = partition_ownership_expiration_interval \
-            if partition_ownership_expiration_interval is not None \
+        self._ownership_timeout = (
+            partition_ownership_expiration_interval
+            if partition_ownership_expiration_interval is not None
             else self._load_balancing_interval * 6
+        )
         self._load_balancing_strategy = load_balancing_strategy or LoadBalancingStrategy.GREEDY
-        self._tasks = {}  # type: Dict[str, asyncio.Task]
-        self._partition_contexts = {}  # type: Dict[str, PartitionContext]
+        self._tasks: Dict[str, asyncio.Task] = {}
+        self._partition_contexts: Dict[str, PartitionContext] = {}
         self._owner_level = owner_level
         if checkpoint_store and self._owner_level is None:
             self._owner_level = 0
         self._prefetch = prefetch
-        self._track_last_enqueued_event_properties = (
-            track_last_enqueued_event_properties
-        )
+        self._track_last_enqueued_event_properties = track_last_enqueued_event_properties
         self._id = str(uuid.uuid4())
         self._internal_kwargs = get_dict_with_loop_if_needed(loop)
         self._running = False
 
-        self._consumers = {}  # type: Dict[str, EventHubConsumer]
+        self._consumers: Dict[str, EventHubConsumer] = {}
         self._ownership_manager = OwnershipManager(
             cast("EventHubConsumerClient", self._eventhub_client),
             self._consumer_group,
@@ -124,16 +123,16 @@ class EventProcessor(
             self._partition_id,
         )
 
+        self._last_received_time = time.time_ns()
+
     def __repr__(self) -> str:
         return "EventProcessor: id {}".format(self._id)
 
-    async def _cancel_tasks_for_partitions(
-        self, to_cancel_partitions: Iterable[str]
-    ) -> None:
+    async def _cancel_tasks_for_partitions(self, to_cancel_partitions: Iterable[str]) -> None:
         _LOGGER.debug(
             "EventProcessor %r tries to cancel partitions %r",
             self._id,
-            to_cancel_partitions
+            to_cancel_partitions,
         )
         for partition_id in to_cancel_partitions:
             task = self._tasks.get(partition_id)
@@ -142,7 +141,7 @@ class EventProcessor(
                 _LOGGER.info(
                     "EventProcessor %r has cancelled partition %r",
                     self._id,
-                    partition_id
+                    partition_id,
                 )
                 if partition_id not in self._consumers:  # task is cancelled before the consumer is created
                     del self._tasks[partition_id]
@@ -155,24 +154,20 @@ class EventProcessor(
         _LOGGER.debug(
             "EventProcessor %r tries to claim partition %r",
             self._id,
-            claimed_partitions
+            claimed_partitions,
         )
         for partition_id in claimed_partitions:
             if partition_id not in self._tasks or self._tasks[partition_id].done():
                 checkpoint = checkpoints.get(partition_id) if checkpoints else None
                 if self._running:
-                    self._tasks[partition_id] = get_running_loop().create_task(
-                        self._receive(partition_id, checkpoint)
-                    )
+                    self._tasks[partition_id] = asyncio.create_task(self._receive(partition_id, checkpoint))
                     _LOGGER.info(
                         "EventProcessor %r has claimed partition %r",
                         self._id,
-                        partition_id
+                        partition_id,
                     )
 
-    async def _process_error(
-        self, partition_context: PartitionContext, err: Exception
-    ) -> None:
+    async def _process_error(self, partition_context: PartitionContext, err: Exception) -> None:
         if self._error_handler:
             try:
                 await self._error_handler(partition_context, err)
@@ -187,9 +182,7 @@ class EventProcessor(
                     err_again,
                 )
 
-    async def _close_partition(
-        self, partition_context: PartitionContext, reason: CloseReason
-    ) -> None:
+    async def _close_partition(self, partition_context: PartitionContext, reason: CloseReason) -> None:
         _LOGGER.info(
             "EventProcessor instance %r of eventhub %r partition %r consumer group %r"
             " is being closed. Reason is: %r",
@@ -215,15 +208,27 @@ class EventProcessor(
                 await self._process_error(partition_context, err)
 
     async def _on_event_received(
-        self, partition_context: PartitionContext, event: Union[Optional[EventData], List[EventData]]
+        self,
+        partition_context: PartitionContext,
+        event: Union[Optional[EventData], List[EventData]],
     ) -> None:
         if event:
             try:
                 partition_context._last_received_event = event[-1]  # type: ignore  #pylint:disable=protected-access
             except TypeError:
                 partition_context._last_received_event = event  # type: ignore  # pylint:disable=protected-access
-            links = get_event_links(event)
-            with self._context(links=links):
+
+            links = []
+            is_batch = False
+            if is_tracing_enabled():
+                links = get_span_links_from_received_events(event)
+                if isinstance(event, list):
+                    is_batch = True
+
+            with receive_context_manager(self._eventhub_client, links=links, start_time=self._last_received_time):
+                self._last_received_time = time.time_ns()
+
+            with process_context_manager(self._eventhub_client, links=links, is_batch=is_batch):
                 await self._event_handler(partition_context, event)
         else:
             await self._event_handler(partition_context, event)
@@ -251,6 +256,7 @@ class EventProcessor(
                 initial_event_position,
                 event_position_inclusive,
             ) = self.get_init_event_position(partition_id, checkpoint)
+            partition_context: PartitionContext
             if partition_id in self._partition_contexts:
                 partition_context = self._partition_contexts[partition_id]
                 partition_context._last_received_event = None  # pylint:disable=protected-access
@@ -264,9 +270,7 @@ class EventProcessor(
                 )
                 self._partition_contexts[partition_id] = partition_context
 
-            event_received_callback = partial(
-                self._on_event_received, partition_context
-            )
+            event_received_callback = partial(self._on_event_received, partition_context)
             self._consumers[partition_id] = self.create_consumer(  # type: ignore
                 partition_id,
                 initial_event_position,
@@ -291,13 +295,10 @@ class EventProcessor(
 
             while self._running:
                 try:
-                    await self._consumers[partition_id].receive(
-                        self._batch, self._max_batch_size, self._max_wait_time
-                    )
+                    await self._consumers[partition_id].receive(self._batch, self._max_batch_size, self._max_wait_time)
                 except asyncio.CancelledError:
                     _LOGGER.info(
-                        "EventProcessor instance %r of eventhub %r partition %r consumer group %r"
-                        " is cancelled",
+                        "EventProcessor instance %r of eventhub %r partition %r consumer group %r is cancelled",
                         self._id,
                         self._eventhub_name,
                         partition_id,
@@ -325,8 +326,6 @@ class EventProcessor(
         The EventProcessor will try to claim and balance partition ownership with other `EventProcessor`
          and asynchronously start receiving EventData from EventHub and processing events.
 
-        :return: None
-
         """
         _LOGGER.info("EventProcessor %r is being started", self._id)
         if not self._running:
@@ -335,9 +334,7 @@ class EventProcessor(
                 random_jitter = self._load_balancing_interval * random.random() * 0.2
                 load_balancing_interval = self._load_balancing_interval + random_jitter
                 try:
-                    claimed_partition_ids = (
-                        await self._ownership_manager.claim_ownership()
-                    )
+                    claimed_partition_ids = await self._ownership_manager.claim_ownership()
                     if claimed_partition_ids:
                         existing_pids = set(self._tasks.keys())
                         claimed_pids = set(claimed_partition_ids)
@@ -345,13 +342,9 @@ class EventProcessor(
                         newly_claimed_pids = claimed_pids - existing_pids
                         if newly_claimed_pids:
                             checkpoints = (
-                                await self._ownership_manager.get_checkpoints()
-                                if self._checkpoint_store
-                                else None
+                                await self._ownership_manager.get_checkpoints() if self._checkpoint_store else None
                             )
-                            self._create_tasks_for_claimed_ownership(
-                                newly_claimed_pids, checkpoints
-                            )
+                            self._create_tasks_for_claimed_ownership(newly_claimed_pids, checkpoints)
                     else:
                         _LOGGER.info(
                             "EventProcessor %r hasn't claimed an ownership. It keeps claiming.",
@@ -379,7 +372,7 @@ class EventProcessor(
                         self._eventhub_name,
                         self._consumer_group,
                         err,
-                        load_balancing_interval
+                        load_balancing_interval,
                     )
                     await self._process_error(None, err)  # type: ignore
 
@@ -393,8 +386,6 @@ class EventProcessor(
         Other running EventProcessor will take over these released partitions.
 
         A stopped EventProcessor can be restarted by calling method `start` again.
-
-        :return: None
 
         """
         self._running = False

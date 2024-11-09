@@ -6,100 +6,217 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+class ActionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enum. Indicates the action type. "Internal" refers to actions that are for internal only APIs."""
+
+    INTERNAL = "Internal"
+
+
+class ApplicationEnablement(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The application enablement."""
+
+    UNKNOWN = "Unknown"
+    ENABLED = "Enabled"
+    DISABLED = "Disabled"
+
+
+class ArtifactManifestState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact manifest state."""
+
+    UNKNOWN = "Unknown"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
+    VALIDATING = "Validating"
+    VALIDATION_FAILED = "ValidationFailed"
+    SUCCEEDED = "Succeeded"
+
+
+class ArtifactReplicationStrategy(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The replication strategy."""
+
+    UNKNOWN = "Unknown"
+    SINGLE_REPLICATION = "SingleReplication"
+
+
+class ArtifactState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact state."""
+
+    UNKNOWN = "Unknown"
+    PREVIEW = "Preview"
+    ACTIVE = "Active"
+    DEPRECATED = "Deprecated"
+
+
+class ArtifactStoreType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact store type."""
+
+    UNKNOWN = "Unknown"
+    AZURE_CONTAINER_REGISTRY = "AzureContainerRegistry"
+    AZURE_STORAGE_ACCOUNT = "AzureStorageAccount"
+
+
+class ArtifactType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact type."""
+
+    UNKNOWN = "Unknown"
+    OCI_ARTIFACT = "OCIArtifact"
+    VHD_IMAGE_FILE = "VhdImageFile"
+    ARM_TEMPLATE = "ArmTemplate"
+    IMAGE_FILE = "ImageFile"
+
+
+class AzureArcKubernetesArtifactType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact type."""
+
+    UNKNOWN = "Unknown"
+    HELM_PACKAGE = "HelmPackage"
+
+
+class AzureCoreArtifactType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact type."""
+
+    UNKNOWN = "Unknown"
+    VHD_IMAGE_FILE = "VhdImageFile"
+    ARM_TEMPLATE = "ArmTemplate"
+
+
+class AzureOperatorNexusArtifactType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The artifact type."""
+
+    UNKNOWN = "Unknown"
+    IMAGE_FILE = "ImageFile"
+    ARM_TEMPLATE = "ArmTemplate"
+
+
+class ConfigurationGenerationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The configuration generation type."""
+
+    UNKNOWN = "Unknown"
+    HANDLEBAR_TEMPLATE = "HandlebarTemplate"
+
+
+class ConfigurationGroupValueConfigurationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The secret type which indicates if secret or not."""
+
+    UNKNOWN = "Unknown"
+    SECRET = "Secret"
+    OPEN = "Open"
+
+
+class ContainerizedNetworkFunctionNFVIType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The network function type."""
+
+    UNKNOWN = "Unknown"
+    AZURE_ARC_KUBERNETES = "AzureArcKubernetes"
+
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class DeviceType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of the device.
-    """
+
+class CredentialType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The credential type."""
 
     UNKNOWN = "Unknown"
-    AZURE_STACK_EDGE = "AzureStackEdge"
+    AZURE_CONTAINER_REGISTRY_SCOPED_TOKEN = "AzureContainerRegistryScopedToken"
+    AZURE_STORAGE_ACCOUNT_TOKEN = "AzureStorageAccountToken"
 
-class DiskCreateOptionTypes(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Specifies how the virtual machine should be created.
-    """
 
-    UNKNOWN = "Unknown"
-    EMPTY = "Empty"
-
-class IPAllocationMethod(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """IP address allocation method.
-    """
+class HttpMethod(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The http method of the request."""
 
     UNKNOWN = "Unknown"
-    STATIC = "Static"
-    DYNAMIC = "Dynamic"
+    POST = "Post"
+    PUT = "Put"
+    GET = "Get"
+    PATCH = "Patch"
+    DELETE = "Delete"
 
-class IPVersion(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """IP address version.
-    """
 
-    UNKNOWN = "Unknown"
-    I_PV4 = "IPv4"
-
-class NetworkFunctionRoleConfigurationType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Role type.
-    """
+class IdType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The resource reference arm id type."""
 
     UNKNOWN = "Unknown"
-    VIRTUAL_MACHINE = "VirtualMachine"
+    OPEN = "Open"
+    SECRET = "Secret"
 
-class NetworkFunctionType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The network function type.
+
+class ManagedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of managed service identity (where both SystemAssigned and UserAssigned types are
+    allowed).
     """
+
+    NONE = "None"
+    SYSTEM_ASSIGNED = "SystemAssigned"
+    USER_ASSIGNED = "UserAssigned"
+    SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned,UserAssigned"
+
+
+class NetworkFunctionConfigurationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The secret type which indicates if secret or not."""
+
+    UNKNOWN = "Unknown"
+    SECRET = "Secret"
+    OPEN = "Open"
+
+
+class NetworkFunctionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The network function type."""
 
     UNKNOWN = "Unknown"
     VIRTUAL_NETWORK_FUNCTION = "VirtualNetworkFunction"
     CONTAINERIZED_NETWORK_FUNCTION = "ContainerizedNetworkFunction"
 
-class OperatingSystemTypes(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The OS type.
-    """
+
+class NFVIType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The NFVI type."""
 
     UNKNOWN = "Unknown"
-    WINDOWS = "Windows"
-    LINUX = "Linux"
+    AZURE_ARC_KUBERNETES = "AzureArcKubernetes"
+    AZURE_CORE = "AzureCore"
+    AZURE_OPERATOR_NEXUS = "AzureOperatorNexus"
 
-class OperationalState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The operational state of the role instance.
+
+class Origin(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The intended executor of the operation; as in Resource Based Access Control (RBAC) and audit
+    logs UX. Default value is "user,system".
     """
 
+    USER = "user"
+    SYSTEM = "system"
+    USER_SYSTEM = "user,system"
+
+
+class PodEventType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of pod event."""
+
+    NORMAL = "Normal"
+    WARNING = "Warning"
+
+
+class PodStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The status of a Pod."""
+
     UNKNOWN = "Unknown"
-    STOPPED = "Stopped"
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
     RUNNING = "Running"
-    STOPPING = "Stopping"
-    STARTING = "Starting"
+    PENDING = "Pending"
+    TERMINATING = "Terminating"
+    NOT_READY = "NotReady"
 
-class ProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The current provisioning state.
-    """
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current provisioning state."""
 
     UNKNOWN = "Unknown"
     SUCCEEDED = "Succeeded"
@@ -108,81 +225,78 @@ class ProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     FAILED = "Failed"
     CANCELED = "Canceled"
     DELETED = "Deleted"
+    CONVERGING = "Converging"
 
-class SkuDeploymentMode(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The sku deployment mode.
-    """
 
-    UNKNOWN = "Unknown"
-    AZURE = "Azure"
-    PRIVATE_EDGE_ZONE = "PrivateEdgeZone"
-
-class SkuType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Sku type.
-    """
+class PublisherScope(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Publisher Scope."""
 
     UNKNOWN = "Unknown"
-    EVOLVED_PACKET_CORE = "EvolvedPacketCore"
-    SDWAN = "SDWAN"
-    FIREWALL = "Firewall"
+    PRIVATE = "Private"
 
-class Status(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The current device status.
-    """
 
-    UNKNOWN = "Unknown"
-    NOT_REGISTERED = "NotRegistered"
-    REGISTERED = "Registered"
-    DELETED = "Deleted"
+class SkuName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Name of this Sku."""
 
-class VendorProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The current vendor provisioning state.
-    """
+    BASIC = "Basic"
+    STANDARD = "Standard"
 
-    UNKNOWN = "Unknown"
-    NOT_PROVISIONED = "NotProvisioned"
-    PROVISIONING = "Provisioning"
-    PROVISIONED = "Provisioned"
-    DEPROVISIONED = "Deprovisioned"
-    USER_DATA_VALIDATION_FAILED = "UserDataValidationFailed"
 
-class VirtualMachineSizeTypes(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The size of the virtual machine.
-    """
+class SkuTier(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The SKU tier based on the SKU name."""
+
+    BASIC = "Basic"
+    STANDARD = "Standard"
+
+
+class Status(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The component resource deployment status."""
 
     UNKNOWN = "Unknown"
-    STANDARD_D1_V2 = "Standard_D1_v2"
-    STANDARD_D2_V2 = "Standard_D2_v2"
-    STANDARD_D3_V2 = "Standard_D3_v2"
-    STANDARD_D4_V2 = "Standard_D4_v2"
-    STANDARD_D5_V2 = "Standard_D5_v2"
-    STANDARD_D11_V2 = "Standard_D11_v2"
-    STANDARD_D12_V2 = "Standard_D12_v2"
-    STANDARD_D13_V2 = "Standard_D13_v2"
-    STANDARD_DS1_V2 = "Standard_DS1_v2"
-    STANDARD_DS2_V2 = "Standard_DS2_v2"
-    STANDARD_DS3_V2 = "Standard_DS3_v2"
-    STANDARD_DS4_V2 = "Standard_DS4_v2"
-    STANDARD_DS5_V2 = "Standard_DS5_v2"
-    STANDARD_DS11_V2 = "Standard_DS11_v2"
-    STANDARD_DS12_V2 = "Standard_DS12_v2"
-    STANDARD_DS13_V2 = "Standard_DS13_v2"
-    STANDARD_F1 = "Standard_F1"
-    STANDARD_F2 = "Standard_F2"
-    STANDARD_F4 = "Standard_F4"
-    STANDARD_F8 = "Standard_F8"
-    STANDARD_F16 = "Standard_F16"
-    STANDARD_F1_S = "Standard_F1s"
-    STANDARD_F2_S = "Standard_F2s"
-    STANDARD_F4_S = "Standard_F4s"
-    STANDARD_F8_S = "Standard_F8s"
-    STANDARD_F16_S = "Standard_F16s"
+    DEPLOYED = "Deployed"
+    UNINSTALLED = "Uninstalled"
+    SUPERSEDED = "Superseded"
+    FAILED = "Failed"
+    UNINSTALLING = "Uninstalling"
+    PENDING_INSTALL = "Pending-Install"
+    PENDING_UPGRADE = "Pending-Upgrade"
+    PENDING_ROLLBACK = "Pending-Rollback"
+    DOWNLOADING = "Downloading"
+    INSTALLING = "Installing"
+    REINSTALLING = "Reinstalling"
+    ROLLINGBACK = "Rollingback"
+    UPGRADING = "Upgrading"
 
-class VMSwitchType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of the VM switch.
-    """
+
+class TemplateType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The template type."""
 
     UNKNOWN = "Unknown"
-    MANAGEMENT = "Management"
-    WAN = "Wan"
-    LAN = "Lan"
+    ARM_TEMPLATE = "ArmTemplate"
+
+
+class Type(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The resource element template type."""
+
+    UNKNOWN = "Unknown"
+    ARM_RESOURCE_DEFINITION = "ArmResourceDefinition"
+    NETWORK_FUNCTION_DEFINITION = "NetworkFunctionDefinition"
+
+
+class VersionState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The configuration group schema state."""
+
+    UNKNOWN = "Unknown"
+    PREVIEW = "Preview"
+    ACTIVE = "Active"
+    DEPRECATED = "Deprecated"
+    VALIDATING = "Validating"
+    VALIDATION_FAILED = "ValidationFailed"
+
+
+class VirtualNetworkFunctionNFVIType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The network function type."""
+
+    UNKNOWN = "Unknown"
+    AZURE_CORE = "AzureCore"
+    AZURE_OPERATOR_NEXUS = "AzureOperatorNexus"

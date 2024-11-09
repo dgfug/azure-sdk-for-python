@@ -13,13 +13,18 @@ from .certificate import CertificateCredential
 from .client_secret import ClientSecretCredential
 from .shared_cache import SharedTokenCacheCredential
 from .azure_cli import AzureCliCredential
+from .azd_cli import AzureDeveloperCliCredential
 from .vscode import VisualStudioCodeCredential
 from .client_assertion import ClientAssertionCredential
+from .workload_identity import WorkloadIdentityCredential
+from .azure_pipelines import AzurePipelinesCredential
 
 
 __all__ = [
     "AuthorizationCodeCredential",
     "AzureCliCredential",
+    "AzureDeveloperCliCredential",
+    "AzurePipelinesCredential",
     "AzurePowerShellCredential",
     "CertificateCredential",
     "ChainedTokenCredential",
@@ -31,4 +36,5 @@ __all__ = [
     "SharedTokenCacheCredential",
     "VisualStudioCodeCredential",
     "ClientAssertionCredential",
+    "WorkloadIdentityCredential",
 ]

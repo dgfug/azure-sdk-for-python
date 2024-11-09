@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 # ------------------------------------
+from unittest.mock import Mock, patch
+
 from azure.core.pipeline.policies import SansIOHTTPPolicy
 from azure.identity import UsernamePasswordCredential
 from azure.identity._internal.user_agent import USER_AGENT
@@ -15,12 +17,8 @@ from helpers import (
     mock_response,
     Request,
     validating_transport,
+    GET_TOKEN_METHODS,
 )
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:  # python < 3.3
-    from mock import Mock, patch  # type: ignore
 
 
 def test_tenant_id_validation():
@@ -36,15 +34,17 @@ def test_tenant_id_validation():
             UsernamePasswordCredential("client-id", "username", "password", tenant_id=tenant)
 
 
-def test_no_scopes():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_no_scopes(get_token_method):
     """The credential should raise when get_token is called with no scopes"""
 
     credential = UsernamePasswordCredential("client-id", "username", "password")
     with pytest.raises(ValueError):
-        credential.get_token()
+        getattr(credential, get_token_method)()
 
 
-def test_policies_configurable():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_policies_configurable(get_token_method):
     policy = Mock(spec_set=SansIOHTTPPolicy, on_request=Mock())
 
     transport = validating_transport(
@@ -54,12 +54,13 @@ def test_policies_configurable():
     )
     credential = UsernamePasswordCredential("client-id", "username", "password", policies=[policy], transport=transport)
 
-    credential.get_token("scope")
+    getattr(credential, get_token_method)("scope")
 
     assert policy.on_request.called
 
 
-def test_user_agent():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_user_agent(get_token_method):
     transport = validating_transport(
         requests=[Request()] * 2 + [Request(required_headers={"User-Agent": USER_AGENT})],
         responses=[get_discovery_response()] * 2
@@ -68,22 +69,29 @@ def test_user_agent():
 
     credential = UsernamePasswordCredential("client-id", "username", "password", transport=transport)
 
-    credential.get_token("scope")
+    getattr(credential, get_token_method)("scope")
 
 
-def test_tenant_id():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_tenant_id(get_token_method):
     transport = validating_transport(
         requests=[Request()] * 2 + [Request(required_headers={"User-Agent": USER_AGENT})],
         responses=[get_discovery_response()] * 2
         + [mock_response(json_payload=build_aad_response(access_token="**", id_token=build_id_token()))],
     )
 
-    credential = UsernamePasswordCredential("client-id", "username", "password", transport=transport)
+    credential = UsernamePasswordCredential(
+        "client-id", "username", "password", transport=transport, additionally_allowed_tenants=["*"]
+    )
 
-    credential.get_token("scope", tenant_id="tenant_id")
+    kwargs = {"tenant_id": "tenant_id"}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
+    getattr(credential, get_token_method)("scope", **kwargs)
 
 
-def test_username_password_credential():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_username_password_credential(get_token_method):
     expected_token = "access-token"
     client_id = "client-id"
     transport = validating_transport(
@@ -105,14 +113,15 @@ def test_username_password_credential():
         username="user@azure",
         password="secret_password",
         transport=transport,
-        instance_discovery=False,  # kwargs are passed to MSAL; this one prevents an AAD verification request
+        disable_instance_discovery=True,  # kwargs are passed to MSAL; this one prevents a Microsoft Entra verification request
     )
 
-    token = credential.get_token("scope")
+    token = getattr(credential, get_token_method)("scope")
     assert token.token == expected_token
 
 
-def test_authenticate():
+@pytest.mark.parametrize("get_token_method", ["get_token_info"])
+def test_authenticate(get_token_method):
     client_id = "client-id"
     environment = "localhost"
     issuer = "https://" + environment
@@ -122,7 +131,7 @@ def test_authenticate():
     access_token = "***"
     scope = "scope"
 
-    # mock AAD response with id token
+    # mock Microsoft Entra response with id token
     object_id = "object-id"
     home_tenant = "home-tenant-id"
     username = "me@work.com"
@@ -156,12 +165,12 @@ def test_authenticate():
     assert record.username == username
 
     # credential should have a cached access token for the scope passed to authenticate
-    token = credential.get_token(scope)
+    token = getattr(credential, get_token_method)(scope)
     assert token.token == access_token
 
 
 def test_client_capabilities():
-    """the credential should configure MSAL for capability CP1 unless AZURE_IDENTITY_DISABLE_CP1 is set"""
+    """the credential should configure MSAL for capability CP1 only if enable_cae is passed."""
 
     transport = Mock(send=Mock(side_effect=Exception("this test mocks MSAL, so no request should be sent")))
 
@@ -169,21 +178,19 @@ def test_client_capabilities():
     with patch("msal.PublicClientApplication") as PublicClientApplication:
         credential._get_app()
 
-    assert PublicClientApplication.call_count == 1
-    _, kwargs = PublicClientApplication.call_args
-    assert kwargs["client_capabilities"] == ["CP1"]
+        assert PublicClientApplication.call_count == 1
+        _, kwargs = PublicClientApplication.call_args
+        assert kwargs["client_capabilities"] == None
 
-    credential = UsernamePasswordCredential("client-id", "username", "password", transport=transport)
-    with patch.dict("os.environ", {"AZURE_IDENTITY_DISABLE_CP1": "true"}):
-        with patch("msal.PublicClientApplication") as PublicClientApplication:
-            credential._get_app()
+        credential._get_app(enable_cae=True)
 
-    assert PublicClientApplication.call_count == 1
-    _, kwargs = PublicClientApplication.call_args
-    assert kwargs["client_capabilities"] is None
+        assert PublicClientApplication.call_count == 2
+        _, kwargs = PublicClientApplication.call_args
+        assert kwargs["client_capabilities"] == ["CP1"]
 
 
-def test_claims_challenge():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_claims_challenge(get_token_method):
     """get_token should and authenticate pass any claims challenge to MSAL token acquisition APIs"""
 
     msal_acquire_token_result = dict(
@@ -203,7 +210,10 @@ def test_claims_challenge():
         args, kwargs = msal_app.acquire_token_by_username_password.call_args
         assert kwargs["claims_challenge"] == expected_claims
 
-        credential.get_token("scope", claims=expected_claims)
+        kwargs = {"claims": expected_claims}
+        if get_token_method == "get_token_info":
+            kwargs = {"options": kwargs}
+        getattr(credential, get_token_method)("scope", **kwargs)
 
         assert msal_app.acquire_token_by_username_password.call_count == 2
         args, kwargs = msal_app.acquire_token_by_username_password.call_args
@@ -211,7 +221,10 @@ def test_claims_challenge():
 
         msal_app.get_accounts.return_value = [{"home_account_id": credential._auth_record.home_account_id}]
         msal_app.acquire_token_silent_with_error.return_value = msal_acquire_token_result
-        credential.get_token("scope", claims=expected_claims)
+        kwargs = {"claims": expected_claims}
+        if get_token_method == "get_token_info":
+            kwargs = {"options": kwargs}
+        getattr(credential, get_token_method)("scope", **kwargs)
 
         assert msal_app.acquire_token_silent_with_error.call_count == 1
         args, kwargs = msal_app.acquire_token_silent_with_error.call_args

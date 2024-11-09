@@ -6,126 +6,146 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-try:
-    from ._models_py3 import AccessKeys
-    from ._models_py3 import Cluster
-    from ._models_py3 import ClusterList
-    from ._models_py3 import ClusterUpdate
-    from ._models_py3 import Database
-    from ._models_py3 import DatabaseList
-    from ._models_py3 import DatabaseUpdate
-    from ._models_py3 import ErrorAdditionalInfo
-    from ._models_py3 import ErrorDetail
-    from ._models_py3 import ErrorResponse
-    from ._models_py3 import ExportClusterParameters
-    from ._models_py3 import ImportClusterParameters
-    from ._models_py3 import Module
-    from ._models_py3 import Operation
-    from ._models_py3 import OperationDisplay
-    from ._models_py3 import OperationListResult
-    from ._models_py3 import OperationStatus
-    from ._models_py3 import Persistence
-    from ._models_py3 import PrivateEndpoint
-    from ._models_py3 import PrivateEndpointConnection
-    from ._models_py3 import PrivateEndpointConnectionListResult
-    from ._models_py3 import PrivateLinkResource
-    from ._models_py3 import PrivateLinkResourceListResult
-    from ._models_py3 import PrivateLinkServiceConnectionState
-    from ._models_py3 import ProxyResource
-    from ._models_py3 import RegenerateKeyParameters
-    from ._models_py3 import Resource
-    from ._models_py3 import Sku
-    from ._models_py3 import TrackedResource
-except (SyntaxError, ImportError):
-    from ._models import AccessKeys  # type: ignore
-    from ._models import Cluster  # type: ignore
-    from ._models import ClusterList  # type: ignore
-    from ._models import ClusterUpdate  # type: ignore
-    from ._models import Database  # type: ignore
-    from ._models import DatabaseList  # type: ignore
-    from ._models import DatabaseUpdate  # type: ignore
-    from ._models import ErrorAdditionalInfo  # type: ignore
-    from ._models import ErrorDetail  # type: ignore
-    from ._models import ErrorResponse  # type: ignore
-    from ._models import ExportClusterParameters  # type: ignore
-    from ._models import ImportClusterParameters  # type: ignore
-    from ._models import Module  # type: ignore
-    from ._models import Operation  # type: ignore
-    from ._models import OperationDisplay  # type: ignore
-    from ._models import OperationListResult  # type: ignore
-    from ._models import OperationStatus  # type: ignore
-    from ._models import Persistence  # type: ignore
-    from ._models import PrivateEndpoint  # type: ignore
-    from ._models import PrivateEndpointConnection  # type: ignore
-    from ._models import PrivateEndpointConnectionListResult  # type: ignore
-    from ._models import PrivateLinkResource  # type: ignore
-    from ._models import PrivateLinkResourceListResult  # type: ignore
-    from ._models import PrivateLinkServiceConnectionState  # type: ignore
-    from ._models import ProxyResource  # type: ignore
-    from ._models import RegenerateKeyParameters  # type: ignore
-    from ._models import Resource  # type: ignore
-    from ._models import Sku  # type: ignore
-    from ._models import TrackedResource  # type: ignore
+from ._models_py3 import AccessKeys
+from ._models_py3 import AccessPolicyAssignment
+from ._models_py3 import AccessPolicyAssignmentList
+from ._models_py3 import AccessPolicyAssignmentPropertiesUser
+from ._models_py3 import Cluster
+from ._models_py3 import ClusterList
+from ._models_py3 import ClusterPropertiesEncryption
+from ._models_py3 import ClusterPropertiesEncryptionCustomerManagedKeyEncryption
+from ._models_py3 import ClusterPropertiesEncryptionCustomerManagedKeyEncryptionKeyIdentity
+from ._models_py3 import ClusterUpdate
+from ._models_py3 import Database
+from ._models_py3 import DatabaseList
+from ._models_py3 import DatabasePropertiesGeoReplication
+from ._models_py3 import DatabaseUpdate
+from ._models_py3 import ErrorAdditionalInfo
+from ._models_py3 import ErrorDetail
+from ._models_py3 import ErrorResponse
+from ._models_py3 import ExportClusterParameters
+from ._models_py3 import FlushParameters
+from ._models_py3 import ForceLinkParameters
+from ._models_py3 import ForceUnlinkParameters
+from ._models_py3 import ImportClusterParameters
+from ._models_py3 import LinkedDatabase
+from ._models_py3 import ManagedServiceIdentity
+from ._models_py3 import Module
+from ._models_py3 import Operation
+from ._models_py3 import OperationDisplay
+from ._models_py3 import OperationListResult
+from ._models_py3 import OperationStatus
+from ._models_py3 import Persistence
+from ._models_py3 import PrivateEndpoint
+from ._models_py3 import PrivateEndpointConnection
+from ._models_py3 import PrivateEndpointConnectionListResult
+from ._models_py3 import PrivateLinkResource
+from ._models_py3 import PrivateLinkResourceListResult
+from ._models_py3 import PrivateLinkServiceConnectionState
+from ._models_py3 import ProxyResource
+from ._models_py3 import ProxyResourceAutoGenerated
+from ._models_py3 import RegenerateKeyParameters
+from ._models_py3 import Resource
+from ._models_py3 import ResourceAutoGenerated
+from ._models_py3 import Sku
+from ._models_py3 import SystemData
+from ._models_py3 import TrackedResource
+from ._models_py3 import UserAssignedIdentity
 
-from ._redis_enterprise_management_client_enums import (
-    AccessKeyType,
-    ActionType,
-    AofFrequency,
-    ClusteringPolicy,
-    EvictionPolicy,
-    Origin,
-    PrivateEndpointConnectionProvisioningState,
-    PrivateEndpointServiceConnectionStatus,
-    Protocol,
-    ProvisioningState,
-    RdbFrequency,
-    ResourceState,
-    SkuName,
-    TlsVersion,
-)
+from ._redis_enterprise_management_client_enums import AccessKeyType
+from ._redis_enterprise_management_client_enums import AccessKeysAuthentication
+from ._redis_enterprise_management_client_enums import ActionType
+from ._redis_enterprise_management_client_enums import AofFrequency
+from ._redis_enterprise_management_client_enums import ClusteringPolicy
+from ._redis_enterprise_management_client_enums import CmkIdentityType
+from ._redis_enterprise_management_client_enums import CreatedByType
+from ._redis_enterprise_management_client_enums import DeferUpgradeSetting
+from ._redis_enterprise_management_client_enums import EvictionPolicy
+from ._redis_enterprise_management_client_enums import HighAvailability
+from ._redis_enterprise_management_client_enums import LinkState
+from ._redis_enterprise_management_client_enums import ManagedServiceIdentityType
+from ._redis_enterprise_management_client_enums import Origin
+from ._redis_enterprise_management_client_enums import PrivateEndpointConnectionProvisioningState
+from ._redis_enterprise_management_client_enums import PrivateEndpointServiceConnectionStatus
+from ._redis_enterprise_management_client_enums import Protocol
+from ._redis_enterprise_management_client_enums import ProvisioningState
+from ._redis_enterprise_management_client_enums import RdbFrequency
+from ._redis_enterprise_management_client_enums import RedundancyMode
+from ._redis_enterprise_management_client_enums import ResourceState
+from ._redis_enterprise_management_client_enums import SkuName
+from ._redis_enterprise_management_client_enums import TlsVersion
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'AccessKeys',
-    'Cluster',
-    'ClusterList',
-    'ClusterUpdate',
-    'Database',
-    'DatabaseList',
-    'DatabaseUpdate',
-    'ErrorAdditionalInfo',
-    'ErrorDetail',
-    'ErrorResponse',
-    'ExportClusterParameters',
-    'ImportClusterParameters',
-    'Module',
-    'Operation',
-    'OperationDisplay',
-    'OperationListResult',
-    'OperationStatus',
-    'Persistence',
-    'PrivateEndpoint',
-    'PrivateEndpointConnection',
-    'PrivateEndpointConnectionListResult',
-    'PrivateLinkResource',
-    'PrivateLinkResourceListResult',
-    'PrivateLinkServiceConnectionState',
-    'ProxyResource',
-    'RegenerateKeyParameters',
-    'Resource',
-    'Sku',
-    'TrackedResource',
-    'AccessKeyType',
-    'ActionType',
-    'AofFrequency',
-    'ClusteringPolicy',
-    'EvictionPolicy',
-    'Origin',
-    'PrivateEndpointConnectionProvisioningState',
-    'PrivateEndpointServiceConnectionStatus',
-    'Protocol',
-    'ProvisioningState',
-    'RdbFrequency',
-    'ResourceState',
-    'SkuName',
-    'TlsVersion',
+    "AccessKeys",
+    "AccessPolicyAssignment",
+    "AccessPolicyAssignmentList",
+    "AccessPolicyAssignmentPropertiesUser",
+    "Cluster",
+    "ClusterList",
+    "ClusterPropertiesEncryption",
+    "ClusterPropertiesEncryptionCustomerManagedKeyEncryption",
+    "ClusterPropertiesEncryptionCustomerManagedKeyEncryptionKeyIdentity",
+    "ClusterUpdate",
+    "Database",
+    "DatabaseList",
+    "DatabasePropertiesGeoReplication",
+    "DatabaseUpdate",
+    "ErrorAdditionalInfo",
+    "ErrorDetail",
+    "ErrorResponse",
+    "ExportClusterParameters",
+    "FlushParameters",
+    "ForceLinkParameters",
+    "ForceUnlinkParameters",
+    "ImportClusterParameters",
+    "LinkedDatabase",
+    "ManagedServiceIdentity",
+    "Module",
+    "Operation",
+    "OperationDisplay",
+    "OperationListResult",
+    "OperationStatus",
+    "Persistence",
+    "PrivateEndpoint",
+    "PrivateEndpointConnection",
+    "PrivateEndpointConnectionListResult",
+    "PrivateLinkResource",
+    "PrivateLinkResourceListResult",
+    "PrivateLinkServiceConnectionState",
+    "ProxyResource",
+    "ProxyResourceAutoGenerated",
+    "RegenerateKeyParameters",
+    "Resource",
+    "ResourceAutoGenerated",
+    "Sku",
+    "SystemData",
+    "TrackedResource",
+    "UserAssignedIdentity",
+    "AccessKeyType",
+    "AccessKeysAuthentication",
+    "ActionType",
+    "AofFrequency",
+    "ClusteringPolicy",
+    "CmkIdentityType",
+    "CreatedByType",
+    "DeferUpgradeSetting",
+    "EvictionPolicy",
+    "HighAvailability",
+    "LinkState",
+    "ManagedServiceIdentityType",
+    "Origin",
+    "PrivateEndpointConnectionProvisioningState",
+    "PrivateEndpointServiceConnectionStatus",
+    "Protocol",
+    "ProvisioningState",
+    "RdbFrequency",
+    "RedundancyMode",
+    "ResourceState",
+    "SkuName",
+    "TlsVersion",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

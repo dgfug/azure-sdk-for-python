@@ -30,11 +30,11 @@ The following are code samples that show common scenario operations with the Azu
     * Manage Container Provisioned Throughput
     * List all Container resources in a Database
 
+
 * [document_management.py](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/document_management.py) - Example demonstrating basic CRUD operations on an Item resource.
 
-* [nonpartitioned_container_operations.py](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/nonpartitioned_container_operations.py) - Example demonstrating basic CRUD operations on a Item resource in a non-partitioned Container.
 
-* [index_management.py](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/index_management.py)- Example demonstrating how to manage the indexing policy of a Container.
+* [index_management.py](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/index_management.py) - Example demonstrating basic CRUD operations on a Item resource in a non-partitioned Container.
 
 
 * [change_feed_management.py](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/change_feed_management.py) - Example demontrating how to consume the Change Feed and iterate on the results.
@@ -44,6 +44,8 @@ The following are code samples that show common scenario operations with the Azu
 
 
 * [multi-master operations](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/MultiMasterOperations) - Example demonstrating multi-master operations.
+
+* [tracing-open-telemetry](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos/samples/tracing_open_telemetry.py) - Example demonstrating how to use OpenTelemetry tracing with our SDK.
 
 ## Prerequisites
 * Python 3.6+

@@ -1,5 +1,600 @@
 # Release History
 
+## 9.0.0 (2024-08-19)
+
+### Features Added
+
+  - The model or publicly exposed class 'AmazonMWSLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AmazonRdsForOracleLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AmazonRdsForSqlServerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AmazonRedshiftLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AmazonS3CompatibleLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AmazonS3LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AppFiguresLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AsanaLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureBatchLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureBlobFSLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureBlobStorageLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureDataExplorerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureDataLakeAnalyticsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureDataLakeStoreLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureDatabricksDeltaLakeLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureDatabricksLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureFileStorageLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureFileStorageLinkedService' had property 'service_endpoint' added in the current version
+  - The model or publicly exposed class 'AzureFileStorageLinkedService' had property 'credential' added in the current version
+  - The model or publicly exposed class 'AzureFunctionLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureKeyVaultLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureMLLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureMLServiceLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureMariaDBLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureMySqlLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzurePostgreSqlLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureSearchLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureSqlDWLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureSqlDatabaseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureSqlMILinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureStorageLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureSynapseArtifactsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureTableStorageLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureTableStorageLinkedService' had property 'service_endpoint' added in the current version
+  - The model or publicly exposed class 'AzureTableStorageLinkedService' had property 'credential' added in the current version
+  - The model or publicly exposed class 'CassandraLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'CommonDataServiceForAppsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'CommonDataServiceForAppsLinkedService' had property 'domain' added in the current version
+  - The model or publicly exposed class 'ConcurLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'CosmosDbLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'CosmosDbMongoDbApiLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'CouchbaseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'CustomDataSourceLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'DataworldLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'Db2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'DrillLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'DynamicsAXLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'DynamicsAuthenticationType' had property 'ACTIVE_DIRECTORY' added in the current version
+  - The model or publicly exposed class 'DynamicsCrmLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'DynamicsCrmLinkedService' had property 'domain' added in the current version
+  - The model or publicly exposed class 'DynamicsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'DynamicsLinkedService' had property 'domain' added in the current version
+  - The model or publicly exposed class 'EloquaLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ExecuteDataFlowActivity' had property 'continuation_settings' added in the current version
+  - The model or publicly exposed class 'ExecuteDataFlowActivityTypeProperties' had property 'continuation_settings' added in the current version
+  - The model or publicly exposed class 'ExecutePowerQueryActivityTypeProperties' had property 'continuation_settings' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ExecuteWranglingDataflowActivity' had property 'continuation_settings' added in the current version
+  - The model or publicly exposed class 'FileServerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'FtpServerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'GlobalParameterType' had property 'INT' added in the current version
+  - The model or publicly exposed class 'GoogleAdWordsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'GoogleBigQueryLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'GoogleBigQueryV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'GoogleCloudStorageLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'GoogleSheetsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'GreenplumLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'HBaseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'HDInsightLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'HDInsightOnDemandLinkedService' had property 'version_type_properties_version' added in the current version
+  - The model or publicly exposed class 'HdfsLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'HiveLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'HttpLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'HubspotLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ImpalaLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'InformixLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'JiraLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'LakeHouseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'LinkedService' had property 'version' added in the current version
+  - The model or publicly exposed class 'MagentoLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MariaDBLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MarketoLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MicrosoftAccessLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MongoDbAtlasLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MongoDbLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MongoDbV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'MySqlLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'NetezzaLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'NotebookParameterType' had property 'INT' added in the current version
+  - The model or publicly exposed class 'ODataLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'OdbcLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'Office365LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'OracleCloudStorageLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'OracleLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'OracleServiceCloudLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ParameterType' had property 'INT' added in the current version
+  - The model or publicly exposed class 'PaypalLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'PhoenixLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'PostgreSqlLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'PostgreSqlV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'PrestoLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'QuickBooksLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'QuickbaseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ResponsysLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'RestServiceLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'RestServiceLinkedService' had property 'service_principal_credential_type' added in the current version
+  - The model or publicly exposed class 'RestServiceLinkedService' had property 'service_principal_embedded_cert' added in the current version
+  - The model or publicly exposed class 'RestServiceLinkedService' had property 'service_principal_embedded_cert_password' added in the current version
+  - The model or publicly exposed class 'RunQueryFilterOperator' had property 'IN' added in the current version
+  - The model or publicly exposed class 'SalesforceLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SalesforceMarketingCloudLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SalesforceServiceCloudLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SalesforceServiceCloudV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SalesforceV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapBWLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapCloudForCustomerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapEccLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapHanaLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapOdpLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapOpenHubLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SapTableLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ServiceNowLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ServiceNowV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SftpServerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SharePointOnlineListLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SharePointOnlineListLinkedService' had property 'service_principal_credential_type' added in the current version
+  - The model or publicly exposed class 'SharePointOnlineListLinkedService' had property 'service_principal_embedded_cert' added in the current version
+  - The model or publicly exposed class 'SharePointOnlineListLinkedService' had property 'service_principal_embedded_cert_password' added in the current version
+  - The model or publicly exposed class 'ShopifyLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SmartsheetLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SnowflakeExportCopyCommand' had property 'storage_integration' added in the current version
+  - The model or publicly exposed class 'SnowflakeImportCopyCommand' had property 'storage_integration' added in the current version
+  - The model or publicly exposed class 'SnowflakeLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SnowflakeV2LinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SparkLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SqlServerAuthenticationType' had property 'USER_ASSIGNED_MANAGED_IDENTITY' added in the current version
+  - The model or publicly exposed class 'SqlServerLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'SqlServerLinkedService' had property 'credential' added in the current version
+  - The model or publicly exposed class 'SqlServerLinkedServiceTypeProperties' had property 'credential' added in the current version
+  - The model or publicly exposed class 'SquareLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'StoredProcedureParameterType' had property 'INT' added in the current version
+  - The model or publicly exposed class 'SybaseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'TeamDeskLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'TeradataLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'TwilioLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'VerticaLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'VerticaLinkedService' had property 'server' added in the current version
+  - The model or publicly exposed class 'VerticaLinkedService' had property 'port' added in the current version
+  - The model or publicly exposed class 'VerticaLinkedService' had property 'uid' added in the current version
+  - The model or publicly exposed class 'VerticaLinkedService' had property 'database' added in the current version
+  - The model or publicly exposed class 'WarehouseLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'WebLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'XeroLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ZendeskLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'ZohoLinkedService' had property 'version' added in the __init__ method in the current version
+  - The model or publicly exposed class 'AzureStorageLinkedServiceTypeProperties' was added in the current version
+  - The model or publicly exposed class 'AzureTableStorageLinkedServiceTypeProperties' was added in the current version
+  - The model or publicly exposed class 'ContinuationSettingsReference' was added in the current version
+
+### Breaking Changes
+
+  - The 'GlobalParameterType' enum had its value 'INT_ENUM' deleted or renamed in the current version
+  - The model or publicly exposed class 'HDInsightOnDemandLinkedService' had its instance variable 'version' deleted or renamed in the current version
+  - The 'NotebookParameterType' enum had its value 'INT_ENUM' deleted or renamed in the current version
+  - The 'ParameterType' enum had its value 'INT_ENUM' deleted or renamed in the current version
+  - The 'RunQueryFilterOperator' enum had its value 'IN_ENUM' deleted or renamed in the current version
+  - The 'StoredProcedureParameterType' enum had its value 'INT_ENUM' deleted or renamed in the current version
+
+## 8.0.0 (2024-06-06)
+
+### Features Added
+
+  - Model DynamicsCrmLinkedService has a new parameter credential
+  - Model ExpressionV2 has a new parameter operators
+  - Model LakeHouseTableDataset has a new parameter schema_type_properties_schema
+  - Model SalesforceServiceCloudV2Source has a new parameter query
+  - Model SalesforceV2Source has a new parameter query
+
+### Breaking Changes
+
+  - Model ExpressionV2 no longer has parameter operator
+
+## 7.1.0 (2024-05-08)
+
+### Features Added
+
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter application_intent
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter authentication_type
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter command_timeout
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter connect_retry_count
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter connect_retry_interval
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter connect_timeout
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter database
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter encrypt
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter failover_partner
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter host_name_in_certificate
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter integrated_security
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter load_balance_timeout
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter max_pool_size
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter min_pool_size
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter multi_subnet_failover
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter multiple_active_result_sets
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter packet_size
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter pooling
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter server
+  - Model AmazonRdsForSqlServerLinkedService has a new parameter trust_server_certificate
+  - Model AzureSqlDWLinkedService has a new parameter application_intent
+  - Model AzureSqlDWLinkedService has a new parameter authentication_type
+  - Model AzureSqlDWLinkedService has a new parameter command_timeout
+  - Model AzureSqlDWLinkedService has a new parameter connect_retry_count
+  - Model AzureSqlDWLinkedService has a new parameter connect_retry_interval
+  - Model AzureSqlDWLinkedService has a new parameter connect_timeout
+  - Model AzureSqlDWLinkedService has a new parameter database
+  - Model AzureSqlDWLinkedService has a new parameter encrypt
+  - Model AzureSqlDWLinkedService has a new parameter failover_partner
+  - Model AzureSqlDWLinkedService has a new parameter host_name_in_certificate
+  - Model AzureSqlDWLinkedService has a new parameter integrated_security
+  - Model AzureSqlDWLinkedService has a new parameter load_balance_timeout
+  - Model AzureSqlDWLinkedService has a new parameter max_pool_size
+  - Model AzureSqlDWLinkedService has a new parameter min_pool_size
+  - Model AzureSqlDWLinkedService has a new parameter multi_subnet_failover
+  - Model AzureSqlDWLinkedService has a new parameter multiple_active_result_sets
+  - Model AzureSqlDWLinkedService has a new parameter packet_size
+  - Model AzureSqlDWLinkedService has a new parameter pooling
+  - Model AzureSqlDWLinkedService has a new parameter server
+  - Model AzureSqlDWLinkedService has a new parameter service_principal_credential
+  - Model AzureSqlDWLinkedService has a new parameter service_principal_credential_type
+  - Model AzureSqlDWLinkedService has a new parameter trust_server_certificate
+  - Model AzureSqlDWLinkedService has a new parameter user_name
+  - Model AzureSqlDatabaseLinkedService has a new parameter application_intent
+  - Model AzureSqlDatabaseLinkedService has a new parameter authentication_type
+  - Model AzureSqlDatabaseLinkedService has a new parameter command_timeout
+  - Model AzureSqlDatabaseLinkedService has a new parameter connect_retry_count
+  - Model AzureSqlDatabaseLinkedService has a new parameter connect_retry_interval
+  - Model AzureSqlDatabaseLinkedService has a new parameter connect_timeout
+  - Model AzureSqlDatabaseLinkedService has a new parameter database
+  - Model AzureSqlDatabaseLinkedService has a new parameter encrypt
+  - Model AzureSqlDatabaseLinkedService has a new parameter failover_partner
+  - Model AzureSqlDatabaseLinkedService has a new parameter host_name_in_certificate
+  - Model AzureSqlDatabaseLinkedService has a new parameter integrated_security
+  - Model AzureSqlDatabaseLinkedService has a new parameter load_balance_timeout
+  - Model AzureSqlDatabaseLinkedService has a new parameter max_pool_size
+  - Model AzureSqlDatabaseLinkedService has a new parameter min_pool_size
+  - Model AzureSqlDatabaseLinkedService has a new parameter multi_subnet_failover
+  - Model AzureSqlDatabaseLinkedService has a new parameter multiple_active_result_sets
+  - Model AzureSqlDatabaseLinkedService has a new parameter packet_size
+  - Model AzureSqlDatabaseLinkedService has a new parameter pooling
+  - Model AzureSqlDatabaseLinkedService has a new parameter server
+  - Model AzureSqlDatabaseLinkedService has a new parameter service_principal_credential
+  - Model AzureSqlDatabaseLinkedService has a new parameter service_principal_credential_type
+  - Model AzureSqlDatabaseLinkedService has a new parameter trust_server_certificate
+  - Model AzureSqlDatabaseLinkedService has a new parameter user_name
+  - Model AzureSqlMILinkedService has a new parameter application_intent
+  - Model AzureSqlMILinkedService has a new parameter authentication_type
+  - Model AzureSqlMILinkedService has a new parameter command_timeout
+  - Model AzureSqlMILinkedService has a new parameter connect_retry_count
+  - Model AzureSqlMILinkedService has a new parameter connect_retry_interval
+  - Model AzureSqlMILinkedService has a new parameter connect_timeout
+  - Model AzureSqlMILinkedService has a new parameter database
+  - Model AzureSqlMILinkedService has a new parameter encrypt
+  - Model AzureSqlMILinkedService has a new parameter failover_partner
+  - Model AzureSqlMILinkedService has a new parameter host_name_in_certificate
+  - Model AzureSqlMILinkedService has a new parameter integrated_security
+  - Model AzureSqlMILinkedService has a new parameter load_balance_timeout
+  - Model AzureSqlMILinkedService has a new parameter max_pool_size
+  - Model AzureSqlMILinkedService has a new parameter min_pool_size
+  - Model AzureSqlMILinkedService has a new parameter multi_subnet_failover
+  - Model AzureSqlMILinkedService has a new parameter multiple_active_result_sets
+  - Model AzureSqlMILinkedService has a new parameter packet_size
+  - Model AzureSqlMILinkedService has a new parameter pooling
+  - Model AzureSqlMILinkedService has a new parameter server
+  - Model AzureSqlMILinkedService has a new parameter service_principal_credential
+  - Model AzureSqlMILinkedService has a new parameter service_principal_credential_type
+  - Model AzureSqlMILinkedService has a new parameter trust_server_certificate
+  - Model AzureSqlMILinkedService has a new parameter user_name
+  - Model ManagedIdentityCredential has a new parameter resource_id
+  - Model SqlServerLinkedService has a new parameter application_intent
+  - Model SqlServerLinkedService has a new parameter authentication_type
+  - Model SqlServerLinkedService has a new parameter command_timeout
+  - Model SqlServerLinkedService has a new parameter connect_retry_count
+  - Model SqlServerLinkedService has a new parameter connect_retry_interval
+  - Model SqlServerLinkedService has a new parameter connect_timeout
+  - Model SqlServerLinkedService has a new parameter database
+  - Model SqlServerLinkedService has a new parameter encrypt
+  - Model SqlServerLinkedService has a new parameter failover_partner
+  - Model SqlServerLinkedService has a new parameter host_name_in_certificate
+  - Model SqlServerLinkedService has a new parameter integrated_security
+  - Model SqlServerLinkedService has a new parameter load_balance_timeout
+  - Model SqlServerLinkedService has a new parameter max_pool_size
+  - Model SqlServerLinkedService has a new parameter min_pool_size
+  - Model SqlServerLinkedService has a new parameter multi_subnet_failover
+  - Model SqlServerLinkedService has a new parameter multiple_active_result_sets
+  - Model SqlServerLinkedService has a new parameter packet_size
+  - Model SqlServerLinkedService has a new parameter pooling
+  - Model SqlServerLinkedService has a new parameter server
+  - Model SqlServerLinkedService has a new parameter trust_server_certificate
+
+## 7.0.0 (2024-04-22)
+
+### Breaking Changes
+
+  - Model ManagedIdentityCredential no longer has parameter resource_id
+
+## 6.1.0 (2024-03-18)
+
+### Features Added
+
+  - Added model ExpressionV2
+  - Added model ExpressionV2Type
+  - Added model GoogleBigQueryV2AuthenticationType
+  - Added model GoogleBigQueryV2LinkedService
+  - Added model GoogleBigQueryV2ObjectDataset
+  - Added model GoogleBigQueryV2Source
+  - Added model PostgreSqlV2LinkedService
+  - Added model PostgreSqlV2Source
+  - Added model PostgreSqlV2TableDataset
+  - Added model ServiceNowV2AuthenticationType
+  - Added model ServiceNowV2LinkedService
+  - Added model ServiceNowV2ObjectDataset
+  - Added model ServiceNowV2Source
+
+## 6.0.0 (2024-03-04)
+
+### Features Added
+
+  - Model SalesforceServiceCloudV2LinkedService has a new parameter authentication_type
+  - Model SalesforceServiceCloudV2Source has a new parameter include_deleted_objects
+  - Model SalesforceV2LinkedService has a new parameter authentication_type
+  - Model SalesforceV2Source has a new parameter include_deleted_objects
+
+### Breaking Changes
+
+  - Model SalesforceServiceCloudV2Source no longer has parameter read_behavior
+  - Model SalesforceV2Source no longer has parameter read_behavior
+
+## 5.0.0 (2024-01-26)
+
+### Features Added
+
+  - Model AzureBlobFSWriteSettings has a new parameter metadata
+  - Model AzureBlobStorageWriteSettings has a new parameter metadata
+  - Model AzureDataLakeStoreWriteSettings has a new parameter metadata
+  - Model AzureFileStorageWriteSettings has a new parameter metadata
+  - Model FileServerWriteSettings has a new parameter metadata
+  - Model LakeHouseWriteSettings has a new parameter metadata
+  - Model MariaDBLinkedService has a new parameter database
+  - Model MariaDBLinkedService has a new parameter driver_version
+  - Model MariaDBLinkedService has a new parameter password
+  - Model MariaDBLinkedService has a new parameter port
+  - Model MariaDBLinkedService has a new parameter server
+  - Model MariaDBLinkedService has a new parameter username
+  - Model MySqlLinkedService has a new parameter database
+  - Model MySqlLinkedService has a new parameter driver_version
+  - Model MySqlLinkedService has a new parameter port
+  - Model MySqlLinkedService has a new parameter server
+  - Model MySqlLinkedService has a new parameter ssl_mode
+  - Model MySqlLinkedService has a new parameter use_system_trust_store
+  - Model MySqlLinkedService has a new parameter username
+  - Model SftpWriteSettings has a new parameter metadata
+  - Model StoreWriteSettings has a new parameter metadata
+  - Model WebActivity has a new parameter http_request_timeout
+  - Model WebActivity has a new parameter turn_off_async
+
+### Breaking Changes
+
+  - Model MariaDBLinkedService no longer has parameter pwd
+
+## 4.0.0 (2023-11-20)
+
+### Features Added
+
+  - Added operation group ChangeDataCaptureOperations
+  - Model Activity has a new parameter on_inactive_mark_as
+  - Model Activity has a new parameter state
+  - Model AmazonRdsForSqlServerSource has a new parameter isolation_level
+  - Model AppendVariableActivity has a new parameter on_inactive_mark_as
+  - Model AppendVariableActivity has a new parameter state
+  - Model AzureDataExplorerCommandActivity has a new parameter on_inactive_mark_as
+  - Model AzureDataExplorerCommandActivity has a new parameter state
+  - Model AzureFunctionActivity has a new parameter on_inactive_mark_as
+  - Model AzureFunctionActivity has a new parameter state
+  - Model AzureMLBatchExecutionActivity has a new parameter on_inactive_mark_as
+  - Model AzureMLBatchExecutionActivity has a new parameter state
+  - Model AzureMLExecutePipelineActivity has a new parameter on_inactive_mark_as
+  - Model AzureMLExecutePipelineActivity has a new parameter state
+  - Model AzureMLServiceLinkedService has a new parameter authentication
+  - Model AzureMLUpdateResourceActivity has a new parameter on_inactive_mark_as
+  - Model AzureMLUpdateResourceActivity has a new parameter state
+  - Model AzureSqlSource has a new parameter isolation_level
+  - Model ControlActivity has a new parameter on_inactive_mark_as
+  - Model ControlActivity has a new parameter state
+  - Model CopyActivity has a new parameter on_inactive_mark_as
+  - Model CopyActivity has a new parameter state
+  - Model CustomActivity has a new parameter on_inactive_mark_as
+  - Model CustomActivity has a new parameter state
+  - Model DataLakeAnalyticsUSQLActivity has a new parameter on_inactive_mark_as
+  - Model DataLakeAnalyticsUSQLActivity has a new parameter state
+  - Model DatabricksNotebookActivity has a new parameter on_inactive_mark_as
+  - Model DatabricksNotebookActivity has a new parameter state
+  - Model DatabricksSparkJarActivity has a new parameter on_inactive_mark_as
+  - Model DatabricksSparkJarActivity has a new parameter state
+  - Model DatabricksSparkPythonActivity has a new parameter on_inactive_mark_as
+  - Model DatabricksSparkPythonActivity has a new parameter state
+  - Model DeleteActivity has a new parameter on_inactive_mark_as
+  - Model DeleteActivity has a new parameter state
+  - Model ExecuteDataFlowActivity has a new parameter on_inactive_mark_as
+  - Model ExecuteDataFlowActivity has a new parameter state
+  - Model ExecutePipelineActivity has a new parameter on_inactive_mark_as
+  - Model ExecutePipelineActivity has a new parameter state
+  - Model ExecuteSSISPackageActivity has a new parameter on_inactive_mark_as
+  - Model ExecuteSSISPackageActivity has a new parameter state
+  - Model ExecuteWranglingDataflowActivity has a new parameter on_inactive_mark_as
+  - Model ExecuteWranglingDataflowActivity has a new parameter state
+  - Model ExecutionActivity has a new parameter on_inactive_mark_as
+  - Model ExecutionActivity has a new parameter state
+  - Model FailActivity has a new parameter on_inactive_mark_as
+  - Model FailActivity has a new parameter state
+  - Model FilterActivity has a new parameter on_inactive_mark_as
+  - Model FilterActivity has a new parameter state
+  - Model ForEachActivity has a new parameter on_inactive_mark_as
+  - Model ForEachActivity has a new parameter state
+  - Model GetMetadataActivity has a new parameter on_inactive_mark_as
+  - Model GetMetadataActivity has a new parameter state
+  - Model GoogleAdWordsLinkedService has a new parameter google_ads_api_version
+  - Model GoogleAdWordsLinkedService has a new parameter login_customer_id
+  - Model GoogleAdWordsLinkedService has a new parameter private_key
+  - Model GoogleAdWordsLinkedService has a new parameter support_legacy_data_types
+  - Model HDInsightHiveActivity has a new parameter on_inactive_mark_as
+  - Model HDInsightHiveActivity has a new parameter state
+  - Model HDInsightMapReduceActivity has a new parameter on_inactive_mark_as
+  - Model HDInsightMapReduceActivity has a new parameter state
+  - Model HDInsightPigActivity has a new parameter on_inactive_mark_as
+  - Model HDInsightPigActivity has a new parameter state
+  - Model HDInsightSparkActivity has a new parameter on_inactive_mark_as
+  - Model HDInsightSparkActivity has a new parameter state
+  - Model HDInsightStreamingActivity has a new parameter on_inactive_mark_as
+  - Model HDInsightStreamingActivity has a new parameter state
+  - Model HttpReadSettings has a new parameter additional_columns
+  - Model IfConditionActivity has a new parameter on_inactive_mark_as
+  - Model IfConditionActivity has a new parameter state
+  - Model IntegrationRuntimeDataFlowProperties has a new parameter custom_properties
+  - Model LookupActivity has a new parameter on_inactive_mark_as
+  - Model LookupActivity has a new parameter state
+  - Model MongoDbAtlasLinkedService has a new parameter driver_version
+  - Model ParquetSource has a new parameter format_settings
+  - Model PipelineExternalComputeScaleProperties has a new parameter number_of_external_nodes
+  - Model PipelineExternalComputeScaleProperties has a new parameter number_of_pipeline_nodes
+  - Model ScriptActivity has a new parameter on_inactive_mark_as
+  - Model ScriptActivity has a new parameter state
+  - Model SelfHostedIntegrationRuntime has a new parameter self_contained_interactive_authoring_enabled
+  - Model SelfHostedIntegrationRuntimeStatus has a new parameter self_contained_interactive_authoring_enabled
+  - Model SetVariableActivity has a new parameter on_inactive_mark_as
+  - Model SetVariableActivity has a new parameter policy
+  - Model SetVariableActivity has a new parameter set_system_variable
+  - Model SetVariableActivity has a new parameter state
+  - Model SqlDWSource has a new parameter isolation_level
+  - Model SqlMISource has a new parameter isolation_level
+  - Model SqlServerSource has a new parameter isolation_level
+  - Model SqlServerStoredProcedureActivity has a new parameter on_inactive_mark_as
+  - Model SqlServerStoredProcedureActivity has a new parameter state
+  - Model SwitchActivity has a new parameter on_inactive_mark_as
+  - Model SwitchActivity has a new parameter state
+  - Model SynapseNotebookActivity has a new parameter configuration_type
+  - Model SynapseNotebookActivity has a new parameter on_inactive_mark_as
+  - Model SynapseNotebookActivity has a new parameter spark_config
+  - Model SynapseNotebookActivity has a new parameter state
+  - Model SynapseNotebookActivity has a new parameter target_spark_configuration
+  - Model SynapseSparkJobDefinitionActivity has a new parameter on_inactive_mark_as
+  - Model SynapseSparkJobDefinitionActivity has a new parameter state
+  - Model UntilActivity has a new parameter on_inactive_mark_as
+  - Model UntilActivity has a new parameter state
+  - Model ValidationActivity has a new parameter on_inactive_mark_as
+  - Model ValidationActivity has a new parameter state
+  - Model WaitActivity has a new parameter on_inactive_mark_as
+  - Model WaitActivity has a new parameter state
+  - Model WebActivity has a new parameter on_inactive_mark_as
+  - Model WebActivity has a new parameter state
+  - Model WebHookActivity has a new parameter on_inactive_mark_as
+  - Model WebHookActivity has a new parameter policy
+  - Model WebHookActivity has a new parameter state
+
+### Breaking Changes
+
+  - Model HttpReadSettings no longer has parameter enable_partition_discovery
+  - Model HttpReadSettings no longer has parameter partition_root_path
+
+## 3.1.0 (2023-03-20)
+
+### Features Added
+
+  - Model AzureBlobFSLinkedService has a new parameter sas_token
+  - Model AzureBlobFSLinkedService has a new parameter sas_uri
+
+## 3.0.0 (2023-02-20)
+
+### Features Added
+
+  - Added operation group CredentialOperationsOperations
+  - Model AzureBlobStorageLinkedService has a new parameter authentication_type
+  - Model AzureBlobStorageLinkedService has a new parameter container_uri
+  - Model IntegrationRuntimeComputeProperties has a new parameter copy_compute_scale_properties
+  - Model IntegrationRuntimeComputeProperties has a new parameter pipeline_external_compute_scale_properties
+  - Model SynapseSparkJobDefinitionActivity has a new parameter configuration_type
+  - Model SynapseSparkJobDefinitionActivity has a new parameter scan_folder
+  - Model SynapseSparkJobDefinitionActivity has a new parameter spark_config
+  - Model SynapseSparkJobDefinitionActivity has a new parameter target_spark_configuration
+
+### Breaking Changes
+
+  - Parameter export_settings of model SnowflakeSource is now required
+
+## 2.10.0 (2022-11-22)
+
+### Features Added
+
+  - Model ScriptActivity has a new parameter script_block_execution_timeout
+
+## 2.9.0 (2022-10-24)
+
+### Features Added
+
+  - Model AzureSynapseArtifactsLinkedService has a new parameter workspace_resource_id
+  - Model FactoryGitHubConfiguration has a new parameter disable_publish
+  - Model FactoryRepoConfiguration has a new parameter disable_publish
+  - Model FactoryVSTSConfiguration has a new parameter disable_publish
+  - Model SynapseSparkJobDefinitionActivity has a new parameter files_v2
+  - Model SynapseSparkJobDefinitionActivity has a new parameter python_code_reference
+
+## 2.8.1 (2022-10-17)
+
+### Other Changes
+
+  - Changed type of stored_procedure_parameters to json-like object
+
+## 2.8.0 (2022-09-13)
+
+### Features Added
+
+  - Added model AzureSynapseArtifactsLinkedService
+  - Added model BigDataPoolParametrizationReference
+  - Added model BigDataPoolReferenceType
+  - Added model DatasetReferenceType
+  - Added model ExpressionType
+  - Added model GoogleSheetsLinkedService
+  - Added model IntegrationRuntimeReferenceType
+  - Added model NotebookParameter
+  - Added model NotebookParameterType
+  - Added model NotebookReferenceType
+  - Added model PipelineReferenceType
+  - Added model SparkJobReferenceType
+  - Added model SynapseNotebookActivity
+  - Added model SynapseNotebookReference
+  - Added model SynapseSparkJobDefinitionActivity
+  - Added model SynapseSparkJobReference
+  - Added model Type
+
+## 2.7.0 (2022-06-15)
+
+**Features**
+
+  - Model RestServiceLinkedService has a new parameter client_id
+  - Model RestServiceLinkedService has a new parameter client_secret
+  - Model RestServiceLinkedService has a new parameter resource
+  - Model RestServiceLinkedService has a new parameter scope
+  - Model RestServiceLinkedService has a new parameter token_endpoint
+
+## 2.6.0 (2022-05-27)
+
+**Features**
+
+  - Added operation group GlobalParametersOperations
+  - Model DataFlowSink has a new parameter rejected_data_linked_service
+  - Model ExecuteDataFlowActivity has a new parameter source_staging_concurrency
+  - Model ExecuteDataFlowActivityTypeProperties has a new parameter source_staging_concurrency
+  - Model ExecutePowerQueryActivityTypeProperties has a new parameter source_staging_concurrency
+  - Model ExecuteWranglingDataflowActivity has a new parameter source_staging_concurrency
+  - Model Factory has a new parameter purview_configuration
+  - Model PowerQuerySink has a new parameter rejected_data_linked_service
+
+## 2.5.0 (2022-05-12)
+
+**Features**
+
+  - Model PrivateLinkConnectionApprovalRequest has a new parameter private_endpoint
+
+## 2.4.0 (2022-04-15)
+
+**Features**
+
+  - Model ExecutePipelineActivity has a new parameter policy
+  - Model WebActivity has a new parameter disable_cert_validation
+
 ## 2.3.0 (2022-03-02)
 
 **Features**

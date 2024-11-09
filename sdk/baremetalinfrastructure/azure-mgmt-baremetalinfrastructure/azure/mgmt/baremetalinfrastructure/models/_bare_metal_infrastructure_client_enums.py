@@ -6,36 +6,42 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class AzureBareMetalHardwareTypeNamesEnum(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Name of the hardware type (vendor and/or their product name)
-    """
+class ActionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enum. Indicates the action type. "Internal" refers to actions that are for internal only APIs."""
+
+    INTERNAL = "Internal"
+
+
+class AsyncOperationStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the operation."""
+
+    REQUESTING = "Requesting"
+    EXECUTING = "Executing"
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
+
+
+class AzureBareMetalHardwareTypeNamesEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Name of the hardware type (vendor and/or their product name)."""
 
     CISCO_UCS = "Cisco_UCS"
     HPE = "HPE"
+    SDFLEX = "SDFLEX"
 
-class AzureBareMetalInstancePowerStateEnum(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Resource power state
-    """
+
+class AzureBareMetalInstanceForcePowerState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Whether to force restart by shutting all processes."""
+
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
+class AzureBareMetalInstancePowerStateEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Resource power state."""
 
     STARTING = "starting"
     STARTED = "started"
@@ -44,9 +50,9 @@ class AzureBareMetalInstancePowerStateEnum(with_metaclass(_CaseInsensitiveEnumMe
     RESTARTING = "restarting"
     UNKNOWN = "unknown"
 
-class AzureBareMetalInstanceSizeNamesEnum(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Specifies the AzureBareMetal instance SKU.
-    """
+
+class AzureBareMetalInstanceSizeNamesEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Specifies the Azure Bare Metal Instance SKU."""
 
     S72_M = "S72m"
     S144_M = "S144m"
@@ -73,6 +79,7 @@ class AzureBareMetalInstanceSizeNamesEnum(with_metaclass(_CaseInsensitiveEnumMet
     S448_OO = "S448oo"
     S448_OOM = "S448oom"
     S448_OOO = "S448ooo"
+    S448_SE = "S448se"
     S576_M = "S576m"
     S576_XM = "S576xm"
     S672 = "S672"
@@ -92,9 +99,9 @@ class AzureBareMetalInstanceSizeNamesEnum(with_metaclass(_CaseInsensitiveEnumMet
     S896_OOO = "S896ooo"
     S960_M = "S960m"
 
-class AzureBareMetalProvisioningStatesEnum(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """State of provisioning of the AzureBareMetalInstance
-    """
+
+class AzureBareMetalProvisioningStatesEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """State of provisioning of the AzureBareMetalInstance."""
 
     ACCEPTED = "Accepted"
     CREATING = "Creating"
@@ -104,11 +111,34 @@ class AzureBareMetalProvisioningStatesEnum(with_metaclass(_CaseInsensitiveEnumMe
     DELETING = "Deleting"
     MIGRATING = "Migrating"
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
+
+
+class Origin(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The intended executor of the operation; as in Resource Based Access Control (RBAC) and audit
+    logs UX. Default value is "user,system".
+    """
+
+    USER = "user"
+    SYSTEM = "system"
+    USER_SYSTEM = "user,system"
+
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """State of provisioning of the AzureBareMetalStorageInstance."""
+
+    ACCEPTED = "Accepted"
+    CREATING = "Creating"
+    UPDATING = "Updating"
+    FAILED = "Failed"
+    SUCCEEDED = "Succeeded"
+    DELETING = "Deleting"
+    CANCELED = "Canceled"
+    MIGRATING = "Migrating"

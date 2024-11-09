@@ -7,68 +7,72 @@
 # --------------------------------------------------------------------------
 
 from enum import Enum
-from six import with_metaclass
 from azure.core import CaseInsensitiveEnumMeta
 
 
-class ActiveDirectoryStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Status of the Active Directory
-    """
+class ActiveDirectoryStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the Active Directory."""
 
-    #: Active Directory created but not in use.
     CREATED = "Created"
-    #: Active Directory in use by SMB Volume.
+    """Active Directory created but not in use"""
     IN_USE = "InUse"
-    #: Active Directory Deleted.
+    """Active Directory in use by SMB Volume"""
     DELETED = "Deleted"
-    #: Error with the Active Directory.
+    """Active Directory Deleted"""
     ERROR = "Error"
-    #: Active Directory Updating.
+    """Error with the Active Directory"""
     UPDATING = "Updating"
+    """Active Directory Updating"""
 
-class ApplicationType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Application Type
-    """
+
+class ApplicationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Application Type."""
 
     SAP_HANA = "SAP-HANA"
+    ORACLE = "ORACLE"
 
-class AvsDataStore(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Specifies whether the volume is enabled for Azure VMware Solution (AVS) datastore purpose
-    """
 
-    #: avsDataStore is enabled.
+class AvsDataStore(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Specifies whether the volume is enabled for Azure VMware Solution (AVS) datastore purpose."""
+
     ENABLED = "Enabled"
-    #: avsDataStore is disabled.
+    """avsDataStore is enabled"""
     DISABLED = "Disabled"
+    """avsDataStore is disabled"""
 
-class BackupType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of backup Manual or Scheduled
-    """
 
-    #: Manual backup.
+class BackupType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of backup Manual or Scheduled."""
+
     MANUAL = "Manual"
-    #: Scheduled backup.
+    """Manual backup"""
     SCHEDULED = "Scheduled"
+    """Scheduled backup"""
 
-class CheckNameResourceTypes(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Resource type used for verification.
-    """
 
-    MICROSOFT_NET_APP_NET_APP_ACCOUNTS = "Microsoft.NetApp/netAppAccounts"
-    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS = "Microsoft.NetApp/netAppAccounts/capacityPools"
-    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES = "Microsoft.NetApp/netAppAccounts/capacityPools/volumes"
-    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES_SNAPSHOTS = "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots"
-
-class CheckQuotaNameResourceTypes(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Resource type used for verification.
-    """
+class CheckNameResourceTypes(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Resource type used for verification."""
 
     MICROSOFT_NET_APP_NET_APP_ACCOUNTS = "Microsoft.NetApp/netAppAccounts"
     MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS = "Microsoft.NetApp/netAppAccounts/capacityPools"
     MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES = "Microsoft.NetApp/netAppAccounts/capacityPools/volumes"
-    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES_SNAPSHOTS = "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots"
+    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES_SNAPSHOTS = (
+        "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots"
+    )
 
-class ChownMode(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class CheckQuotaNameResourceTypes(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Resource type used for verification."""
+
+    MICROSOFT_NET_APP_NET_APP_ACCOUNTS = "Microsoft.NetApp/netAppAccounts"
+    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS = "Microsoft.NetApp/netAppAccounts/capacityPools"
+    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES = "Microsoft.NetApp/netAppAccounts/capacityPools/volumes"
+    MICROSOFT_NET_APP_NET_APP_ACCOUNTS_CAPACITY_POOLS_VOLUMES_SNAPSHOTS = (
+        "Microsoft.NetApp/netAppAccounts/capacityPools/volumes/snapshots"
+    )
+
+
+class ChownMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """This parameter specifies who is authorized to change the ownership of a file. restricted - Only
     root user can change the ownership of the file. unrestricted - Non-root users can change
     ownership of files that they own.
@@ -77,42 +81,83 @@ class ChownMode(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     RESTRICTED = "Restricted"
     UNRESTRICTED = "Unrestricted"
 
-class CreatedByType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
+
+class CoolAccessRetrievalPolicy(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """coolAccessRetrievalPolicy determines the data retrieval behavior from the cool tier to standard
+    storage based on the read pattern for cool access enabled volumes. The possible values for this
+    field are:
+     Default - Data will be pulled from cool tier to standard storage on random reads. This policy
+    is the default.
+     OnRead - All client-driven data read is pulled from cool tier to standard storage on both
+    sequential and random reads.
+     Never - No client-driven data is pulled from cool tier to standard storage.
     """
+
+    DEFAULT = "Default"
+    ON_READ = "OnRead"
+    NEVER = "Never"
+
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class EnableSubvolumes(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Flag indicating whether subvolume operations are enabled on the volume
+
+class EnableSubvolumes(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Flag indicating whether subvolume operations are enabled on the volume."""
+
+    ENABLED = "Enabled"
+    """subvolumes are enabled"""
+    DISABLED = "Disabled"
+    """subvolumes are not enabled"""
+
+
+class EncryptionKeySource(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Source of key used to encrypt data in volume. Applicable if NetApp account has
+    encryption.keySource = 'Microsoft.KeyVault'. Possible values (case-insensitive) are:
+    'Microsoft.NetApp, Microsoft.KeyVault'.
     """
 
-    #: subvolumes are enabled.
-    ENABLED = "Enabled"
-    #: subvolumes are not enabled.
-    DISABLED = "Disabled"
+    MICROSOFT_NET_APP = "Microsoft.NetApp"
+    """Microsoft-managed key encryption"""
+    MICROSOFT_KEY_VAULT = "Microsoft.KeyVault"
+    """Customer-managed key encryption"""
 
-class EncryptionType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class EncryptionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Encryption type of the capacity pool, set encryption type for data at rest for this pool and
     all volumes in it. This value can only be set when creating new pool.
     """
 
-    #: EncryptionType Single, volumes will use single encryption at rest.
     SINGLE = "Single"
-    #: EncryptionType Double, volumes will use double encryption at rest.
+    """EncryptionType Single, volumes will use single encryption at rest"""
     DOUBLE = "Double"
+    """EncryptionType Double, volumes will use double encryption at rest"""
 
-class EndpointType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Indicates whether the local volume is the source or destination for the Volume Replication
-    """
+
+class EndpointType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Indicates whether the local volume is the source or destination for the Volume Replication."""
 
     SRC = "src"
     DST = "dst"
 
-class InAvailabilityReasonType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class FileAccessLogs(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Flag indicating whether file access logs are enabled for the volume, based on active diagnostic
+    settings present on the volume.
+    """
+
+    ENABLED = "Enabled"
+    """fileAccessLogs are enabled"""
+    DISABLED = "Disabled"
+    """fileAccessLogs are not enabled"""
+
+
+class InAvailabilityReasonType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """:code:`<code>Invalid</code>` indicates the name provided does not match Azure App Service
     naming requirements. :code:`<code>AlreadyExists</code>` indicates that the name is already in
     use and is therefore unavailable.
@@ -121,78 +166,202 @@ class InAvailabilityReasonType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum
     INVALID = "Invalid"
     ALREADY_EXISTS = "AlreadyExists"
 
-class MetricAggregationType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class KeySource(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The encryption keySource (provider). Possible values (case-insensitive):  Microsoft.NetApp,
+    Microsoft.KeyVault.
+    """
+
+    MICROSOFT_NET_APP = "Microsoft.NetApp"
+    """Microsoft-managed key encryption"""
+    MICROSOFT_KEY_VAULT = "Microsoft.KeyVault"
+    """Customer-managed key encryption"""
+
+
+class KeyVaultStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the KeyVault connection."""
+
+    CREATED = "Created"
+    """KeyVault connection created but not in use"""
+    IN_USE = "InUse"
+    """KeyVault connection in use by SMB Volume"""
+    DELETED = "Deleted"
+    """KeyVault connection Deleted"""
+    ERROR = "Error"
+    """Error with the KeyVault connection"""
+    UPDATING = "Updating"
+    """KeyVault connection Updating"""
+
+
+class ManagedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of managed service identity (where both SystemAssigned and UserAssigned types are
+    allowed).
+    """
+
+    NONE = "None"
+    SYSTEM_ASSIGNED = "SystemAssigned"
+    USER_ASSIGNED = "UserAssigned"
+    SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned,UserAssigned"
+
+
+class MetricAggregationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """MetricAggregationType."""
 
     AVERAGE = "Average"
 
-class MirrorState(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The status of the replication
-    """
+
+class MirrorState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The status of the replication."""
 
     UNINITIALIZED = "Uninitialized"
     MIRRORED = "Mirrored"
     BROKEN = "Broken"
 
-class NetworkFeatures(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Basic network, or Standard features available to the volume.
-    """
 
-    #: Basic network feature.
+class NetworkFeatures(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Network features available to the volume, or current state of update."""
+
     BASIC = "Basic"
-    #: Standard network feature.
+    """Basic network features."""
     STANDARD = "Standard"
+    """Standard network features."""
+    BASIC_STANDARD = "Basic_Standard"
+    """Updating from Basic to Standard network features."""
+    STANDARD_BASIC = "Standard_Basic"
+    """Updating from Standard to Basic network features."""
 
-class QosType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The qos type of the pool
-    """
 
-    #: qos type Auto.
+class NetworkSiblingSetProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Gets the status of the NetworkSiblingSet at the time the operation was called."""
+
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
+    CANCELED = "Canceled"
+    UPDATING = "Updating"
+
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Gets the status of the VolumeQuotaRule at the time the operation was called."""
+
+    ACCEPTED = "Accepted"
+    CREATING = "Creating"
+    PATCHING = "Patching"
+    DELETING = "Deleting"
+    MOVING = "Moving"
+    FAILED = "Failed"
+    SUCCEEDED = "Succeeded"
+
+
+class QosType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The qos type of the pool."""
+
     AUTO = "Auto"
-    #: qos type Manual.
+    """qos type Auto"""
     MANUAL = "Manual"
+    """qos type Manual"""
 
-class RelationshipStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Status of the mirror relationship
-    """
+
+class RegionStorageToNetworkProximity(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Provides storage to network proximity information in the region."""
+
+    DEFAULT = "Default"
+    """Basic network connectivity."""
+    T1 = "T1"
+    """Standard T1 network connectivity."""
+    T2 = "T2"
+    """Standard T2 network connectivity."""
+    ACROSS_T2 = "AcrossT2"
+    """Standard AcrossT2 network connectivity."""
+    T1_AND_T2 = "T1AndT2"
+    """Standard T1 and T2 network connectivity."""
+    T1_AND_ACROSS_T2 = "T1AndAcrossT2"
+    """Standard T1 and AcrossT2 network connectivity."""
+    T2_AND_ACROSS_T2 = "T2AndAcrossT2"
+    """Standard T2 and AcrossT2 network connectivity."""
+    T1_AND_T2_AND_ACROSS_T2 = "T1AndT2AndAcrossT2"
+    """Standard T1, T2 and AcrossT2 network connectivity."""
+
+
+class RelationshipStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the mirror relationship."""
 
     IDLE = "Idle"
     TRANSFERRING = "Transferring"
+    FAILED = "Failed"
+    UNKNOWN = "Unknown"
 
-class ReplicationSchedule(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Schedule
-    """
+
+class ReplicationSchedule(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Schedule."""
 
     _10_MINUTELY = "_10minutely"
     HOURLY = "hourly"
     DAILY = "daily"
 
-class SecurityStyle(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The security style of volume, default unix, defaults to ntfs for dual protocol or CIFS protocol
+
+class SecurityStyle(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The security style of volume, default unix, defaults to ntfs for dual protocol or CIFS
+    protocol.
     """
 
     NTFS = "ntfs"
     UNIX = "unix"
 
-class ServiceLevel(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The service level of the file system
-    """
 
-    #: Standard service level.
+class ServiceLevel(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The service level of the file system."""
+
     STANDARD = "Standard"
-    #: Premium service level.
+    """Standard service level"""
     PREMIUM = "Premium"
-    #: Ultra service level.
+    """Premium service level"""
     ULTRA = "Ultra"
-    #: Zone redundant storage service level.
+    """Ultra service level"""
     STANDARD_ZRS = "StandardZRS"
+    """Zone redundant storage service level"""
 
-class VolumeStorageToNetworkProximity(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Provides storage to network proximity information for the volume.
+
+class SmbAccessBasedEnumeration(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enables access-based enumeration share property for SMB Shares. Only applicable for
+    SMB/DualProtocol volume.
     """
 
-    #: Basic storage to network connectivity.
+    DISABLED = "Disabled"
+    """smbAccessBasedEnumeration share setting is disabled"""
+    ENABLED = "Enabled"
+    """smbAccessBasedEnumeration share setting is enabled"""
+
+
+class SmbNonBrowsable(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enables non-browsable property for SMB Shares. Only applicable for SMB/DualProtocol volume."""
+
+    DISABLED = "Disabled"
+    """smbNonBrowsable share setting is disabled"""
+    ENABLED = "Enabled"
+    """smbNonBrowsable share setting is enabled"""
+
+
+class Type(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of quota."""
+
+    DEFAULT_USER_QUOTA = "DefaultUserQuota"
+    """Default user quota"""
+    DEFAULT_GROUP_QUOTA = "DefaultGroupQuota"
+    """Default group quota"""
+    INDIVIDUAL_USER_QUOTA = "IndividualUserQuota"
+    """Individual user quota"""
+    INDIVIDUAL_GROUP_QUOTA = "IndividualGroupQuota"
+    """Individual group quota"""
+
+
+class VolumeStorageToNetworkProximity(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Provides storage to network proximity information for the volume."""
+
     DEFAULT = "Default"
-    #: Standard T1 storage to network connectivity.
+    """Basic storage to network connectivity."""
     T1 = "T1"
-    #: Standard T2 storage to network connectivity.
+    """Standard T1 storage to network connectivity."""
     T2 = "T2"
+    """Standard T2 storage to network connectivity."""
+    ACROSS_T2 = "AcrossT2"
+    """Standard AcrossT2 storage to network connectivity."""

@@ -1,11 +1,17 @@
+# -------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See LICENSE.txt in the project root for
+# license information.
+# -------------------------------------------------------------------------
 import azure.cosmos.cosmos_client as cosmos_client
 import azure.cosmos.exceptions as exceptions
 from azure.cosmos.partition_key import PartitionKey
+from azure.cosmos import ThroughputProperties
 
 import config
 
 # ----------------------------------------------------------------------------------------------------------
-# Prerequistes -
+# Prerequisites -
 #
 # 1. An Azure Cosmos account -
 #    https://azure.microsoft.com/en-us/documentation/articles/documentdb-create-account/
@@ -166,15 +172,30 @@ def create_container(db, id):
     try:
         container = db.create_container(
             id=id+"_container_analytical_store",
-            partition_key=PartitionKey(path='/id', kind='Hash'),analytical_storage_ttl=-1
-
+            partition_key=PartitionKey(path='/id', kind='Hash'), analytical_storage_ttl=None
         )
+        """A value of None leaves analytical storage off and a value of -1 turns analytical storage on with no TTL.
+        Please note that analytical storage can only be enabled on Synapse Link enabled accounts."""
+
         properties = container.read()
         print('Container with id \'{0}\' created'.format(container.id))
         print('Partition Key - \'{0}\''.format(properties['partitionKey']))
 
     except exceptions.CosmosResourceExistsError:
         print('A container with id \'_container_analytical_store\' already exists')
+
+    print("\n2.8 Create Container - With autoscale settings")
+
+    try:
+        container = db.create_container(
+            id=id+"_container_auto_scale_settings",
+            partition_key=partition_key,
+            offer_throughput=ThroughputProperties(auto_scale_max_throughput=5000, auto_scale_increment_percent=0)
+        )
+        print('Container with id \'{0}\' created'.format(container.id))
+
+    except exceptions.CosmosResourceExistsError:
+        print('A container with id \'{0}\' already exists'.format(coll['id']))
 
 
 
@@ -191,7 +212,7 @@ def manage_provisioned_throughput(db, id):
         container = db.get_container_client(container=id)
 
         # now use its _self to query for Offers
-        offer = container.read_offer()
+        offer = container.get_throughput()
 
         print('Found Offer \'{0}\' for Container \'{1}\' and its throughput is \'{2}\''.format(offer.properties['id'], container.id, offer.properties['content']['offerThroughput']))
 

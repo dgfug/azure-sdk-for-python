@@ -1,5 +1,54 @@
 # Release History
 
+## 4.0.0 (2024-10-29)
+
+### Breaking Changes
+
+  - This package now only targets the latest Api-Version available on Azure and removes APIs of other Api-Version. After this change, the package can have much smaller size. If your application requires a specific and non-latest Api-Version, it's recommended to pin this package to the previous released version; If your application always only use latest Api-Version, please ingore this change.
+
+## 3.1.0 (2024-10-21)
+
+### Features Added
+
+  - Added operation group SnapshotsOperations
+  - Model ConfigurationStore has a new parameter data_plane_proxy
+  - Model ConfigurationStoreUpdateParameters has a new parameter data_plane_proxy
+
+## 3.0.0 (2023-03-27)
+
+### Breaking Changes
+
+  - Removed operation KeyValuesOperations.list_by_configuration_store
+
+## 3.0.0b1 (2023-02-15)
+
+### Breaking Changes
+
+  - Removed operation KeyValuesOperations.list_by_configuration_store
+
+## 2.2.0 (2022-08-29)
+
+### Features Added
+
+  - Added operation group ReplicasOperations
+
+### Other Changes
+
+  - Changed to multiapi package(please refer to https://github.com/Azure/azure-sdk-for-python/blob/main/doc/dev/mgmt/multiapi.md for more info)
+
+## 2.1.0 (2022-06-08)
+
+**Features**
+
+  - Added operation ConfigurationStoresOperations.begin_purge_deleted
+  - Added operation ConfigurationStoresOperations.get_deleted
+  - Added operation ConfigurationStoresOperations.list_deleted
+  - Added operation Operations.regional_check_name_availability
+  - Model ConfigurationStore has a new parameter create_mode
+  - Model ConfigurationStore has a new parameter enable_purge_protection
+  - Model ConfigurationStore has a new parameter soft_delete_retention_in_days
+  - Model ConfigurationStoreUpdateParameters has a new parameter enable_purge_protection
+
 ## 2.1.0b2 (2022-02-28)
 
 **Features**

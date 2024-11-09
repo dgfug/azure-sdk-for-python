@@ -17,7 +17,7 @@ def _fmt(timestamp):
 
 
 def _now():
-    return datetime.datetime.utcnow()
+    return datetime.datetime.now(tz=datetime.timezone.utc)
 
 
 def _seconds(seconds):
@@ -37,17 +37,16 @@ class LocalFileBlob:
 
     def get(self):
         try:
-            with open(self.fullpath, "r") as file:
-                return tuple(
-                    json.loads(line.strip()) for line in file.readlines()
-                )
+            with open(self.fullpath, "r", encoding="utf-8") as file:
+                return tuple(json.loads(line.strip()) for line in file.readlines())
         except Exception:
             pass  # keep silent
+        return None
 
     def put(self, data, lease_period=0):
         try:
             fullpath = self.fullpath + ".tmp"
-            with open(fullpath, "w") as file:
+            with open(fullpath, "w", encoding="utf-8") as file:
                 for item in data:
                     file.write(json.dumps(item))
                     # The official Python doc: Do not use os.linesep as a line
@@ -61,6 +60,7 @@ class LocalFileBlob:
             return self
         except Exception:
             pass  # keep silent
+        return None
 
     def lease(self, period):
         timestamp = _now() + _seconds(period)
@@ -83,8 +83,10 @@ class LocalFileStorage:
         path,
         max_size=50 * 1024 * 1024,  # 50MiB
         maintenance_period=60,  # 1 minute
-        retention_period=7 * 24 * 60 * 60,  # 7 days
-        write_timeout=60,  # 1 minute
+        retention_period=48 * 60 * 60,  # 48 hours
+        write_timeout=60,  # 1 minute,
+        name=None,
+        lease_period=60,  # 1 minute
     ):
         self._path = os.path.abspath(path)
         self._max_size = max_size
@@ -94,7 +96,9 @@ class LocalFileStorage:
         self._maintenance_task = PeriodicTask(
             interval=maintenance_period,
             function=self._maintenance_routine,
+            name=name,
         )
+        self._lease_period = lease_period
         self._maintenance_task.daemon = True
         self._maintenance_task.start()
 
@@ -135,7 +139,7 @@ class LocalFileStorage:
                         except Exception:
                             pass  # keep silent
                 if path.endswith(".lock"):
-                    if path[path.rindex("@") + 1: -5] > lease_deadline:
+                    if path[path.rindex("@") + 1 : -5] > lease_deadline:
                         continue  # under lease
                     new_path = path[: path.rindex("@")]
                     try:
@@ -162,7 +166,7 @@ class LocalFileStorage:
             pass
         return None
 
-    def put(self, data, lease_period=0):
+    def put(self, data, lease_period=None):
         # Create path if it doesn't exist
         try:
             if not os.path.isdir(self._path):
@@ -176,12 +180,12 @@ class LocalFileStorage:
                 self._path,
                 "{}-{}.blob".format(
                     _fmt(_now()),
-                    "{:08x}".format(
-                        random.getrandbits(32)
-                    ),  # thread-safe random
+                    "{:08x}".format(random.getrandbits(32)),  # thread-safe random
                 ),
             )
         )
+        if lease_period is None:
+            lease_period = self._lease_period
         return blob.put(data, lease_period=lease_period)
 
     def _check_storage_size(self):
@@ -196,7 +200,7 @@ class LocalFileStorage:
                         size += os.path.getsize(path)
                     except OSError:
                         logger.error(
-                            "Path %s does not exist or is " "inaccessible.",
+                            "Path %s does not exist or is inaccessible.",
                             path,
                         )
                         continue
@@ -206,9 +210,7 @@ class LocalFileStorage:
                             "Persistent storage max capacity has been "
                             "reached. Currently at {}KB. Telemetry will be "
                             "lost. Please consider increasing the value of "
-                            "'storage_max_size' in exporter config.".format(
-                                str(size / 1024)
-                            )
+                            "'storage_max_size' in exporter config.".format(str(size / 1024))
                         )
                         return False
         return True

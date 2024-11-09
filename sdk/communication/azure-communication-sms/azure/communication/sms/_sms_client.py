@@ -4,6 +4,7 @@
 # license information.
 # --------------------------------------------------------------------------
 
+from typing import List, Union, Any, Optional
 from uuid import uuid4
 from azure.core.tracing.decorator import distributed_trace
 from azure.communication.sms._generated.models import (
@@ -12,32 +13,36 @@ from azure.communication.sms._generated.models import (
     SmsSendOptions,
 )
 from azure.communication.sms._models import SmsSendResult
+from azure.core.credentials import TokenCredential, AzureKeyCredential
 
 from ._generated._azure_communication_sms_service import AzureCommunicationSMSService
-from ._shared.utils import parse_connection_str, get_authentication_policy, get_current_utc_time
+from ._shared.auth_policy_utils import get_authentication_policy
+from ._shared.utils import parse_connection_str, get_current_utc_time
 from ._version import SDK_MONIKER
 
-class SmsClient(object):
+
+class SmsClient(object):  # pylint: disable=client-accepts-api-version-keyword
     """A client to interact with the AzureCommunicationService Sms gateway.
 
     This client provides operations to send an SMS via a phone number.
 
     :param str endpoint:
         The endpoint url for Azure Communication Service resource.
-    :param TokenCredential credential:
-        The TokenCredential we use to authenticate against the service.
+    :param Union[TokenCredential, AzureKeyCredential] credential:
+        The credential we use to authenticate against the service.
     """
+
     def __init__(
-            self, endpoint, # type: str
-            credential, # type: TokenCredential
-            **kwargs # type: Any
-        ):
+            self, endpoint,  # type: str
+            credential,  # type: Union[TokenCredential, AzureKeyCredential]
+            **kwargs  # type: Any
+    ):
         # type: (...) -> None
         try:
             if not endpoint.lower().startswith('http'):
                 endpoint = "https://" + endpoint
         except AttributeError:
-            raise ValueError("Account URL must be a string.")
+            raise ValueError("Account URL must be a string.")  # pylint: disable=raise-missing-from
 
         if not credential:
             raise ValueError(
@@ -53,18 +58,18 @@ class SmsClient(object):
 
     @classmethod
     def from_connection_string(cls, conn_str,  # type: str
-            **kwargs  # type: Any
-        ):  # type: (...) -> SmsClient
+                               **kwargs  # type: Any
+                               ):  # type: (...) -> SmsClient
         """Create SmsClient from a Connection String.
 
         :param str conn_str:
             A connection string to an Azure Communication Service resource.
         :returns: Instance of SmsClient.
-        :rtype: ~azure.communication.SmsClient
+        :rtype: ~azure.communication.sms.SmsClient
 
         .. admonition:: Example:
 
-            .. literalinclude:: ../samples/sms_sample.py
+            .. literalinclude:: ../samples/send_sms_to_single_recipient_sample.py
                 :start-after: [START auth_from_connection_string]
                 :end-before: [END auth_from_connection_string]
                 :language: python
@@ -76,17 +81,20 @@ class SmsClient(object):
         return cls(endpoint, access_key, **kwargs)
 
     @distributed_trace
-    def send(self, from_, # type: str
-             to, # type: Union[str, List[str]]
-             message, # type: str
-             **kwargs #type: Any
-        ): # type: (...) -> [SmsSendResult]
+    def send(self, from_,  # type: str
+             to,  # type: Union[str, List[str]]
+             message,  # type: str
+             *,
+             enable_delivery_report: bool = False,
+             tag: Optional[str] = None,
+             **kwargs: Any
+             ):  # type: (...) -> [SmsSendResult]
         """Sends SMSs to phone numbers.
 
         :param str from_: The sender of the SMS.
         :param to: The single recipient or the list of recipients of the SMS.
         :type to: Union[str, List[str]]
-        :param str message: The message in the SMS
+        :param str message: The message in the SMS.
         :keyword bool enable_delivery_report: Enable this flag to receive a delivery report for this
          message on the Azure Resource EventGrid.
         :keyword str tag: Use this field to provide metadata that will then be sent back in the corresponding
@@ -97,9 +105,6 @@ class SmsClient(object):
 
         if isinstance(to, str):
             to = [to]
-
-        enable_delivery_report = kwargs.pop('enable_delivery_report', False)
-        tag = kwargs.pop('tag', None)
 
         sms_send_options = SmsSendOptions(
             enable_delivery_report=enable_delivery_report,

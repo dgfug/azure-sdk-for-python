@@ -1,5 +1,76 @@
 # Release History
 
+## 2.1.0 (2024-04-22)
+
+### Features Added
+
+  - Model DicomService has a new parameter enable_data_partitions
+  - Model DicomService has a new parameter storage_configuration
+  - Model FhirServiceAuthenticationConfiguration has a new parameter smart_identity_providers
+
+## 2.0.0 (2023-12-18)
+
+### Features Added
+
+  - Model DicomService has a new parameter cors_configuration
+  - Model DicomService has a new parameter encryption
+  - Model DicomService has a new parameter event_state
+  - Model FhirService has a new parameter encryption
+  - Model FhirService has a new parameter implementation_guides_configuration
+  - Model FhirService has a new parameter import_configuration
+  - Model MetricSpecification has a new parameter enable_regional_mdm_account
+  - Model MetricSpecification has a new parameter is_internal
+  - Model MetricSpecification has a new parameter metric_filter_pattern
+  - Model MetricSpecification has a new parameter resource_id_dimension_name_override
+  - Model MetricSpecification has a new parameter source_mdm_account
+  - Model ServiceCosmosDbConfigurationInfo has a new parameter cross_tenant_cmk_application_id
+  - Model ServicesProperties has a new parameter import_configuration
+
+### Breaking Changes
+
+  - Model FhirService no longer has parameter access_policies
+
+## 1.2.0b1 (2022-11-22)
+
+### Features Added
+
+  - Model DicomService has a new parameter cors_configuration
+  - Model FhirService has a new parameter import_configuration
+  - Model MetricSpecification has a new parameter enable_regional_mdm_account
+  - Model MetricSpecification has a new parameter is_internal
+  - Model MetricSpecification has a new parameter metric_filter_pattern
+  - Model MetricSpecification has a new parameter resource_id_dimension_name_override
+  - Model MetricSpecification has a new parameter source_mdm_account
+  - Model ServicesProperties has a new parameter import_configuration
+
+## 1.1.0 (2022-03-31)
+
+**Features**
+
+  - Added operation group WorkspacePrivateEndpointConnectionsOperations
+  - Added operation group WorkspacePrivateLinkResourcesOperations
+  - Model DicomService has a new parameter identity
+  - Model DicomService has a new parameter private_endpoint_connections
+  - Model DicomService has a new parameter public_network_access
+  - Model DicomServicePatchResource has a new parameter identity
+  - Model FhirService has a new parameter event_state
+  - Model FhirService has a new parameter private_endpoint_connections
+  - Model FhirService has a new parameter public_network_access
+  - Model FhirService has a new parameter resource_version_policy_configuration
+  - Model FhirServiceAcrConfiguration has a new parameter oci_artifacts
+  - Model OperationDetail has a new parameter properties
+  - Model OperationResultsDescription has a new parameter end_time
+  - Model ServiceAcrConfigurationInfo has a new parameter oci_artifacts
+  - Model ServiceManagedIdentityIdentity has a new parameter principal_id
+  - Model ServiceManagedIdentityIdentity has a new parameter tenant_id
+  - Model ServiceManagedIdentityIdentity has a new parameter user_assigned_identities
+  - Model WorkspaceProperties has a new parameter private_endpoint_connections
+  - Model WorkspaceProperties has a new parameter public_network_access
+
+**Breaking changes**
+
+  - Parameter type of model ServiceManagedIdentityIdentity is now required
+
 ## 1.1.0b1 (2021-08-26)
 
 **Features**

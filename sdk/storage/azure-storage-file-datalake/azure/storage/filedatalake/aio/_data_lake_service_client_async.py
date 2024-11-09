@@ -3,11 +3,14 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
-# pylint: disable=invalid-overridden-method
-from typing import Optional, Any, Dict
+# pylint: disable=invalid-overridden-method, docstring-keyword-should-match-keyword-only
+
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 from azure.core.paging import ItemPaged
 from azure.core.pipeline import AsyncPipeline
+from azure.core.tracing.decorator import distributed_trace
+from azure.core.tracing.decorator_async import distributed_trace_async
 
 from azure.storage.blob.aio import BlobServiceClient
 from .._serialize import get_api_version
@@ -21,6 +24,10 @@ from ._data_lake_directory_client_async import DataLakeDirectoryClient
 from ._data_lake_file_client_async import DataLakeFileClient
 from ._models import FileSystemPropertiesPaged
 from .._models import UserDelegationKey, LocationMode
+
+if TYPE_CHECKING:
+    from azure.core.credentials import AzureNamedKeyCredential, AzureSasCredential
+    from azure.core.credentials_async import AsyncTokenCredential
 
 
 class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClientBase):
@@ -44,10 +51,23 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
     :param credential:
         The credentials with which to authenticate. This is optional if the
         account URL already has a SAS token. The value can be a SAS token string,
-        an instance of a AzureSasCredential from azure.core.credentials, an account
-        shared access key, or an instance of a TokenCredentials class from azure.identity.
+        an instance of a AzureSasCredential or AzureNamedKeyCredential from azure.core.credentials,
+        an account shared access key, or an instance of a TokenCredentials class from azure.identity.
         If the resource URI already contains a SAS token, this will be ignored in favor of an explicit credential
         - except in the case of AzureSasCredential, where the conflicting SAS tokens will raise a ValueError.
+        If using an instance of AzureNamedKeyCredential, "name" should be the storage account name, and "key"
+        should be the storage account key.
+    :type credential:
+        ~azure.core.credentials.AzureNamedKeyCredential or
+        ~azure.core.credentials.AzureSasCredential or
+        ~azure.core.credentials_async.AsyncTokenCredential or
+        str or dict[str, str] or None
+    :keyword str api_version:
+        The Storage API version to use for requests. Default value is the most recent service version that is
+        compatible with the current SDK. Setting to an older version may result in reduced feature compatibility.
+    :keyword str audience: The audience to use when requesting tokens for Azure Active Directory
+        authentication. Only has an effect when credential is of type TokenCredential. The value could be
+        https://storage.azure.com/ (default) or https://<account>.blob.core.windows.net.
 
     .. admonition:: Example:
 
@@ -67,11 +87,10 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
     """
 
     def __init__(
-            self, account_url,  # type: str
-            credential=None,  # type: Optional[Any]
-            **kwargs  # type: Any
-    ):
-        # type: (...) -> None
+            self, account_url: str,
+            credential: Optional[Union[str, Dict[str, str], "AzureNamedKeyCredential", "AzureSasCredential", "AsyncTokenCredential"]] = None,  # pylint: disable=line-too-long
+            **kwargs: Any
+        ) -> None:
         kwargs['retry_policy'] = kwargs.get('retry_policy') or ExponentialRetry(**kwargs)
         super(DataLakeServiceClient, self).__init__(
             account_url,
@@ -79,9 +98,9 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
             **kwargs
         )
         self._blob_service_client = BlobServiceClient(self._blob_account_url, credential, **kwargs)
-        self._blob_service_client._hosts[LocationMode.SECONDARY] = ""  #pylint: disable=protected-access
+        self._blob_service_client._hosts[LocationMode.SECONDARY] = ""
         self._client = AzureDataLakeStorageRESTAPI(self.url, base_url=self.url, pipeline=self._pipeline)
-        self._client._config.version = get_api_version(kwargs)  #pylint: disable=protected-access
+        self._client._config.version = get_api_version(kwargs)
         self._loop = kwargs.get('loop', None)
 
     async def __aenter__(self):
@@ -90,14 +109,16 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
 
     async def __aexit__(self, *args):
         await self._blob_service_client.close()
+        await super(DataLakeServiceClient, self).__aexit__(*args)
 
     async def close(self):
         # type: () -> None
         """ This method is to close the sockets opened by the client.
         It need not be used when using with a context manager.
         """
-        await self._blob_service_client.close()
+        await self.__aexit__()
 
+    @distributed_trace_async
     async def get_user_delegation_key(self, key_start_time,  # type: datetime
                                       key_expiry_time,  # type: datetime
                                       **kwargs  # type: Any
@@ -112,7 +133,11 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         :param ~datetime.datetime key_expiry_time:
             A DateTime value. Indicates when the key stops being valid.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :return: The user delegation key.
         :rtype: ~azure.storage.filedatalake.UserDelegationKey
 
@@ -128,9 +153,10 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         delegation_key = await self._blob_service_client.get_user_delegation_key(
             key_start_time=key_start_time,
             key_expiry_time=key_expiry_time,
-            **kwargs)  # pylint: disable=protected-access
+            **kwargs)
         return UserDelegationKey._from_generated(delegation_key)  # pylint: disable=protected-access
 
+    @distributed_trace
     def list_file_systems(self, name_starts_with=None,  # type: Optional[str]
                           include_metadata=None,  # type: Optional[bool]
                           **kwargs):
@@ -150,7 +176,11 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
             The maximum number of file system names to retrieve per API
             call. If the request does not specify the server will return up to 5,000 items per page.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :keyword bool include_deleted:
             Specifies that deleted file systems to be returned in the response. This is for file system restore enabled
             account. The default value is `False`.
@@ -172,10 +202,11 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         """
         item_paged = self._blob_service_client.list_containers(name_starts_with=name_starts_with,
                                                                include_metadata=include_metadata,
-                                                               **kwargs)  # pylint: disable=protected-access
+                                                               **kwargs)
         item_paged._page_iterator_class = FileSystemPropertiesPaged  # pylint: disable=protected-access
         return item_paged
 
+    @distributed_trace_async
     async def create_file_system(self, file_system,  # type: Union[FileSystemProperties, str]
                                  metadata=None,  # type: Optional[Dict[str, str]]
                                  public_access=None,  # type: Optional[PublicAccess]
@@ -196,8 +227,20 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         :param public_access:
             Possible values include: file system, file.
         :type public_access: ~azure.storage.filedatalake.PublicAccess
+        :keyword encryption_scope_options:
+            Specifies the default encryption scope to set on the file system and use for
+            all future writes.
+
+            .. versionadded:: 12.9.0
+
+        :paramtype encryption_scope_options: dict or ~azure.storage.filedatalake.EncryptionScopeOptions
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
+        :returns: FileSystemClient under the specified account.
         :rtype: ~azure.storage.filedatalake.FileSystemClient
 
         .. admonition:: Example:
@@ -228,13 +271,19 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
             matches the active lease ID of the source filesystem.
         :paramtype lease: ~azure.storage.filedatalake.DataLakeLeaseClient or str
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
+        :returns: FileSystemClient with the newly specified name.
         :rtype: ~azure.storage.filedatalake.FileSystemClient
         """
         await self._blob_service_client._rename_container(name, new_name, **kwargs)   # pylint: disable=protected-access
         renamed_file_system = self.get_file_system_client(new_name)
         return renamed_file_system
 
+    @distributed_trace_async
     async def undelete_file_system(self, name, deleted_version, **kwargs):
         # type: (str, str, **Any) -> FileSystemClient
         """Restores soft-deleted filesystem.
@@ -250,14 +299,20 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         :param str deleted_version:
             Specifies the version of the deleted filesystem to restore.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
+        :returns: The FileSystemClient of the restored soft-deleted filesystem.
         :rtype: ~azure.storage.filedatalake.FileSystemClient
         """
         new_name = kwargs.pop('new_name', None)
-        await self._blob_service_client.undelete_container(name, deleted_version, new_name=new_name, **kwargs)  # pylint: disable=protected-access
+        await self._blob_service_client.undelete_container(name, deleted_version, new_name=new_name, **kwargs)
         file_system = self.get_file_system_client(new_name or name)
         return file_system
 
+    @distributed_trace_async
     async def delete_file_system(self, file_system,  # type: Union[FileSystemProperties, str]
                                  **kwargs):
         # type: (...) -> FileSystemClient
@@ -293,8 +348,13 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         :keyword ~azure.core.MatchConditions match_condition:
             The match condition to use upon the etag.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
-        :rtype: None
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
+        :returns: FileSystemClient after marking the specified file system for deletion.
+        :rtype: ~azure.storage.filedatalake.aio.FileSystemClient
 
         .. admonition:: Example:
 
@@ -344,9 +404,7 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         return FileSystemClient(self.url, file_system_name, credential=self._raw_credential,
                                 api_version=self.api_version,
                                 _configuration=self._config,
-                                _pipeline=self._pipeline, _hosts=self._hosts,
-                                require_encryption=self.require_encryption, key_encryption_key=self.key_encryption_key,
-                                key_resolver_function=self.key_resolver_function)
+                                _pipeline=_pipeline, _hosts=self._hosts)
 
     def get_directory_client(self, file_system,  # type: Union[FileSystemProperties, str]
                              directory  # type: Union[DirectoryProperties, str]
@@ -392,12 +450,8 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         return DataLakeDirectoryClient(self.url, file_system_name, directory_name=directory_name,
                                        credential=self._raw_credential,
                                        api_version=self.api_version,
-                                       _configuration=self._config, _pipeline=self._pipeline,
-                                       _hosts=self._hosts,
-                                       require_encryption=self.require_encryption,
-                                       key_encryption_key=self.key_encryption_key,
-                                       key_resolver_function=self.key_resolver_function
-                                       )
+                                       _configuration=self._config, _pipeline=_pipeline,
+                                       _hosts=self._hosts)
 
     def get_file_client(self, file_system,  # type: Union[FileSystemProperties, str]
                         file_path  # type: Union[FileProperties, str]
@@ -443,11 +497,9 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
         return DataLakeFileClient(
             self.url, file_system_name, file_path=file_path, credential=self._raw_credential,
             api_version=self.api_version,
-            _hosts=self._hosts, _configuration=self._config, _pipeline=self._pipeline,
-            require_encryption=self.require_encryption,
-            key_encryption_key=self.key_encryption_key,
-            key_resolver_function=self.key_resolver_function)
+            _hosts=self._hosts, _configuration=self._config, _pipeline=_pipeline)
 
+    @distributed_trace_async
     async def set_service_properties(self, **kwargs):
         # type: (**Any) -> None
         """Sets the properties of a storage account's Datalake service, including
@@ -487,11 +539,15 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
             and if yes, indicates the index document and 404 error document to use.
         :type static_website: ~azure.storage.filedatalake.StaticWebsite
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
-        :rtype: None
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         """
-        return await self._blob_service_client.set_service_properties(**kwargs)  # pylint: disable=protected-access
+        await self._blob_service_client.set_service_properties(**kwargs)
 
+    @distributed_trace_async
     async def get_service_properties(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
         """Gets the properties of a storage account's datalake service, including
@@ -501,10 +557,14 @@ class DataLakeServiceClient(AsyncStorageAccountHostsMixin, DataLakeServiceClient
             This operation was introduced in API version '2020-06-12'.
 
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :returns: An object containing datalake service properties such as
             analytics logging, hour/minute metrics, cors rules, etc.
-        :rtype: Dict[str, Any]
+        :rtype: dict[str, Any]
         """
-        props = await self._blob_service_client.get_service_properties(**kwargs)  # pylint: disable=protected-access
+        props = await self._blob_service_client.get_service_properties(**kwargs)
         return get_datalake_service_properties(props)

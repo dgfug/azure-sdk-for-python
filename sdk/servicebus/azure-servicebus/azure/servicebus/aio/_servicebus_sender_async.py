@@ -6,10 +6,8 @@ import logging
 import asyncio
 import datetime
 import warnings
-from typing import Any, TYPE_CHECKING, Union, List, Optional, Mapping, cast
+from typing import Any, TYPE_CHECKING, Union, List, Optional, Mapping, cast, Iterable
 
-import uamqp
-from uamqp import SendClientAsync, types
 from azure.core.credentials import AzureSasCredential, AzureNamedKeyCredential
 
 from .._common.message import (
@@ -23,25 +21,44 @@ from .._common.constants import (
     REQUEST_RESPONSE_SCHEDULE_MESSAGE_OPERATION,
     REQUEST_RESPONSE_CANCEL_SCHEDULED_MESSAGE_OPERATION,
     MGMT_REQUEST_SEQUENCE_NUMBERS,
-    SPAN_NAME_SCHEDULE,
+    MAX_MESSAGE_LENGTH_BYTES,
+    MAX_BATCH_SIZE_PREMIUM,
+    MAX_BATCH_SIZE_STANDARD,
 )
 from .._common import mgmt_handlers
-from .._common.utils import (
-    transform_messages_if_needed,
+from .._common.utils import transform_outbound_messages
+from .._common.tracing import (
     send_trace_context_manager,
     trace_message,
+    is_tracing_enabled,
+    get_span_links_from_batch,
+    get_span_link_from_message,
+    SPAN_NAME_SCHEDULE,
+    TraceAttributes,
 )
 from ._async_utils import create_authentication
 
 if TYPE_CHECKING:
     from azure.core.credentials_async import AsyncTokenCredential
 
+    try:
+        # pylint:disable=unused-import
+        from uamqp.async_ops.client_async import SendClientAsync as uamqp_SendClientAsync
+        from uamqp.authentication import JWTTokenAsync as uamqp_JWTTokenAuthAsync
+    except ImportError:
+        pass
+    from .._pyamqp.aio import SendClientAsync as pyamqp_SendClientAsync
+    from .._pyamqp.aio._authentication_async import JWTTokenAuthAsync as pyamqp_JWTTokenAuthAsync
+    from ._transport._base_async import AmqpTransportAsync
+
 
 MessageTypes = Union[
     Mapping[str, Any],
     ServiceBusMessage,
     AmqpAnnotatedMessage,
-    List[Union[Mapping[str, Any], ServiceBusMessage, AmqpAnnotatedMessage]],
+    Iterable[Mapping[str, Any]],
+    Iterable[ServiceBusMessage],
+    Iterable[AmqpAnnotatedMessage],
 ]
 MessageObjTypes = Union[
     ServiceBusMessage,
@@ -86,6 +103,13 @@ class ServiceBusSender(BaseHandler, SenderMixin):
      keys: `'proxy_hostname'` (str value) and `'proxy_port'` (int value).
      Additionally the following keys may also be present: `'username', 'password'`.
     :keyword str user_agent: If specified, this will be added in front of the built-in user agent string.
+    :keyword str client_identifier: A string-based identifier to uniquely identify the client instance.
+     Service Bus will associate it with some error messages for easier correlation of errors.
+     If not specified, a unique id will be generated.
+    :keyword float socket_timeout: The time in seconds that the underlying socket on the connection should
+     wait when sending and receiving data before timing out. The default value is 0.2 for TransportType.Amqp
+     and 1 for TransportType.AmqpOverWebsocket. If connection errors are occurring due to write timing out,
+     a larger than default value may need to be passed in.
     """
 
     def __init__(
@@ -95,23 +119,20 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         *,
         queue_name: Optional[str] = None,
         topic_name: Optional[str] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
+        self._amqp_transport: "AmqpTransportAsync"
         if kwargs.get("entity_name"):
             super(ServiceBusSender, self).__init__(
                 fully_qualified_namespace=fully_qualified_namespace,
                 credential=credential,
-                **kwargs
+                **kwargs,
             )
         else:
             if queue_name and topic_name:
-                raise ValueError(
-                    "Queue/Topic name can not be specified simultaneously."
-                )
+                raise ValueError("Queue/Topic name can not be specified simultaneously.")
             if not (queue_name or topic_name):
-                raise ValueError(
-                    "Queue/Topic name is missing. Please specify queue_name/topic_name."
-                )
+                raise ValueError("Queue/Topic name is missing. Please specify queue_name/topic_name.")
             entity_name = queue_name or topic_name
             super(ServiceBusSender, self).__init__(
                 fully_qualified_namespace=fully_qualified_namespace,
@@ -119,17 +140,24 @@ class ServiceBusSender(BaseHandler, SenderMixin):
                 entity_name=str(entity_name),
                 queue_name=queue_name,
                 topic_name=topic_name,
-                **kwargs
+                **kwargs,
             )
-
         self._max_message_size_on_link = 0
-        self._create_attribute()
+        self._max_batch_size_on_link = 0
+        self._create_attribute(**kwargs)
         self._connection = kwargs.get("connection")
+        self._handler: Union["pyamqp_SendClientAsync", "uamqp_SendClientAsync"]
+
+    async def __aenter__(self) -> "ServiceBusSender":
+        if self._shutdown.is_set():
+            raise ValueError(
+                "The handler has already been shutdown. Please use ServiceBusClient to create a new instance."
+            )
+        await self._open_with_retry()
+        return self
 
     @classmethod
-    def _from_connection_string(
-        cls, conn_str: str, **kwargs: Any
-    ) -> "ServiceBusSender":
+    def _from_connection_string(cls, conn_str: str, **kwargs: Any) -> "ServiceBusSender":
         """Create a ServiceBusSender from a connection string.
 
         :param str conn_str: The connection string of a Service Bus.
@@ -143,6 +171,7 @@ class ServiceBusSender(BaseHandler, SenderMixin):
          keys: `'proxy_hostname'` (str value) and `'proxy_port'` (int value).
          Additionally the following keys may also be present: `'username', 'password'`.
         :keyword str user_agent: If specified, this will be added in front of the built-in user agent string.
+        :returns: The ServiceBusSender
         :rtype: ~azure.servicebus.aio.ServiceBusSender
 
         :raises ~azure.servicebus.ServiceBusAuthenticationError: Indicates an issue in token/identity validity.
@@ -161,16 +190,15 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         constructor_args = cls._convert_connection_string_to_kwargs(conn_str, **kwargs)
         return cls(**constructor_args)
 
-    def _create_handler(self, auth):
-        self._handler = SendClientAsync(
-            self._entity_uri,
+    def _create_handler(self, auth: Union["uamqp_JWTTokenAuthAsync", "pyamqp_JWTTokenAuthAsync"]) -> None:
+
+        self._handler = self._amqp_transport.create_send_client_async(
+            config=self._config,
+            target=self._entity_uri,
             auth=auth,
-            debug=self._config.logging_enable,
             properties=self._properties,
-            error_policy=self._error_policy,
+            retry_policy=self._error_policy,
             client_name=self._name,
-            keep_alive_interval=self._config.keep_alive,
-            encoding=self._config.encoding,
         )
 
     async def _open(self):
@@ -187,21 +215,25 @@ class ServiceBusSender(BaseHandler, SenderMixin):
                 await asyncio.sleep(0.05)
             self._running = True
             self._max_message_size_on_link = (
-                self._handler.message_handler._link.peer_max_message_size
-                or uamqp.constants.MAX_MESSAGE_LENGTH_BYTES
+                self._amqp_transport.get_remote_max_message_size(self._handler) or MAX_MESSAGE_LENGTH_BYTES
             )
+            if self._max_message_size_on_link > MAX_BATCH_SIZE_PREMIUM:
+                self._max_batch_size_on_link = MAX_BATCH_SIZE_PREMIUM
+            else:
+                self._max_batch_size_on_link = MAX_BATCH_SIZE_STANDARD
         except:
             await self._close_handler()
             raise
 
-    async def _send(self, message, timeout=None, last_exception=None):
-        await self._open()
-        default_timeout = self._handler._msg_timeout  # pylint: disable=protected-access
-        try:
-            self._set_msg_timeout(timeout, last_exception)
-            await self._handler.send_message_async(message.message)
-        finally:  # reset the timeout of the handler back to the default value
-            self._set_msg_timeout(default_timeout, None)
+    async def _send(
+        self,
+        message: Union[ServiceBusMessage, ServiceBusMessageBatch],
+        timeout: Optional[float] = None,
+        last_exception: Optional[Exception] = None,
+    ) -> None:
+        await self._amqp_transport.send_messages_async(
+            self, message, _LOGGER, timeout=timeout, last_exception=last_exception
+        )
 
     async def schedule_messages(
         self,
@@ -209,7 +241,7 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         schedule_time_utc: datetime.datetime,
         *,
         timeout: Optional[float] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[int]:
         """Send Message or multiple Messages to be enqueued at a specific time by the service.
         Returns a list of the sequence numbers of the enqueued messages.
@@ -221,6 +253,7 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         :type schedule_time_utc: ~datetime.datetime
         :keyword float timeout: The total operation timeout in seconds including all the retries. The value must be
          greater than 0 if specified. The default value is None, meaning no timeout.
+        :return: The sequence numbers of the enqueued messages.
         :rtype: list[int]
 
         .. admonition:: Example:
@@ -237,22 +270,27 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         # pylint: disable=protected-access
 
         self._check_live()
-        obj_messages = transform_messages_if_needed(messages, ServiceBusMessage)
+        obj_messages = transform_outbound_messages(
+            messages, ServiceBusMessage, to_outgoing_amqp_message=self._amqp_transport.to_outgoing_amqp_message
+        )
         if timeout is not None and timeout <= 0:
             raise ValueError("The timeout must be greater than 0.")
-        with send_trace_context_manager(span_name=SPAN_NAME_SCHEDULE) as send_span:
-            if isinstance(obj_messages, ServiceBusMessage):
-                request_body = self._build_schedule_request(
-                    schedule_time_utc, send_span, obj_messages
-                )
-            else:
-                if len(obj_messages) == 0:
-                    return []  # No-op on empty list.
-                request_body = self._build_schedule_request(
-                    schedule_time_utc, send_span, *obj_messages
-                )
-            if send_span:
-                await self._add_span_request_attributes(send_span)
+
+        tracing_attributes = {
+            TraceAttributes.TRACE_NET_PEER_NAME_ATTRIBUTE: self.fully_qualified_namespace,
+            TraceAttributes.TRACE_MESSAGING_DESTINATION_ATTRIBUTE: self.entity_name,
+        }
+        if isinstance(obj_messages, ServiceBusMessage):
+            request_body, trace_links = self._build_schedule_request(
+                schedule_time_utc, self._amqp_transport, tracing_attributes, obj_messages
+            )
+        else:
+            if len(obj_messages) == 0:
+                return []  # No-op on empty list.
+            request_body, trace_links = self._build_schedule_request(
+                schedule_time_utc, self._amqp_transport, tracing_attributes, *obj_messages
+            )
+        with send_trace_context_manager(self, span_name=SPAN_NAME_SCHEDULE, links=trace_links):
             return await self._mgmt_request_response_with_retry(
                 REQUEST_RESPONSE_SCHEDULE_MESSAGE_OPERATION,
                 request_body,
@@ -261,7 +299,11 @@ class ServiceBusSender(BaseHandler, SenderMixin):
             )
 
     async def cancel_scheduled_messages(
-        self, sequence_numbers: Union[int, List[int]], *, timeout: Optional[float] = None, **kwargs: Any
+        self,
+        sequence_numbers: Union[int, List[int]],
+        *,
+        timeout: Optional[float] = None,
+        **kwargs: Any,
     ) -> None:
         """
         Cancel one or more messages that have previously been scheduled and are still pending.
@@ -289,12 +331,12 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         if timeout is not None and timeout <= 0:
             raise ValueError("The timeout must be greater than 0.")
         if isinstance(sequence_numbers, int):
-            numbers = [types.AMQPLong(sequence_numbers)]
+            numbers = [self._amqp_transport.AMQP_LONG_VALUE(sequence_numbers)]
         else:
-            numbers = [types.AMQPLong(s) for s in sequence_numbers]
+            numbers = [self._amqp_transport.AMQP_LONG_VALUE(s) for s in sequence_numbers]
         if len(numbers) == 0:
             return None  # no-op on empty list.
-        request_body = {MGMT_REQUEST_SEQUENCE_NUMBERS: types.AMQPArray(numbers)}
+        request_body = {MGMT_REQUEST_SEQUENCE_NUMBERS: self._amqp_transport.AMQP_ARRAY_VALUE(numbers)}
         return await self._mgmt_request_response_with_retry(
             REQUEST_RESPONSE_CANCEL_SCHEDULED_MESSAGE_OPERATION,
             request_body,
@@ -303,7 +345,11 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         )
 
     async def send_messages(
-        self, message: Union[MessageTypes, ServiceBusMessageBatch], *, timeout: Optional[float] = None, **kwargs: Any
+        self,
+        message: Union[MessageTypes, ServiceBusMessageBatch],
+        *,
+        timeout: Optional[float] = None,
+        **kwargs: Any,
     ) -> None:
         """Sends message and blocks until acknowledgement is received or operation times out.
 
@@ -342,28 +388,51 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         if timeout is not None and timeout <= 0:
             raise ValueError("The timeout must be greater than 0.")
 
-        with send_trace_context_manager() as send_span:
-            if isinstance(message, ServiceBusMessageBatch):
-                obj_message = message  # type: MessageObjTypes
+        try:  # Short circuit noop if an empty list or batch is provided.
+            if len(cast(Union[List, ServiceBusMessageBatch], message)) == 0:  # pylint: disable=len-as-condition
+                return
+        except TypeError:  # continue if ServiceBusMessage
+            pass
+
+        obj_message: Union[ServiceBusMessage, ServiceBusMessageBatch]
+        if isinstance(message, ServiceBusMessageBatch):
+            # If AmqpTransports are not the same, create batch with correct BatchMessage.
+            if self._amqp_transport is not message._amqp_transport:  # pylint: disable=protected-access
+                # pylint: disable=protected-access
+                batch = await self.create_message_batch()
+                batch._from_list(message._messages)  # type: ignore
+                obj_message = batch
             else:
-                obj_message = transform_messages_if_needed(  # type: ignore
-                    message, ServiceBusMessage
+                obj_message = message
+        else:
+            obj_message = transform_outbound_messages(  # type: ignore
+                message, ServiceBusMessage, self._amqp_transport.to_outgoing_amqp_message
+            )
+            try:
+                batch = await self.create_message_batch()
+                batch._from_list(obj_message)  # type: ignore # pylint: disable=protected-access
+                obj_message = batch
+            except TypeError:  # Message was not a list or generator.
+                # pylint: disable=protected-access
+                obj_message._message = trace_message(
+                    obj_message._message,
+                    amqp_transport=self._amqp_transport,
+                    additional_attributes={
+                        TraceAttributes.TRACE_NET_PEER_NAME_ATTRIBUTE: self.fully_qualified_namespace,
+                        TraceAttributes.TRACE_MESSAGING_DESTINATION_ATTRIBUTE: self.entity_name,
+                    },
                 )
-                try:
-                    batch = await self.create_message_batch()
-                    batch._from_list(obj_message, send_span)  # type: ignore # pylint: disable=protected-access
-                    obj_message = batch
-                except TypeError:  # Message was not a list or generator.
-                    trace_message(cast(ServiceBusMessage, obj_message), send_span)
-            if (
-                isinstance(obj_message, ServiceBusMessageBatch)
-                and len(obj_message) == 0
-            ):  # pylint: disable=len-as-condition
-                return  # Short circuit noop if an empty list or batch is provided.
 
-            if send_span:
-                await self._add_span_request_attributes(send_span)
+        trace_links = []
+        if is_tracing_enabled():
+            if isinstance(obj_message, ServiceBusMessageBatch):
+                trace_links = get_span_links_from_batch(obj_message)
+            else:
+                link = get_span_link_from_message(obj_message._message)  # pylint: disable=protected-access
+                if link:
+                    trace_links.append(link)
 
+        with send_trace_context_manager(self, links=trace_links):
             await self._do_retryable_operation(
                 self._send,
                 message=obj_message,
@@ -372,14 +441,13 @@ class ServiceBusSender(BaseHandler, SenderMixin):
                 require_last_exception=True,
             )
 
-    async def create_message_batch(
-        self, max_size_in_bytes: Optional[int] = None
-    ) -> ServiceBusMessageBatch:
+    async def create_message_batch(self, max_size_in_bytes: Optional[int] = None) -> ServiceBusMessageBatch:
         """Create a ServiceBusMessageBatch object with the max size of all content being constrained by
         max_size_in_bytes. The max_size should be no greater than the max allowed message size defined by the service.
 
-        :param Optional[int] max_size_in_bytes: The maximum size of bytes data that a ServiceBusMessageBatch object can
+        :param int or None max_size_in_bytes: The maximum size of bytes data that a ServiceBusMessageBatch object can
          hold. By default, the value is determined by your Service Bus tier.
+        :return: ServiceBusMessageBatch object
         :rtype: ~azure.servicebus.ServiceBusMessageBatch
 
         .. admonition:: Example:
@@ -396,13 +464,29 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         if not self._max_message_size_on_link:
             await self._open_with_retry()
 
-        if max_size_in_bytes and max_size_in_bytes > self._max_message_size_on_link:
+        if max_size_in_bytes and max_size_in_bytes > self._max_batch_size_on_link:
             raise ValueError(
-                "Max message size: {} is too large, acceptable max batch size is: {} bytes.".format(
-                    max_size_in_bytes, self._max_message_size_on_link
-                )
+                f"Max message size: {max_size_in_bytes} is too large, "
+                f"acceptable max batch size is: {self._max_batch_size_on_link} bytes."
             )
 
         return ServiceBusMessageBatch(
-            max_size_in_bytes=(max_size_in_bytes or self._max_message_size_on_link)
+            max_size_in_bytes=(max_size_in_bytes or self._max_batch_size_on_link),
+            amqp_transport=self._amqp_transport,
+            tracing_attributes={
+                TraceAttributes.TRACE_NET_PEER_NAME_ATTRIBUTE: self.fully_qualified_namespace,
+                TraceAttributes.TRACE_MESSAGING_DESTINATION_ATTRIBUTE: self.entity_name,
+            },
         )
+
+    @property
+    def client_identifier(self) -> str:
+        """
+        Get the ServiceBusSender client identifier associated with the sender instance.
+
+        :rtype: str
+        """
+        return self._name
+
+    def __str__(self) -> str:
+        return f"Sender client id: {self.client_identifier}, entity: {self.entity_name}"

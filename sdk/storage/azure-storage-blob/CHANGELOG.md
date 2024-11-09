@@ -1,14 +1,271 @@
 # Release History
 
-## 12.10.1 (Unreleased)
+## 12.24.0 (Unreleased)
 
 ### Features Added
 
-### Breaking Changes
+## 12.24.0b1 (2024-10-10)
+
+### Features Added
+- Added support for service version 2025-01-05.
+- Added support for passing metadata to `upload_blob_from_url` via the new `metadata` keyword.
+- Added support for `set_immutability_policy`, `delete_immutability_policy` and `set_legal_hold` for Blob snapshots and versions.
+
+## 12.23.1 (2024-09-25)
+
+### Features Added
+- Added support for decryption of Blobs encrypted using client-side encryption version 2.1.
+
+## 12.23.0 (2024-09-17)
+
+### Features Added
+- Stable release of features from 12.23.0b1
 
 ### Bugs Fixed
+- Fixed an issue with batch APIs when using Azurite.
+
+## 12.23.0b1 (2024-08-07)
+
+### Features Added
+- Added support for service version 2024-11-04.
 
 ### Other Changes
+- Bumped minimum `azure-core` dependency to 1.30.0.
+
+## 12.22.0 (2024-08-06)
+
+### Other Changes
+- Updated type hints across the entire package and enabled MyPy to run during CI. Some public types may have been adjusted if they were previously erroneous or incomplete.
+
+## 12.21.0 (2024-07-18)
+
+### Features Added
+- Stable release of features from 12.21.0b1
+- Added new `chars` keyword to the `StorageStreamDownloader.read` method to support reading an arbitrary number of
+characters from the stream rather than bytes. This can only be used when `encoding` is specified on `download_blob`
+but can help prevent decoding errors in certain scenarios.
+
+## 12.21.0b1 (2024-06-11)
+
+### Features Added
+- Added support for service version 2024-08-04.
+
+## 12.20.0 (2024-05-07)
+
+### Features Added
+- Stable release of features from 12.20.0b1
+
+## 12.20.0b1 (2024-04-16)
+
+This version and all future versions will require Python 3.8+. Python 3.7 is no longer supported.
+
+### Features Added
+- Added support for service version 2024-05-04.
+- The `services` parameter has been added to the `generate_account_sas` API, which enables the ability to generate SAS
+tokens to be used with multiple services. By default, the SAS token service scope will default to the current service.
+
+### Bugs Fixed
+- Bumped dependency of `typing-extensions` to `>=4.6.0` to avoid potential `TypeError` with `typing.TypeVar` on
+Python 3.12.
+- Fixed an issue where authentication errors could raise `AttributeError` instead of `ClientAuthenticationError` when
+using async OAuth credentials.
+- Fixed a typing issue which incorrectly typed the `readinto` API. The correct input type is `IO[bytes]`.
+- Fixed a typo in the initialization of `completion_time` for the `CopyProperties` model.
+- Fixed a couple of issues with `upload_blob` when using Iterators/Generators as the data input.
+
+### Other Changes
+- Passing `prefix` to the following `ContainerClient` APIs now raises a `ValueError`:
+`list_blobs`, `list_blobs_names`, and `walk_blobs`. This change was made to avoid confusion for filtering results.
+The `name_starts_with` parameter is the correct parameter to pass for filtering.
+
+## 12.19.1 (2024-03-05)
+
+### Bugs Fixed
+- Fixed an issue where under rare circumstances, full downloads of sparse Page Blobs could result in the
+downloaded content containing up to one "chunk" of extra `\x00` at the end due to an optimization error.
+
+## 12.19.0 (2023-11-07)
+
+### Features Added
+- Stable release of features from 12.19.0b1
+
+## 12.19.0b1 (2023-10-17)
+
+### Features Added
+- Added support for service version 2023-11-03.
+- Added `audience` as an optional keyword that can be specified on APIs that have a `credential` parameter. This
+keyword only has an effect when the credential provided is of type `TokenCredential`.
+
+### Bugs Fixed
+- Deprecated `BlobProperties` as a valid input type to the `blob` parameter on the following APIs:
+BlobServiceClient's `get_blob_client`, ContainerClient's `delete_blob`, `download_blob`, and `get_blob_client`.
+This deprecation change also applies to the `name` parameter on ContainerClient's `upload_blob` API. This change
+applies to both sync and async packages but does not apply to the batch equivalent of any of the listed APIs. If a
+`BlobProperties` is provided, a deprecation warning is raised.
+
+## 12.18.3 (2023-10-10)
+
+### Bugs Fixed
+- Fixed an issue when an invalid type was provided for `credential` during client construction, the
+`__str__` of the object would be present in the exception message and therefore potentially logged.
+
+## 12.18.2 (2023-09-25)
+
+### Bugs Fixed
+- Fixed an issue where `user_agent` was being ignored on `upload_blob` or `download_blob` if client was configured
+for encryption.
+
+## 12.18.1 (2023-09-13)
+
+### Bugs Fixed
+- Fixed breaking `KeyError: 'sdk_moniker'` in `create_configuration`.
+NOTE: This is not an exported method and therefore should not be imported/called directly.
+
+## 12.18.0 (2023-09-12)
+
+### Features Added
+- Stable release of features from 12.18.0b1
+
+## 12.18.0b1 (2023-08-08)
+
+### Features Added
+- Added support for service versions 2023-05-03 and 2023-08-03.
+- Added `version_id` as a client constructor parameter to `BlobClient`. This change makes `BlobClient`s version-aware, such that
+all APIs that accept `version_id` will operate on the version ID provided during client construction by default.
+- Added optional keyword `version_id` to `get_blob_client` APIs which, if provided, will result in a version-aware `BlobClient` in which
+all APIs that accept `version_id` will operate on the version ID provided to the `get_blob_client` API call by default.
+
+## 12.17.0 (2023-07-11)
+
+### Features Added
+- Stable release of features from 12.17.0b1
+
+## 12.17.0b1 (2023-05-30)
+
+### Features Added
+- Added support for service version 2023-01-03.
+- Content length limit increased from 4 MiB to 100 MiB for `append_block` and `append_block_from_url` APIs and their async equivalents.
+
+## 12.16.0 (2023-04-12)
+
+### Features Added
+- Stable release of features from 12.16.0b1
+
+## 12.16.0b1 (2023-03-28)
+
+### Features Added
+- Added support for service version 2022-11-02.
+
+## 12.15.0 (2023-02-22)
+
+### Features Added
+- Stable release of features from 12.15.0b1
+- The `download_blob` API now returns `creation_time` on the download response.
+
+## 12.15.0b1 (2023-02-02)
+
+### Features Added
+- Added support for service version 2021-12-02.
+- Added support for new blob tier, `Cold`.
+- Added support for `AsyncIterable` as data type for async blob upload.
+
+### Bugs Fixed
+- Changed how async streams are detected on async `upload_blob` to increase compatiblity with different types.
+
+### Other Changes
+- Removed `msrest` dependency.
+- Added `typing-extensions>=4.0.1` as a dependency.
+- Added `isodate>=0.6.1` as a dependency.
+- Added extra dependency `aio` for installing optional async dependencies. Use `pip install azure-storage-blob[aio]` to install.
+
+## 12.14.1 (2022-10-18)
+
+### Bugs Fixed
+- Fixed possible `ValueError` for invalid content range that gets raised when downloading empty blobs through Azurite.
+
+## 12.14.0 (2022-10-11)
+
+### Features Added
+- Stable release of features from 12.14.0b1 and 12.14.0b2.
+
+### Bugs Fixed
+- Fixed an issue where calling `download_blob` with an invalid base64-encoded account key would cause an
+`AttributeError` rather than the proper `AzureSigningError`.
+
+### Other Changes
+- Changed the default value for `read_timeout` to 60 seconds for all clients.
+
+## 12.14.0b2 (2022-08-30)
+
+### Features Added
+- Added a new API, `list_blob_names`, to `ContainerClient` that lists only the names of the blobs in the respective
+container. This API is significantly faster than the traditional `list_blobs` and can be used if only the blob names
+are desired. It does not return any additional properties or metadata for the blobs.
+
+## 12.14.0b1 (2022-08-23)
+
+This version and all future versions will require Python 3.7+. Python 3.6 is no longer supported.
+
+### Features Added
+- Added support for `AzureNamedKeyCredential` as a valid `credential` type.
+- Added standard `read` method to `StorageStreamDownloader`.
+- Added support for async streams (classes with an async `read` method) to async `upload_blob`.
+
+### Bugs Fixed
+- Removed dead retry meachism from async `azure.storage.blob.aio.StorageStreamDownloader`.
+- Updated exception catching of `azure.storage.blob.StorageStreamDownloader`'s retry mechanism.
+- Adjusted type hints for `upload_blob` and `StorageStreamDownloader.readall`.
+- Fixed a bug where uploading an empty blob via `upload_blob` would fail with `validate_content=True`.
+
+## 12.13.1 (2022-08-04)
+
+### Bugs Fixed
+- Fixed two rare issues with ranged blob download when using client-side encryption V1 or V2.
+
+## 12.13.0 (2022-07-07)
+
+### Bugs Fixed
+- Stable release of features from 12.13.0b1.
+- Added support for deleting versions in `delete_blobs` by supplying `version_id`.
+
+## 12.13.0b1 (2022-06-15)
+
+### Features Added
+- Added support for service version 2021-08-06.
+- Added a new version of client-side encryption for blobs (version 2.0) which utilizes AES-GCM-256 encryption.
+If you are currently using client-side encryption, it is **highly recommended** to switch to a form of server-side
+encryption (Customer-Provided Key, Encryption Scope, etc.) or version 2.0 of client-side encryption. The encryption
+version can be specified on any client constructor via the `encryption_version` keyword (`encryption_version='2.0'`).
+
+## 12.12.0 (2022-05-09)
+
+### Features Added
+- Stable release of features from 12.12.0b1.
+- Added support for progress tracking to `upload_blob()` and `download_blob()` via a new optional callback,`progress_hook`.
+
+### Bugs Fixed
+- Fixed a bug in `BlobClient.from_blob_url()` such that users will receive a more helpful error
+message if they pass an incorrect URL without a full `/container/blob` path.
+- Fixed a bug, introduced in the previous beta release, that caused Authentication errors when attempting to use
+an Account SAS with certain service level operations.
+
+## 12.12.0b1 (2022-04-14)
+
+### Features Added
+- Added support for service version 2021-06-08.
+- Added a new paginated method for listing page ranges, `list_page_ranges()`. This replaces `get_page_ranges()` which has been deprecated.
+- Added support for copying source blob tags with `start_copy_from_url()` by specifying `"COPY"` for the `tags` keyword.
+
+## 12.11.0 (2022-03-29)
+
+**Warning** This release involves a bug fix that may change the behavior for some users. In previous versions,
+the `tag` parameter on`BlobSasPermissions` defaulted to `True` meaning a Blob SAS URL would include the `t` permission
+by default. This was not the intended behavior. This release adjusts `BlobSasPermission` so the `tag` permission will
+default to `False`, like all other permissions.
+
+### Bugs Fixed
+- Fixed a bug in `BlobSasPermissions` where the `tag` permission had a default value of `True` and
+therefore was being added to the SAS token by default.
 
 ## 12.10.0 (2022-03-08)
 
@@ -21,7 +278,7 @@ This version and all future versions will require Python 3.6+. Python 2.7 is no 
     - `set_immutability_policy`
 - Encryption Scope is now supported for Sync Blob Copy (`copy_from_url()`).
 - Encryption Scope is now supported as a SAS permission.
-- Added support for blob names containing invalid XML characters. 
+- Added support for blob names containing invalid XML characters.
   Previously \uFFFE and \uFFFF would fail if present in blob name.
 - Added support for listing system containers with get_blob_containers().
 - Added support for `find_blobs_by_tags()` on a container.
@@ -72,7 +329,7 @@ This version and all future versions will require Python 3.6+. Python 2.7 is no 
 
 **Fixes**
 - Blob Client Typing annotation issues have been resolved, specifically `invalid type inference` issues (#19906)
-- Duplicate type signature issue has been resolved (#19739) 
+- Duplicate type signature issue has been resolved (#19739)
 
 ## 12.9.0 (2021-09-15)
 **Stable release of preview features**

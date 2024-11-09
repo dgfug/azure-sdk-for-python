@@ -42,8 +42,9 @@ setup(
     author="Microsoft Corporation",
     author_email="azure-digitaltwins-core@microsoft.com",
     url="https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/digitaltwins/azure-digitaltwins-core",
+    keywords="azure, azure sdk",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
@@ -62,9 +63,13 @@ setup(
             'azure.digitaltwins',
         ]
     ),
+    include_package_data=True,
+    package_data={
+        'pytyped': ['py.typed'],
+    },
     python_requires=">=3.7",
     install_requires=[
-        "azure-core<2.0.0,>=1.2.2",
+        "azure-core<2.0.0,>=1.20.0",
         "msrest>=0.6.21"
     ],
 )

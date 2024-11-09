@@ -12,9 +12,10 @@ An example to show receiving events from an Event Hub asynchronously.
 import asyncio
 import os
 from azure.eventhub.aio import EventHubConsumerClient
+from azure.identity.aio import DefaultAzureCredential
 
-CONNECTION_STR = os.environ["EVENT_HUB_CONN_STR"]
-EVENTHUB_NAME = os.environ['EVENT_HUB_NAME']
+FULLY_QUALIFIED_NAMESPACE = os.environ["EVENT_HUB_HOSTNAME"]
+EVENTHUB_NAME = os.environ["EVENT_HUB_NAME"]
 
 
 async def on_event(partition_context, event):
@@ -31,28 +32,27 @@ async def on_partition_initialize(partition_context):
 
 async def on_partition_close(partition_context, reason):
     # Put your code here.
-    print("Partition: {} has been closed, reason for closing: {}.".format(
-        partition_context.partition_id,
-        reason
-    ))
+    print("Partition: {} has been closed, reason for closing: {}.".format(partition_context.partition_id, reason))
 
 
 async def on_error(partition_context, error):
     # Put your code here. partition_context can be None in the on_error callback.
     if partition_context:
-        print("An exception: {} occurred during receiving from Partition: {}.".format(
-            partition_context.partition_id,
-            error
-        ))
+        print(
+            "An exception: {} occurred during receiving from Partition: {}.".format(
+                partition_context.partition_id, error
+            )
+        )
     else:
         print("An exception: {} occurred during the load balance process.".format(error))
 
 
 async def main():
-    client = EventHubConsumerClient.from_connection_string(
-        conn_str=CONNECTION_STR,
+    client = EventHubConsumerClient(
+        fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,
+        eventhub_name=EVENTHUB_NAME,
+        credential=DefaultAzureCredential(),
         consumer_group="$default",
-        eventhub_name=EVENTHUB_NAME
     )
     async with client:
         await client.receive(
@@ -64,5 +64,5 @@ async def main():
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

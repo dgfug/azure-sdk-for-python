@@ -2,14 +2,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 # ------------------------------------
-try:
-    from unittest.mock import MagicMock, patch
-except ImportError:
-    from mock import MagicMock, patch  # type: ignore
+from unittest.mock import MagicMock, patch
 
 from azure.identity._credentials.application import AzureApplicationCredential
 from azure.identity import (
     AzureCliCredential,
+    AzureDeveloperCliCredential,
     AzurePowerShellCredential,
     AuthorizationCodeCredential,
     CertificateCredential,
@@ -109,6 +107,7 @@ def test_exit_args(fixture):
     "cls",
     (
         AzureCliCredential,
+        AzureDeveloperCliCredential,
         AzureApplicationCredential,
         AzurePowerShellCredential,
         EnvironmentCredential,

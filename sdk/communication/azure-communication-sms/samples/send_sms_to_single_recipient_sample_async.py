@@ -27,11 +27,13 @@ sys.path.append("..")
 
 class SmsSingleRecipientSampleAsync(object):
 
-    connection_string = os.getenv("COMMUNICATION_SAMPLES_CONNECTION_STRING")
-    phone_number = os.getenv("AZURE_PHONE_NUMBER")
+    connection_string = os.getenv("COMMUNICATION_LIVETEST_STATIC_CONNECTION_STRING")
+    phone_number = os.getenv("SMS_PHONE_NUMBER")
     
     async def send_sms_to_single_recipient_async(self):
+        # [START auth_from_connection_string_async]
         sms_client = SmsClient.from_connection_string(self.connection_string)
+        # [END auth_from_connection_string_async]
 
         async with sms_client:
             try:

@@ -7,29 +7,36 @@
 # --------------------------------------------------------------------------
 
 from enum import Enum
-from six import with_metaclass
 from azure.core import CaseInsensitiveEnumMeta
 
 
-class BillingType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+class BillingType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Configures whether billing will be only on the cluster or each workspace will be billed by its
     proportional use. This does not change the overall billing, only how it will be distributed.
-    Default value is 'Cluster'
+    Default value is 'Cluster'.
     """
 
     CLUSTER = "Cluster"
     WORKSPACES = "Workspaces"
 
-class Capacity(with_metaclass(CaseInsensitiveEnumMeta, int, Enum)):
-    """The capacity value
-    """
 
+class Capacity(int, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The capacity reservation level in Gigabytes for this cluster."""
+
+    ONE_HUNDRED = 100
+    TWO_HUNDRED = 200
+    THREE_HUNDRED = 300
+    FOUR_HUNDRED = 400
     FIVE_HUNDRED = 500
     TEN_HUNDRED = 1000
     TWO_THOUSAND = 2000
     FIVE_THOUSAND = 5000
+    TEN_THOUSAND = 10000
+    TWENTY_FIVE_THOUSAND = 25000
+    FIFTY_THOUSAND = 50000
 
-class CapacityReservationLevel(with_metaclass(CaseInsensitiveEnumMeta, int, Enum)):
+
+class CapacityReservationLevel(int, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The capacity reservation level in GB for this workspace, when CapacityReservation sku is
     selected.
     """
@@ -43,9 +50,9 @@ class CapacityReservationLevel(with_metaclass(CaseInsensitiveEnumMeta, int, Enum
     TWO_THOUSAND = 2000
     FIVE_THOUSAND = 5000
 
-class ClusterEntityStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The provisioning state of the cluster.
-    """
+
+class ClusterEntityStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The provisioning state of the cluster."""
 
     CREATING = "Creating"
     SUCCEEDED = "Succeeded"
@@ -55,30 +62,30 @@ class ClusterEntityStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     PROVISIONING_ACCOUNT = "ProvisioningAccount"
     UPDATING = "Updating"
 
-class ClusterSkuNameEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The name of the SKU.
-    """
+
+class ClusterSkuNameEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The SKU (tier) of a cluster."""
 
     CAPACITY_RESERVATION = "CapacityReservation"
 
-class ColumnDataTypeHintEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Column data type logical hint.
-    """
 
-    #: A string that matches the pattern of a URI, for example,
-    #: scheme://username:password@host:1234/this/is/a/path?k1=v1&k2=v2#fragment.
+class ColumnDataTypeHintEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Column data type logical hint."""
+
     URI = "uri"
-    #: A standard 128-bit GUID following the standard shape, xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
+    """A string that matches the pattern of a URI, for example,
+    scheme://username:password@host:1234/this/is/a/path?k1=v1&k2=v2#fragment"""
     GUID = "guid"
-    #: An Azure Resource Model (ARM) path:
-    #: /subscriptions/{...}/resourceGroups/{...}/providers/Microsoft.{...}/{...}/{...}/{...}...
+    """A standard 128-bit GUID following the standard shape, xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"""
     ARM_PATH = "armPath"
-    #: A standard V4/V6 ip address following the standard shape, x.x.x.x/y:y:y:y:y:y:y:y.
+    """An Azure Resource Model (ARM) path:
+    /subscriptions/{...}/resourceGroups/{...}/providers/Microsoft.{...}/{...}/{...}/{...}..."""
     IP = "ip"
+    """A standard V4/V6 ip address following the standard shape, x.x.x.x/y:y:y:y:y:y:y:y"""
 
-class ColumnTypeEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Column data type.
-    """
+
+class ColumnTypeEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Column data type."""
 
     STRING = "string"
     INT = "int"
@@ -88,36 +95,37 @@ class ColumnTypeEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     DATE_TIME = "dateTime"
     GUID = "guid"
     DYNAMIC = "dynamic"
+    INT_ENUM = "int"
 
-class CreatedByType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class DataIngestionStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The status of data ingestion for this workspace.
-    """
 
-    #: Ingestion enabled following daily cap quota reset, or subscription enablement.
+class DataIngestionStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The status of data ingestion for this workspace."""
+
     RESPECT_QUOTA = "RespectQuota"
-    #: Ingestion started following service setting change.
+    """Ingestion enabled following daily cap quota reset, or subscription enablement."""
     FORCE_ON = "ForceOn"
-    #: Ingestion stopped following service setting change.
+    """Ingestion started following service setting change."""
     FORCE_OFF = "ForceOff"
-    #: Reached daily cap quota, ingestion stopped.
+    """Ingestion stopped following service setting change."""
     OVER_QUOTA = "OverQuota"
-    #: Ingestion stopped following suspended subscription.
+    """Reached daily cap quota, ingestion stopped."""
     SUBSCRIPTION_SUSPENDED = "SubscriptionSuspended"
-    #: 80% of daily cap quota reached.
+    """Ingestion stopped following suspended subscription."""
     APPROACHING_QUOTA = "ApproachingQuota"
+    """80% of daily cap quota reached."""
 
-class DataSourceKind(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The kind of the DataSource.
-    """
+
+class DataSourceKind(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The kind of the DataSource."""
 
     WINDOWS_EVENT = "WindowsEvent"
     WINDOWS_PERFORMANCE_COUNTER = "WindowsPerformanceCounter"
@@ -153,71 +161,90 @@ class DataSourceKind(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     APPLICATION_INSIGHTS = "ApplicationInsights"
     SQL_DATA_CLASSIFICATION = "SqlDataClassification"
 
-class DataSourceType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Linked storage accounts type.
-    """
+
+class DataSourceType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Linked storage accounts type."""
 
     CUSTOM_LOGS = "CustomLogs"
     AZURE_WATSON = "AzureWatson"
     QUERY = "Query"
+    INGESTION = "Ingestion"
     ALERTS = "Alerts"
 
-class IdentityType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Type of managed service identity.
-    """
 
+class IdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that creates/modifies resources."""
+
+    USER = "user"
+    APPLICATION = "application"
+    MANAGED_IDENTITY = "managedIdentity"
+    KEY = "key"
     SYSTEM_ASSIGNED = "SystemAssigned"
     USER_ASSIGNED = "UserAssigned"
     NONE = "None"
 
-class LinkedServiceEntityStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The provisioning state of the linked service.
-    """
+
+class LinkedServiceEntityStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The provisioning state of the linked service."""
 
     SUCCEEDED = "Succeeded"
     DELETING = "Deleting"
     PROVISIONING_ACCOUNT = "ProvisioningAccount"
     UPDATING = "Updating"
 
-class ProvisioningStateEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class ManagedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Type of managed service identity (where both SystemAssigned and UserAssigned types are
+    allowed).
+    """
+
+    NONE = "None"
+    SYSTEM_ASSIGNED = "SystemAssigned"
+    USER_ASSIGNED = "UserAssigned"
+    SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned,UserAssigned"
+
+
+class ProvisioningStateEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Table's current provisioning state. If set to 'updating', indicates a resource lock due to
     ongoing operation, forbidding any update to the table until the ongoing operation is concluded.
     """
 
-    #: Table schema is still being built and updated, table is currently locked for any changes till
-    #: the procedure is done.
     UPDATING = "Updating"
-    #: Table schema is stable and without changes, table data is being updated.
+    """Table schema is still being built and updated, table is currently locked for any changes till
+    the procedure is done."""
     IN_PROGRESS = "InProgress"
-    #: Table state is stable and without changes, table is unlocked and open for new updates.
+    """Table schema is stable and without changes, table data is being updated."""
     SUCCEEDED = "Succeeded"
+    """Table state is stable and without changes, table is unlocked and open for new updates."""
+    DELETING = "Deleting"
+    """Table state is deleting."""
 
-class PublicNetworkAccessType(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The network access type for operating on the Log Analytics Workspace. By default it is Enabled
-    """
 
-    #: Enables connectivity to Log Analytics through public DNS.
+class PublicNetworkAccessType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The network access type for operating on the Log Analytics Workspace. By default it is Enabled."""
+
     ENABLED = "Enabled"
-    #: Disables public connectivity to Log Analytics through public DNS.
+    """Enables connectivity to Log Analytics through public DNS."""
     DISABLED = "Disabled"
+    """Disables public connectivity to Log Analytics through public DNS."""
 
-class PurgeState(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Status of the operation represented by the requested Id.
-    """
+
+class PurgeState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Status of the operation represented by the requested Id."""
 
     PENDING = "pending"
     COMPLETED = "completed"
 
-class SearchSortEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The sort order of the search.
-    """
+
+class SearchSortEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The sort order of the search."""
 
     ASC = "asc"
     DESC = "desc"
 
-class SkuNameEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The name of the Service Tier.
-    """
+
+class SkuNameEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The name of the Service Tier."""
 
     FREE = "Free"
     STANDARD = "Standard"
@@ -227,70 +254,71 @@ class SkuNameEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     STANDALONE = "Standalone"
     CAPACITY_RESERVATION = "CapacityReservation"
 
-class SourceEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Table's creator.
-    """
 
-    #: Tables provisioned by the system, as collected via Diagnostic Settings, the Agents, or any
-    #: other standard data collection means.
+class SourceEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Table's creator."""
+
     MICROSOFT = "microsoft"
-    #: Tables created by the owner of the Workspace, and only found in this Workspace.
+    """Tables provisioned by the system, as collected via Diagnostic Settings, the Agents, or any
+    other standard data collection means."""
     CUSTOMER = "customer"
+    """Tables created by the owner of the Workspace, and only found in this Workspace."""
 
-class StorageInsightState(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The state of the storage insight connection to the workspace
-    """
+
+class StorageInsightState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The state of the storage insight connection to the workspace."""
 
     OK = "OK"
     ERROR = "ERROR"
 
-class TablePlanEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Instruct the system how to handle and charge the logs ingested to this table.
-    """
 
-    #: Logs  that are adjusted to support high volume low value verbose logs.
+class TablePlanEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Instruct the system how to handle and charge the logs ingested to this table."""
+
     BASIC = "Basic"
-    #: Logs  that allow monitoring and analytics.
+    """Logs  that are adjusted to support high volume low value verbose logs."""
     ANALYTICS = "Analytics"
+    """Logs  that allow monitoring and analytics."""
 
-class TableSubTypeEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
+
+class TableSubTypeEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The subtype describes what APIs can be used to interact with the table, and what features are
     available against it.
     """
 
-    #: The default subtype with which built-in tables are created.
     ANY = "Any"
-    #: Indicates a table created through the Data Collector API or with the custom logs feature of the
-    #: MMA agent, or any table against which Custom Fields were created.
+    """The default subtype with which built-in tables are created."""
     CLASSIC = "Classic"
-    #: A table eligible to have data sent into it via any of the means supported by Data Collection
-    #: Rules: the Data Collection Endpoint API, ingestion-time transformations, or any other mechanism
-    #: provided by Data Collection Rules.
+    """Indicates a table created through the Data Collector API or with the custom logs feature of the
+    MMA agent, or any table against which Custom Fields were created."""
     DATA_COLLECTION_RULE_BASED = "DataCollectionRuleBased"
+    """A table eligible to have data sent into it via any of the means supported by Data Collection
+    Rules: the Data Collection Endpoint API, ingestion-time transformations, or any other mechanism
+    provided by Data Collection Rules"""
 
-class TableTypeEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """Table's creator.
-    """
 
-    #: Standard data collected by Azure Monitor.
+class TableTypeEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Table's creator."""
+
     MICROSOFT = "Microsoft"
-    #: Custom log table.
+    """Standard data collected by Azure Monitor."""
     CUSTOM_LOG = "CustomLog"
-    #: Restored data.
+    """Custom log table."""
     RESTORED_LOGS = "RestoredLogs"
-    #: Data collected by a search job.
+    """Restored data."""
     SEARCH_RESULTS = "SearchResults"
+    """Data collected by a search job."""
 
-class Type(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of the destination resource
-    """
+
+class Type(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of the destination resource."""
 
     STORAGE_ACCOUNT = "StorageAccount"
     EVENT_HUB = "EventHub"
 
-class WorkspaceEntityStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The provisioning state of the workspace.
-    """
+
+class WorkspaceEntityStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The provisioning state of the workspace."""
 
     CREATING = "Creating"
     SUCCEEDED = "Succeeded"
@@ -300,9 +328,9 @@ class WorkspaceEntityStatus(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
     PROVISIONING_ACCOUNT = "ProvisioningAccount"
     UPDATING = "Updating"
 
-class WorkspaceSkuNameEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    """The name of the SKU.
-    """
+
+class WorkspaceSkuNameEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The name of the SKU."""
 
     FREE = "Free"
     STANDARD = "Standard"

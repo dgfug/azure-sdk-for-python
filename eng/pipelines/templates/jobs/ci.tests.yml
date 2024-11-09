@@ -29,11 +29,11 @@ parameters:
   - name: InjectedPackages
     type: string
     default: ''
+  - name: DependsOn
+    type: object
+    default: []
   - name: Matrix
     type: string
-  - name: DependsOn
-    type: string
-    default: ''
   - name: UsePlatformContainer
     type: boolean
     default: false
@@ -43,6 +43,8 @@ parameters:
   - name: TestProxy
     type: boolean
     default: false
+  - name: OSName
+    type: string
 
 jobs:
   - job:
@@ -56,18 +58,20 @@ jobs:
     timeoutInMinutes: ${{ parameters.TestTimeoutInMinutes }}
 
     dependsOn:
-       - ${{ parameters.DependsOn }}
+      - ${{ parameters.DependsOn }}
 
     strategy:
       matrix: $[ ${{ parameters.Matrix }} ]
 
     pool:
       name: $(Pool)
-      vmImage: $(OSVmImage)
-
-    ${{ if eq(parameters.UsePlatformContainer, 'true') }}:
-      # Add a default so the job doesn't fail when the matrix is empty
-      container: $[ variables['Container'] ]
+      # 1es pipeline templates converts `image` to demands: ImageOverride under the hood
+      # which is incompatible with image selection in the default non-1es hosted pools
+      ${{ if eq(parameters.OSName, 'macOS') }}:
+        vmImage: $(OSVmImage)
+      ${{ else }}:
+        image: $(OSVmImage)
+      os: ${{ parameters.OSName }}
 
     variables:
     - template: ../variables/globals.yml
@@ -75,19 +79,30 @@ jobs:
       value: ${{ parameters.InjectedPackages }}
 
     steps:
-    - template: /eng/pipelines/templates/steps/targeting-string-resolve.yml
+    - template: /eng/pipelines/templates/steps/download-package-artifacts.yml
+
+    - template: /eng/pipelines/templates/steps/resolve-package-targeting.yml
       parameters:
         BuildTargetingString: ${{ parameters.BuildTargetingString }}
+        PackagePropertiesFolder: $(Build.ArtifactStagingDirectory)/PackageInfo
 
     - template: /eng/common/pipelines/templates/steps/verify-agent-os.yml
       parameters:
-        AgentImage: $(OSVmImage)
+        AgentImage: ${{ parameters.OSName }}
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.10'
 
     - template: /eng/common/pipelines/templates/steps/set-test-pipeline-version.yml
       parameters:
         PackageName: "azure-template"
         ServiceDirectory: "template"
         TestPipeline: ${{ parameters.TestPipeline }}
+
+    - pwsh: |
+        python -m pip install "tools/azure-sdk-tools[build]"
+      displayName: Install build tooling
 
     - task: PythonScript@0
       displayName: 'Set Tox Environment'
@@ -100,10 +115,8 @@ jobs:
 
     - template: ../steps/build-test.yml
       parameters:
-        ServiceDirectory: ${{ parameters.ServiceDirectory }}
         TestMarkArgument: ${{ parameters.TestMarkArgument }}
         AdditionalTestArgs: '--wheel_dir="$(Build.ArtifactStagingDirectory)"'
-        OSVmImage: $(OSVmImage)
         CoverageArg: $(CoverageArg)
         PythonVersion: $(PythonVersion)
         ToxTestEnv: $(toxenv)
@@ -111,15 +124,6 @@ jobs:
         InjectedPackages: $(InjectedPackages)
         TestProxy: ${{ parameters.TestProxy }}
         BeforeTestSteps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifactName: 'packages'
-              targetPath: $(Build.ArtifactStagingDirectory)
-
-          - template: ../steps/set-dev-build.yml
-            parameters:
-              ServiceDirectory: ${{ parameters.ServiceDirectory }}
-          
           - ${{ each step in parameters.BeforeTestSteps }}:
             -  ${{ step }}
         AfterTestSteps: ${{ parameters.AfterTestSteps }}

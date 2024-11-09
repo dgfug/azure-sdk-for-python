@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines,too-many-statements
 # coding=utf-8
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -6,26 +7,35 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 import datetime
-import functools
-from typing import Any, Callable, Dict, Generic, Iterable, Optional, TypeVar
-import warnings
+from typing import Any, Callable, Dict, Iterable, Optional, TypeVar
+import urllib.parse
 
-from azure.core.exceptions import ClientAuthenticationError, HttpResponseError, ResourceExistsError, ResourceNotFoundError, map_error
+from azure.core.exceptions import (
+    ClientAuthenticationError,
+    HttpResponseError,
+    ResourceExistsError,
+    ResourceNotFoundError,
+    ResourceNotModifiedError,
+    map_error,
+)
 from azure.core.paging import ItemPaged
 from azure.core.pipeline import PipelineResponse
 from azure.core.pipeline.transport import HttpResponse
 from azure.core.rest import HttpRequest
 from azure.core.tracing.decorator import distributed_trace
+from azure.core.utils import case_insensitive_dict
 from azure.mgmt.core.exceptions import ARMErrorFormat
-from msrest import Serializer
 
 from .. import models as _models
-from .._vendor import _convert_request, _format_url_section
-T = TypeVar('T')
+from .._serialization import Serializer
+from .._vendor import ApiManagementClientMixinABC, _convert_request
+
+T = TypeVar("T")
 ClsType = Optional[Callable[[PipelineResponse[HttpRequest, HttpResponse], T, Dict[str, Any]], Any]]
 
 _SERIALIZER = Serializer()
 _SERIALIZER.client_side_validation = False
+
 
 def build_list_by_api_request(
     resource_group_name: str,
@@ -38,40 +48,48 @@ def build_list_by_api_request(
     orderby: Optional[str] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byApi')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byApi",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
     if orderby is not None:
-        query_parameters['$orderby'] = _SERIALIZER.query("orderby", orderby, 'str')
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$orderby"] = _SERIALIZER.query("orderby", orderby, "str")
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_user_request(
@@ -85,40 +103,48 @@ def build_list_by_user_request(
     orderby: Optional[str] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byUser')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byUser",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
     if orderby is not None:
-        query_parameters['$orderby'] = _SERIALIZER.query("orderby", orderby, 'str')
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$orderby"] = _SERIALIZER.query("orderby", orderby, "str")
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_operation_request(
@@ -132,40 +158,48 @@ def build_list_by_operation_request(
     orderby: Optional[str] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byOperation')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byOperation",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
     if orderby is not None:
-        query_parameters['$orderby'] = _SERIALIZER.query("orderby", orderby, 'str')
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$orderby"] = _SERIALIZER.query("orderby", orderby, "str")
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_product_request(
@@ -179,40 +213,48 @@ def build_list_by_product_request(
     orderby: Optional[str] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byProduct')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byProduct",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
     if orderby is not None:
-        query_parameters['$orderby'] = _SERIALIZER.query("orderby", orderby, 'str')
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$orderby"] = _SERIALIZER.query("orderby", orderby, "str")
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_geo_request(
@@ -225,38 +267,46 @@ def build_list_by_geo_request(
     skip: Optional[int] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byGeo')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byGeo",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_subscription_request(
@@ -270,40 +320,48 @@ def build_list_by_subscription_request(
     orderby: Optional[str] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/bySubscription')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/bySubscription",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
     if orderby is not None:
-        query_parameters['$orderby'] = _SERIALIZER.query("orderby", orderby, 'str')
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$orderby"] = _SERIALIZER.query("orderby", orderby, "str")
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_time_request(
@@ -318,41 +376,49 @@ def build_list_by_time_request(
     orderby: Optional[str] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byTime')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byTime",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
     if orderby is not None:
-        query_parameters['$orderby'] = _SERIALIZER.query("orderby", orderby, 'str')
-    query_parameters['interval'] = _SERIALIZER.query("interval", interval, 'duration')
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$orderby"] = _SERIALIZER.query("orderby", orderby, "str")
+    _params["interval"] = _SERIALIZER.query("interval", interval, "duration")
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
 
 def build_list_by_request_request(
@@ -365,60 +431,66 @@ def build_list_by_request_request(
     skip: Optional[int] = None,
     **kwargs: Any
 ) -> HttpRequest:
-    api_version = "2021-08-01"
-    accept = "application/json"
+    _headers = case_insensitive_dict(kwargs.pop("headers", {}) or {})
+    _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+    api_version: str = kwargs.pop("api_version", _params.pop("api-version", "2022-08-01"))
+    accept = _headers.pop("Accept", "application/json")
+
     # Construct URL
-    url = kwargs.pop("template_url", '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byRequest')
+    _url = kwargs.pop(
+        "template_url",
+        "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byRequest",
+    )  # pylint: disable=line-too-long
     path_format_arguments = {
-        "resourceGroupName": _SERIALIZER.url("resource_group_name", resource_group_name, 'str'),
-        "serviceName": _SERIALIZER.url("service_name", service_name, 'str', max_length=50, min_length=1, pattern=r'^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'),
-        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, 'str'),
+        "resourceGroupName": _SERIALIZER.url(
+            "resource_group_name", resource_group_name, "str", max_length=90, min_length=1
+        ),
+        "serviceName": _SERIALIZER.url(
+            "service_name",
+            service_name,
+            "str",
+            max_length=50,
+            min_length=1,
+            pattern=r"^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$",
+        ),
+        "subscriptionId": _SERIALIZER.url("subscription_id", subscription_id, "str", min_length=1),
     }
 
-    url = _format_url_section(url, **path_format_arguments)
+    _url: str = _url.format(**path_format_arguments)  # type: ignore
 
     # Construct parameters
-    query_parameters = kwargs.pop("params", {})  # type: Dict[str, Any]
-    query_parameters['$filter'] = _SERIALIZER.query("filter", filter, 'str')
+    _params["$filter"] = _SERIALIZER.query("filter", filter, "str")
     if top is not None:
-        query_parameters['$top'] = _SERIALIZER.query("top", top, 'int', minimum=1)
+        _params["$top"] = _SERIALIZER.query("top", top, "int", minimum=1)
     if skip is not None:
-        query_parameters['$skip'] = _SERIALIZER.query("skip", skip, 'int', minimum=0)
-    query_parameters['api-version'] = _SERIALIZER.query("api_version", api_version, 'str')
+        _params["$skip"] = _SERIALIZER.query("skip", skip, "int", minimum=0)
+    _params["api-version"] = _SERIALIZER.query("api_version", api_version, "str")
 
     # Construct headers
-    header_parameters = kwargs.pop("headers", {})  # type: Dict[str, Any]
-    header_parameters['Accept'] = _SERIALIZER.header("accept", accept, 'str')
+    _headers["Accept"] = _SERIALIZER.header("accept", accept, "str")
 
-    return HttpRequest(
-        method="GET",
-        url=url,
-        params=query_parameters,
-        headers=header_parameters,
-        **kwargs
-    )
+    return HttpRequest(method="GET", url=_url, params=_params, headers=_headers, **kwargs)
 
-class ReportsOperations(object):
-    """ReportsOperations operations.
 
-    You should not instantiate this class directly. Instead, you should create a Client instance that
-    instantiates it for you and attaches it as an attribute.
+class ReportsOperations:
+    """
+    .. warning::
+        **DO NOT** instantiate this class directly.
 
-    :ivar models: Alias to model classes used in this operation group.
-    :type models: ~api_management_client.models
-    :param client: Client for service requests.
-    :param config: Configuration of service client.
-    :param serializer: An object model serializer.
-    :param deserializer: An object model deserializer.
+        Instead, you should access the following operations through
+        :class:`~azure.mgmt.apimanagement.ApiManagementClient`'s
+        :attr:`reports` attribute.
     """
 
     models = _models
 
-    def __init__(self, client, config, serializer, deserializer):
-        self._client = client
-        self._serialize = serializer
-        self._deserialize = deserializer
-        self._config = config
+    def __init__(self, *args, **kwargs):
+        input_args = list(args)
+        self._client = input_args.pop(0) if input_args else kwargs.pop("client")
+        self._config = input_args.pop(0) if input_args else kwargs.pop("config")
+        self._serialize = input_args.pop(0) if input_args else kwargs.pop("serializer")
+        self._deserialize = input_args.pop(0) if input_args else kwargs.pop("deserializer")
 
     @distributed_trace
     def list_by_api(
@@ -430,35 +502,45 @@ class ReportsOperations(object):
         skip: Optional[int] = None,
         orderby: Optional[str] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by API.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
-        :param filter: The filter to apply on the operation.
+        :param filter: The filter to apply on the operation. Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :param orderby: OData order by query option.
+        :param orderby: OData order by query option. Default value is None.
         :type orderby: str
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_api_request(
+
+                _request = build_list_by_api_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
@@ -466,39 +548,45 @@ class ReportsOperations(object):
                     top=top,
                     skip=skip,
                     orderby=orderby,
-                    template_url=self.list_by_api.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_api_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    orderby=orderby,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -508,11 +596,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_api.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byApi'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_user(
@@ -524,12 +608,13 @@ class ReportsOperations(object):
         skip: Optional[int] = None,
         orderby: Optional[str] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by User.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
@@ -544,27 +629,37 @@ class ReportsOperations(object):
          </br>| apiTimeAvg | select, orderBy |     |     | </br>| apiTimeMin | select |     |     |
          </br>| apiTimeMax | select |     |     | </br>| serviceTimeAvg | select |     |     | </br>|
          serviceTimeMin | select |     |     | </br>| serviceTimeMax | select |     |     | </br>.
+         Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :param orderby: OData order by query option.
+        :param orderby: OData order by query option. Default value is None.
         :type orderby: str
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_user_request(
+
+                _request = build_list_by_user_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
@@ -572,39 +667,45 @@ class ReportsOperations(object):
                     top=top,
                     skip=skip,
                     orderby=orderby,
-                    template_url=self.list_by_user.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_user_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    orderby=orderby,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -614,11 +715,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_user.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byUser'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_operation(
@@ -630,12 +727,13 @@ class ReportsOperations(object):
         skip: Optional[int] = None,
         orderby: Optional[str] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by API Operations.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
@@ -650,27 +748,37 @@ class ReportsOperations(object):
          </br>| apiTimeAvg | select, orderBy |     |     | </br>| apiTimeMin | select |     |     |
          </br>| apiTimeMax | select |     |     | </br>| serviceTimeAvg | select |     |     | </br>|
          serviceTimeMin | select |     |     | </br>| serviceTimeMax | select |     |     | </br>.
+         Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :param orderby: OData order by query option.
+        :param orderby: OData order by query option. Default value is None.
         :type orderby: str
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_operation_request(
+
+                _request = build_list_by_operation_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
@@ -678,39 +786,45 @@ class ReportsOperations(object):
                     top=top,
                     skip=skip,
                     orderby=orderby,
-                    template_url=self.list_by_operation.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_operation_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    orderby=orderby,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -720,11 +834,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_operation.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byOperation'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_product(
@@ -736,12 +846,13 @@ class ReportsOperations(object):
         skip: Optional[int] = None,
         orderby: Optional[str] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by Product.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
@@ -755,27 +866,37 @@ class ReportsOperations(object):
          </br>| apiTimeAvg | select, orderBy |     |     | </br>| apiTimeMin | select |     |     |
          </br>| apiTimeMax | select |     |     | </br>| serviceTimeAvg | select |     |     | </br>|
          serviceTimeMin | select |     |     | </br>| serviceTimeMax | select |     |     | </br>.
+         Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :param orderby: OData order by query option.
+        :param orderby: OData order by query option. Default value is None.
         :type orderby: str
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_product_request(
+
+                _request = build_list_by_product_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
@@ -783,39 +904,45 @@ class ReportsOperations(object):
                     top=top,
                     skip=skip,
                     orderby=orderby,
-                    template_url=self.list_by_product.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_product_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    orderby=orderby,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -825,11 +952,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_product.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byProduct'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_geo(
@@ -840,12 +963,13 @@ class ReportsOperations(object):
         top: Optional[int] = None,
         skip: Optional[int] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by geography.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
@@ -859,64 +983,80 @@ class ReportsOperations(object):
          cacheMissCount | select |     |     | </br>| apiTimeAvg | select |     |     | </br>|
          apiTimeMin | select |     |     | </br>| apiTimeMax | select |     |     | </br>|
          serviceTimeAvg | select |     |     | </br>| serviceTimeMin | select |     |     | </br>|
-         serviceTimeMax | select |     |     | </br>.
+         serviceTimeMax | select |     |     | </br>. Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_geo_request(
+
+                _request = build_list_by_geo_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
                     filter=filter,
                     top=top,
                     skip=skip,
-                    template_url=self.list_by_geo.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_geo_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -926,11 +1066,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_geo.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byGeo'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_subscription(
@@ -942,12 +1078,13 @@ class ReportsOperations(object):
         skip: Optional[int] = None,
         orderby: Optional[str] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by subscription.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
@@ -961,27 +1098,37 @@ class ReportsOperations(object):
          | </br>| apiTimeAvg | select, orderBy |     |     | </br>| apiTimeMin | select |     |     |
          </br>| apiTimeMax | select |     |     | </br>| serviceTimeAvg | select |     |     | </br>|
          serviceTimeMin | select |     |     | </br>| serviceTimeMax | select |     |     | </br>.
+         Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :param orderby: OData order by query option.
+        :param orderby: OData order by query option. Default value is None.
         :type orderby: str
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_subscription_request(
+
+                _request = build_list_by_subscription_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
@@ -989,39 +1136,45 @@ class ReportsOperations(object):
                     top=top,
                     skip=skip,
                     orderby=orderby,
-                    template_url=self.list_by_subscription.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_subscription_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    orderby=orderby,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -1031,11 +1184,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_subscription.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/bySubscription'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_time(
@@ -1048,12 +1197,13 @@ class ReportsOperations(object):
         skip: Optional[int] = None,
         orderby: Optional[str] = None,
         **kwargs: Any
-    ) -> Iterable["_models.ReportCollection"]:
+    ) -> Iterable["_models.ReportRecordContract"]:
         """Lists report records by Time.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
@@ -1066,33 +1216,42 @@ class ReportsOperations(object):
          cacheHitsCount | select |     |     | </br>| cacheMissCount | select |     |     | </br>|
          apiTimeAvg | select |     |     | </br>| apiTimeMin | select |     |     | </br>| apiTimeMax |
          select |     |     | </br>| serviceTimeAvg | select |     |     | </br>| serviceTimeMin |
-         select |     |     | </br>| serviceTimeMax | select |     |     | </br>.
+         select |     |     | </br>| serviceTimeMax | select |     |     | </br>. Required.
         :type filter: str
         :param interval: By time interval. Interval must be multiple of 15 minutes and may not be zero.
          The value should be in ISO  8601 format (http://en.wikipedia.org/wiki/ISO_8601#Durations).This
          code can be used to convert TimeSpan to a valid interval string: XmlConvert.ToString(new
-         TimeSpan(hours, minutes, seconds)).
+         TimeSpan(hours, minutes, seconds)). Required.
         :type interval: ~datetime.timedelta
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :param orderby: OData order by query option.
+        :param orderby: OData order by query option. Default value is None.
         :type orderby: str
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either ReportCollection or the result of cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.ReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :return: An iterator like instance of either ReportRecordContract or the result of
+         cls(response)
+        :rtype: ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.ReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.ReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.ReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_time_request(
+
+                _request = build_list_by_time_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
@@ -1101,40 +1260,45 @@ class ReportsOperations(object):
                     top=top,
                     skip=skip,
                     orderby=orderby,
-                    template_url=self.list_by_time.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_time_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    interval=interval,
-                    top=top,
-                    skip=skip,
-                    orderby=orderby,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("ReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return deserialized.next_link or None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -1144,11 +1308,7 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_time.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byTime'}  # type: ignore
+        return ItemPaged(get_next, extract_data)
 
     @distributed_trace
     def list_by_request(
@@ -1159,76 +1319,93 @@ class ReportsOperations(object):
         top: Optional[int] = None,
         skip: Optional[int] = None,
         **kwargs: Any
-    ) -> Iterable["_models.RequestReportCollection"]:
+    ) -> Iterable["_models.RequestReportRecordContract"]:
         """Lists report records by Request.
 
-        :param resource_group_name: The name of the resource group.
+        :param resource_group_name: The name of the resource group. The name is case insensitive.
+         Required.
         :type resource_group_name: str
-        :param service_name: The name of the API Management service.
+        :param service_name: The name of the API Management service. Required.
         :type service_name: str
         :param filter: |   Field     |     Usage     |     Supported operators     |     Supported
          functions     |</br>|-------------|-------------|-------------|-------------|</br>| timestamp |
          filter | ge, le |     | </br>| apiId | filter | eq |     | </br>| operationId | filter | eq |
          | </br>| productId | filter | eq |     | </br>| userId | filter | eq |     | </br>| apiRegion |
-         filter | eq |     | </br>| subscriptionId | filter | eq |     | </br>.
+         filter | eq |     | </br>| subscriptionId | filter | eq |     | </br>. Required.
         :type filter: str
-        :param top: Number of records to return.
+        :param top: Number of records to return. Default value is None.
         :type top: int
-        :param skip: Number of records to skip.
+        :param skip: Number of records to skip. Default value is None.
         :type skip: int
-        :keyword callable cls: A custom type or function that will be passed the direct response
-        :return: An iterator like instance of either RequestReportCollection or the result of
+        :return: An iterator like instance of either RequestReportRecordContract or the result of
          cls(response)
-        :rtype: ~azure.core.paging.ItemPaged[~api_management_client.models.RequestReportCollection]
-        :raises: ~azure.core.exceptions.HttpResponseError
+        :rtype:
+         ~azure.core.paging.ItemPaged[~azure.mgmt.apimanagement.models.RequestReportRecordContract]
+        :raises ~azure.core.exceptions.HttpResponseError:
         """
-        cls = kwargs.pop('cls', None)  # type: ClsType["_models.RequestReportCollection"]
+        _headers = kwargs.pop("headers", {}) or {}
+        _params = case_insensitive_dict(kwargs.pop("params", {}) or {})
+
+        api_version: str = kwargs.pop("api_version", _params.pop("api-version", self._config.api_version))
+        cls: ClsType[_models.RequestReportCollection] = kwargs.pop("cls", None)
+
         error_map = {
-            401: ClientAuthenticationError, 404: ResourceNotFoundError, 409: ResourceExistsError
+            401: ClientAuthenticationError,
+            404: ResourceNotFoundError,
+            409: ResourceExistsError,
+            304: ResourceNotModifiedError,
         }
-        error_map.update(kwargs.pop('error_map', {}))
+        error_map.update(kwargs.pop("error_map", {}) or {})
+
         def prepare_request(next_link=None):
             if not next_link:
-                
-                request = build_list_by_request_request(
+
+                _request = build_list_by_request_request(
                     resource_group_name=resource_group_name,
                     service_name=service_name,
                     subscription_id=self._config.subscription_id,
                     filter=filter,
                     top=top,
                     skip=skip,
-                    template_url=self.list_by_request.metadata['url'],
+                    api_version=api_version,
+                    headers=_headers,
+                    params=_params,
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
 
             else:
-                
-                request = build_list_by_request_request(
-                    resource_group_name=resource_group_name,
-                    service_name=service_name,
-                    subscription_id=self._config.subscription_id,
-                    filter=filter,
-                    top=top,
-                    skip=skip,
-                    template_url=next_link,
+                # make call to next link with the client's api-version
+                _parsed_next_link = urllib.parse.urlparse(next_link)
+                _next_request_params = case_insensitive_dict(
+                    {
+                        key: [urllib.parse.quote(v) for v in value]
+                        for key, value in urllib.parse.parse_qs(_parsed_next_link.query).items()
+                    }
                 )
-                request = _convert_request(request)
-                request.url = self._client.format_url(request.url)
-                request.method = "GET"
-            return request
+                _next_request_params["api-version"] = self._config.api_version
+                _request = HttpRequest(
+                    "GET", urllib.parse.urljoin(next_link, _parsed_next_link.path), params=_next_request_params
+                )
+                _request = _convert_request(_request)
+                _request.url = self._client.format_url(_request.url)
+                _request.method = "GET"
+            return _request
 
         def extract_data(pipeline_response):
             deserialized = self._deserialize("RequestReportCollection", pipeline_response)
             list_of_elem = deserialized.value
             if cls:
-                list_of_elem = cls(list_of_elem)
+                list_of_elem = cls(list_of_elem)  # type: ignore
             return None, iter(list_of_elem)
 
         def get_next(next_link=None):
-            request = prepare_request(next_link)
+            _request = prepare_request(next_link)
 
-            pipeline_response = self._client._pipeline.run(request, stream=False, **kwargs)
+            _stream = False
+            pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+                _request, stream=_stream, **kwargs
+            )
             response = pipeline_response.http_response
 
             if response.status_code not in [200]:
@@ -1238,8 +1415,4 @@ class ReportsOperations(object):
 
             return pipeline_response
 
-
-        return ItemPaged(
-            get_next, extract_data
-        )
-    list_by_request.metadata = {'url': '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/reports/byRequest'}  # type: ignore
+        return ItemPaged(get_next, extract_data)

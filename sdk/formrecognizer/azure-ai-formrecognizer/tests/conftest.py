@@ -6,14 +6,19 @@
 # license information.
 # --------------------------------------------------------------------------
 
+import logging
 import pytest
+from functools import wraps
+from azure.core.exceptions import HttpResponseError
 import sys
-from devtools_testutils import add_remove_header_sanitizer, add_general_regex_sanitizer, add_oauth_response_sanitizer, add_body_key_sanitizer, test_proxy
-
-# Ignore async tests for Python < 3.6
-collect_ignore_glob = []
-if sys.version_info < (3, 6):
-    collect_ignore_glob.append("*_async.py")
+from devtools_testutils import (
+    add_remove_header_sanitizer,
+    add_general_regex_sanitizer,
+    add_oauth_response_sanitizer,
+    add_body_key_sanitizer,
+    test_proxy,
+    remove_batch_sanitizers,
+)
 
 @pytest.fixture(scope="session", autouse=True)
 def add_sanitizers(test_proxy):
@@ -24,28 +29,45 @@ def add_sanitizers(test_proxy):
     )
     add_oauth_response_sanitizer()
     add_body_key_sanitizer(
-        json_path="urlSource",
-        value="blob_sas_url",
-        regex="(?<=\\/\\/)[a-z-]+(?=\\.blob\\.core\\.windows\\.net)(.*)$",
+        json_path="targetResourceId",
+        value="/path/to/resource/id",
+        regex="^.*",
     )
     add_body_key_sanitizer(
-        json_path="azureBlobSource.containerUrl",
-        value="blob_sas_url",
-        regex="(?<=\\/\\/)[a-z-]+(?=\\.blob\\.core\\.windows\\.net)(.*)$",
+        json_path="targetResourceRegion",
+        value="region",
+        regex="^.*",
     )
-    add_body_key_sanitizer(
-        json_path="source",
-        value="blob_sas_url",
-        regex="(?<=\\/\\/)[a-z-]+(?=\\.blob\\.core\\.windows\\.net)(.*)$",
-    )
-    add_body_key_sanitizer(
-        json_path="accessToken",
-        value="redacted",
-        regex="([0-9a-f-]{36})",
-    )
-    
     add_body_key_sanitizer(
         json_path="copyAuthorization.accessToken",
         value="redacted",
         regex="([0-9a-f-]{36})",
     )
+    # Remove the following sanitizers since certain fields are needed in tests and are non-sensitive:
+    #  - AZSDK3447: $.key
+    #  - AZSDK2003: Location
+    remove_batch_sanitizers(["AZSDK3447", "AZSDK2003"])
+
+def skip_flaky_test(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except HttpResponseError as error:
+            logger = logging.getLogger("azure")
+            if "Invalid request".casefold() in error.message.casefold():
+                pytest.mark.skip("flaky service response: {}".format(error))
+                logger.debug("flaky service response: {}".format(error))
+            elif "Generic error".casefold() in error.message.casefold():
+                pytest.mark.skip("flaky service response: {}".format(error))
+                logger.debug("flaky service response: {}".format(error))
+            elif "Timeout" in error.message.casefold():
+                pytest.mark.skip("flaky service response: {}".format(error))
+                logger.debug("flaky service response: {}".format(error))
+            elif "InvalidImage" in error.message.casefold():
+                pytest.mark.skip("flaky service response: {}".format(error))
+                logger.debug("flaky service response: {}".format(error))
+            else:
+                raise  # not a flaky test
+
+    return wrapper

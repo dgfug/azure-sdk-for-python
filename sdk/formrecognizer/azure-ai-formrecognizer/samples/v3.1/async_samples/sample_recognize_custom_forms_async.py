@@ -22,7 +22,7 @@ USAGE:
     python sample_recognize_custom_forms_async.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_FORM_RECOGNIZER_ENDPOINT - the endpoint to your Cognitive Services resource.
+    1) AZURE_FORM_RECOGNIZER_ENDPOINT - the endpoint to your Form Recognizer  resource.
     2) AZURE_FORM_RECOGNIZER_KEY - your Form Recognizer API key
     3) CUSTOM_TRAINED_MODEL_ID - the ID of your custom trained model
         -OR-
@@ -124,9 +124,11 @@ async def main():
             endpoint=endpoint, credential=AzureKeyCredential(key)
         )
         async with form_training_client:
-            model = await (await form_training_client.begin_training(
-                os.getenv("CONTAINER_SAS_URL_V2"), use_training_labels=True)).result()
-            model_id = model.model_id
+            container_sas_url = os.getenv("CONTAINER_SAS_URL_V2")
+            if container_sas_url is not None:
+                model = await (await form_training_client.begin_training(
+                    container_sas_url, use_training_labels=True)).result()
+                model_id = model.model_id
 
     await sample.recognize_custom_forms(model_id)
 

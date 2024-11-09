@@ -14,22 +14,20 @@ USAGE:
     python sample_analyze_healthcare_entities_with_cancellation.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_TEXT_ANALYTICS_ENDPOINT - the endpoint to your Cognitive Services resource.
-    2) AZURE_TEXT_ANALYTICS_KEY - your Text Analytics subscription key
+    1) AZURE_LANGUAGE_ENDPOINT - the endpoint to your Language resource.
+    2) AZURE_LANGUAGE_KEY - your Language subscription key
 """
 
 
-import os
-from azure.core.exceptions import HttpResponseError
-
-
-def sample_analyze_healthcare_entities_with_cancellation():
+def sample_analyze_healthcare_entities_with_cancellation() -> None:
     # [START analyze_healthcare_entities_with_cancellation]
+    import os
+    from azure.core.exceptions import HttpResponseError
     from azure.core.credentials import AzureKeyCredential
     from azure.ai.textanalytics import TextAnalyticsClient
 
-    endpoint = os.environ["AZURE_TEXT_ANALYTICS_ENDPOINT"]
-    key = os.environ["AZURE_TEXT_ANALYTICS_KEY"]
+    endpoint = os.environ["AZURE_LANGUAGE_ENDPOINT"]
+    key = os.environ["AZURE_LANGUAGE_KEY"]
 
     text_analytics_client = TextAnalyticsClient(
         endpoint=endpoint,
@@ -55,9 +53,7 @@ def sample_analyze_healthcare_entities_with_cancellation():
     poller = text_analytics_client.begin_analyze_healthcare_entities(documents)
 
     try:
-        cancellation_poller = poller.cancel()
-        cancellation_poller.wait()
-
+        poller.cancel()
     except HttpResponseError as e:
         # If the operation has already reached a terminal state it cannot be cancelled.
         print(e)

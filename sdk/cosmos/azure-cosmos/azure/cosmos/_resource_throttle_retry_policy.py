@@ -32,13 +32,14 @@ class ResourceThrottleRetryPolicy(object):
         self._fixed_retry_interval_in_milliseconds = fixed_retry_interval_in_milliseconds
         self._max_wait_time_in_milliseconds = max_wait_time_in_seconds * 1000
         self.current_retry_attempt_count = 0
-        self.cummulative_wait_time_in_milliseconds = 0
+        self.cumulative_wait_time_in_milliseconds = 0
 
     def ShouldRetry(self, exception):
-        """Returns true if should retry based on the passed-in exception.
+        """Returns true if the request should retry based on the passed-in exception.
 
-        :param (exceptions.CosmosHttpResponseError instance) exception:
-        :rtype: boolean
+        :param exceptions.CosmosHttpResponseError exception:
+        :returns: a boolean stating whether the request should be retried
+        :rtype: bool
         """
         if self.current_retry_attempt_count < self._max_retry_attempt_count:
             self.current_retry_attempt_count += 1
@@ -53,8 +54,8 @@ class ResourceThrottleRetryPolicy(object):
                     exception.headers[http_constants.HttpHeaders.RetryAfterInMilliseconds]
                 )
 
-            if self.cummulative_wait_time_in_milliseconds < self._max_wait_time_in_milliseconds:
-                self.cummulative_wait_time_in_milliseconds += self.retry_after_in_milliseconds
+            if self.cumulative_wait_time_in_milliseconds < self._max_wait_time_in_milliseconds:
+                self.cumulative_wait_time_in_milliseconds += self.retry_after_in_milliseconds
                 return True
 
         return False

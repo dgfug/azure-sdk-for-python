@@ -41,14 +41,9 @@ async def sample_translation_with_custom_model_async():
 
     client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
 
-    
-
     async with client:
         poller = await client.begin_translation(
-            source_container_url,
-            target_container_url,
-            "es",
-            category_id=custom_model_id
+            source_container_url, target_container_url, "es", category_id=custom_model_id
         )
         result = await poller.result()
 
@@ -68,12 +63,13 @@ async def sample_translation_with_custom_model_async():
                 print(f"Source document location: {document.source_document_url}")
                 print(f"Translated document location: {document.translated_document_url}")
                 print(f"Translated to language: {document.translated_to}\n")
-            else:
+            elif document.error:
                 print(f"Error Code: {document.error.code}, Message: {document.error.message}\n")
 
 
 async def main():
     await sample_translation_with_custom_model_async()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())

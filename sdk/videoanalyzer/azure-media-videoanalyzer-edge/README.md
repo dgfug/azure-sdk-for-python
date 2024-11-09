@@ -1,5 +1,7 @@
 # Azure Video Analyzer Edge client library for Python
 
+Deprecated. We’re retiring the Azure Video Analyzer preview service, you're advised to transition your applications off of Video Analyzer by 01 December 2022. This SDK is not longer maintained.
+
 Azure Video Analyzer is an [Azure Applied AI Service][applied-ai-service] that provides a platform for you to build intelligent video applications that can span both edge and cloud infrastructures. The platform offers the capability to capture, record, and analyze live video along with publishing the results, video and video analytics, to Azure services at the edge or in the cloud. It is designed to be an extensible platform, enabling you to connect different video inferencing edge modules such as Cognitive services modules, or custom inferencing modules that have been trained with your own data using either open-source machine learning or [Azure Machine Learning][machine-learning].
 
 Use the client library for Video Analyzer Edge to:
@@ -7,7 +9,7 @@ Use the client library for Video Analyzer Edge to:
 - Simplify interactions with the [Microsoft Azure IoT SDKs](https://github.com/azure/azure-iot-sdks)
 - Programmatically construct pipeline topologies and live pipelines
 
-[Package (PyPI)][package] | [Product documentation][doc_product] | [Direct methods][doc_direct_methods] | [Pipelines][doc_pipelines] | [Source code][source] | [Samples][samples]
+[Package (PyPI)][package] | [Product documentation][doc_product] | [Direct methods][doc_direct_methods] | [Archived MS Docs][doc_pipelines] | [Source code][source] | [Samples][samples]
 
 ## Getting started
 
@@ -21,7 +23,7 @@ pip install azure-media-videoanalyzer-edge
 
 ### Prerequisites
 
-- Python 2.7, or 3.6 or later is required to use this package.
+- 3.6 or later is required to use this package.
 - You need an active [Azure subscription][azure_sub], and a IoT device connection string to use this package.
 - To interact with Azure IoT Hub you will need to run `pip install azure-iot-hub`
 - You will need to use the version of the SDK that corresponds to the version of the Video Analyzer Edge module you are using.
@@ -140,12 +142,12 @@ additional questions or comments.
 [code_of_conduct]: https://opensource.microsoft.com/codeofconduct/
 [coc_faq]: https://opensource.microsoft.com/codeofconduct/faq/
 [coc_contact]: mailto:opencode@microsoft.com
-[doc_pipelines]: https://go.microsoft.com/fwlink/?linkid=2162396
+[doc_pipelines]: https://github.com/MicrosoftDocs/azure-docs/blob/4ba87bedc7b17a32903c99afb3ca4163be0dcc90/articles/azure-video-analyzer/video-analyzer-docs/overview.md
 [package]: https://aka.ms/ava/sdk/client/python
 [source]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/videoanalyzer
 [samples]: https://go.microsoft.com/fwlink/?linkid=2162278
-[doc_product]: https://go.microsoft.com/fwlink/?linkid=2162396
-[doc_direct_methods]: https://go.microsoft.com/fwlink/?linkid=2162396
+[doc_product]: https://github.com/MicrosoftDocs/azure-docs/blob/4ba87bedc7b17a32903c99afb3ca4163be0dcc90/articles/azure-video-analyzer/video-analyzer-docs/overview.md
+[doc_direct_methods]: https://github.com/MicrosoftDocs/azure-docs/blob/4ba87bedc7b17a32903c99afb3ca4163be0dcc90/articles/azure-video-analyzer/video-analyzer-docs/overview.md
 [iot-device-sdk]: https://pypi.org/project/azure-iot-device/
 [iot-hub-sdk]: https://pypi.org/project/azure-iot-hub/
 [github-page-issues]: https://github.com/Azure/azure-sdk-for-python/issues

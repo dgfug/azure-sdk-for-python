@@ -1,5 +1,120 @@
 # Release History
 
+## 18.0.0 (2024-09-25)
+
+### Features Added
+
+  - Client `BatchManagementClient` added operation group `network_security_perimeter`
+  - Model `Application` added parameter `tags` in method `__init__`
+  - Model `ApplicationPackage` added parameter `tags` in method `__init__`
+  - Model `Certificate` added parameter `tags` in method `__init__`
+  - Model `CertificateCreateOrUpdateParameters` added parameter `tags` in method `__init__`
+  - Model `DetectorResponse` added parameter `tags` in method `__init__`
+  - Model `ImageReference` added property `shared_gallery_image_id`
+  - Model `ImageReference` added property `community_gallery_image_id`
+  - Model `ManagedDisk` added property `security_profile`
+  - Model `Pool` added parameter `tags` in method `__init__`
+  - Model `PrivateEndpointConnection` added parameter `tags` in method `__init__`
+  - Model `PrivateLinkResource` added parameter `tags` in method `__init__`
+  - Model `ProxyResource` added property `system_data`
+  - Model `ProxyResource` added property `additional_properties`
+  - Enum `PublicNetworkAccessType` added member `SECURED_BY_PERIMETER`
+  - Model `Resource` added property `system_data`
+  - Model `TaskContainerSettings` added property `container_host_batch_bind_mounts`
+  - Added model `AccessRule`
+  - Added enum `AccessRuleDirection`
+  - Added model `AccessRuleProperties`
+  - Added model `AccessRulePropertiesSubscriptionsItem`
+  - Added model `AzureProxyResource`
+  - Added model `AzureResource`
+  - Added model `ContainerHostBatchBindMountEntry`
+  - Added enum `ContainerHostDataPath`
+  - Added enum `CreatedByType`
+  - Added model `ErrorAdditionalInfo`
+  - Added model `ErrorDetail`
+  - Added model `ErrorResponse`
+  - Added enum `IssueType`
+  - Added model `NetworkSecurityPerimeter`
+  - Added model `NetworkSecurityPerimeterConfiguration`
+  - Added model `NetworkSecurityPerimeterConfigurationListResult`
+  - Added model `NetworkSecurityPerimeterConfigurationProperties`
+  - Added enum `NetworkSecurityPerimeterConfigurationProvisioningState`
+  - Added model `NetworkSecurityProfile`
+  - Added model `ProvisioningIssue`
+  - Added model `ProvisioningIssueProperties`
+  - Added model `ResourceAssociation`
+  - Added enum `ResourceAssociationAccessMode`
+  - Added enum `SecurityEncryptionTypes`
+  - Added enum `SecurityTypes`
+  - Added enum `Severity`
+  - Added model `SystemData`
+  - Added model `VMDiskSecurityProfile`
+  - Added model `NetworkSecurityPerimeterOperations`
+
+### Breaking Changes
+
+  - Model `DeploymentConfiguration` deleted or renamed its instance variable `cloud_service_configuration`
+  - Model `ProxyResource` deleted or renamed its instance variable `etag`
+  - Model `Resource` deleted or renamed its instance variable `location`
+  - Model `Resource` deleted or renamed its instance variable `tags`
+  - Deleted or renamed model `CloudServiceConfiguration`
+  - Deleted or renamed method `LocationOperations.list_supported_cloud_service_skus`
+
+## 17.3.0 (2024-03-19)
+
+### Features Added
+
+  - Model Pool has a new parameter upgrade_policy
+  - Model SupportedSku has a new parameter batch_support_end_of_life
+
+## 17.2.0 (2023-12-18)
+
+### Features Added
+
+  - Model OSDisk has a new parameter caching
+  - Model OSDisk has a new parameter disk_size_gb
+  - Model OSDisk has a new parameter managed_disk
+  - Model OSDisk has a new parameter write_accelerator_enabled
+  - Model Pool has a new parameter resource_tags
+  - Model VirtualMachineConfiguration has a new parameter security_profile
+  - Model VirtualMachineConfiguration has a new parameter service_artifact_reference
+
+## 17.1.0 (2023-07-21)
+
+### Features Added
+
+  - Model NetworkConfiguration has a new parameter enable_accelerated_networking
+  - Model VMExtension has a new parameter enable_automatic_upgrade
+  - Model ContainerConfiguration allows two possible values: `dockerCompatible` and `criCompatible` instead of fixed value `dockerCompatible`
+
+## 17.0.0 (2022-11-23)
+
+### Features Added
+
+  - Model NetworkConfiguration has a new parameter dynamic_vnet_assignment_scope
+  - Model Pool has a new parameter current_node_communication_mode
+  - Model Pool has a new parameter target_node_communication_mode
+  - Model PrivateLinkServiceConnectionState has a new parameter actions_required
+
+### Breaking Changes
+
+  - Model CIFSMountConfiguration has a new required parameter user_name
+  - Model CIFSMountConfiguration no longer has parameter username
+  - Model NetworkConfiguration no longer has parameter dynamic_v_net_assignment_scope
+  - Model PrivateLinkServiceConnectionState no longer has parameter action_required
+
+## 16.2.0 (2022-06-06)
+
+**Features**
+
+  - Added operation PrivateEndpointConnectionOperations.begin_delete
+  - Model BatchAccount has a new parameter network_profile
+  - Model BatchAccount has a new parameter node_management_endpoint
+  - Model BatchAccountCreateParameters has a new parameter network_profile
+  - Model BatchAccountUpdateParameters has a new parameter network_profile
+  - Model BatchAccountUpdateParameters has a new parameter public_network_access
+  - Model PrivateEndpointConnection has a new parameter group_ids
+
 ## 16.1.0 (2022-02-24)
 
 **Features**

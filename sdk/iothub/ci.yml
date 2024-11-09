@@ -27,6 +27,7 @@ extends:
   template: ../../eng/pipelines/templates/stages/archetype-sdk-client.yml
   parameters:
     ServiceDirectory: iothub
+    TestProxy: true
     Artifacts:
     - name: azure-mgmt-iothub
       safeName: azuremgmtiothub
@@ -34,3 +35,5 @@ extends:
       safeName: azuremgmtiothubprovisioningservices
     - name: azure-mgmt-iotcentral
       safeName: azuremgmtiotcentral
+    - name: azure-iot-deviceprovisioning
+      safeName: azureiotdeviceprovisioning

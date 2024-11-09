@@ -1,0 +1,5 @@
+[tool.azure-sdk-build]
+type_check_samples = false
+pyright = false
+pylint = true
+bandit = true

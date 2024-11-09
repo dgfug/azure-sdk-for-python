@@ -1,5 +1,115 @@
 # Release History
 
+## 4.0.0 (2023-07-21)
+
+### Features Added
+
+  - Added operation RoleAssignmentScheduleRequestsOperations.validate
+  - Added operation RoleEligibilityScheduleRequestsOperations.validate
+  - Model AlertConfiguration has a new parameter alert_definition
+  - Model AlertConfigurationProperties has a new parameter alert_definition
+  - Model AlertOperationResult has a new parameter created_date_time
+  - Model AlertOperationResult has a new parameter last_action_date_time
+  - Model AlertOperationResult has a new parameter resource_location
+  - Model AlertOperationResult has a new parameter status_detail
+  - Model AzureRolesAssignedOutsidePimAlertConfigurationProperties has a new parameter alert_definition
+  - Model DenyAssignment has a new parameter condition
+  - Model DenyAssignment has a new parameter condition_version
+  - Model DenyAssignment has a new parameter created_by
+  - Model DenyAssignment has a new parameter created_on
+  - Model DenyAssignment has a new parameter updated_by
+  - Model DenyAssignment has a new parameter updated_on
+  - Model DuplicateRoleCreatedAlertConfigurationProperties has a new parameter alert_definition
+  - Model Permission has a new parameter condition
+  - Model Permission has a new parameter condition_version
+  - Model RoleDefinition has a new parameter created_by
+  - Model RoleDefinition has a new parameter created_on
+  - Model RoleDefinition has a new parameter updated_by
+  - Model RoleDefinition has a new parameter updated_on
+  - Model TooManyOwnersAssignedToResourceAlertConfigurationProperties has a new parameter alert_definition
+  - Model TooManyPermanentOwnersAssignedToResourceAlertConfigurationProperties has a new parameter alert_definition
+
+### Breaking Changes
+
+  - Removed operation AlertOperationOperations.list_for_scope
+
+## 3.1.0b1 (2023-02-15)
+
+### Features Added
+
+  - Model AlertConfiguration has a new parameter alert_definition
+  - Model AlertConfigurationProperties has a new parameter alert_definition
+  - Model AzureRolesAssignedOutsidePimAlertConfigurationProperties has a new parameter alert_definition
+  - Model DenyAssignment has a new parameter condition
+  - Model DenyAssignment has a new parameter condition_version
+  - Model DenyAssignment has a new parameter created_by
+  - Model DenyAssignment has a new parameter created_on
+  - Model DenyAssignment has a new parameter updated_by
+  - Model DenyAssignment has a new parameter updated_on
+  - Model DuplicateRoleCreatedAlertConfigurationProperties has a new parameter alert_definition
+  - Model RoleDefinition has a new parameter created_by
+  - Model RoleDefinition has a new parameter created_on
+  - Model RoleDefinition has a new parameter updated_by
+  - Model RoleDefinition has a new parameter updated_on
+  - Model TooManyOwnersAssignedToResourceAlertConfigurationProperties has a new parameter alert_definition
+  - Model TooManyPermanentOwnersAssignedToResourceAlertConfigurationProperties has a new parameter alert_definition
+
+## 3.0.0 (2022-10-11)
+
+### Features Added
+
+  - Added operation AccessReviewInstancesOperations.create
+  - Added operation group AccessReviewHistoryDefinitionInstanceOperations
+  - Added operation group AccessReviewHistoryDefinitionInstancesOperations
+  - Added operation group AccessReviewHistoryDefinitionOperations
+  - Added operation group AccessReviewHistoryDefinitionsOperations
+  - Added operation group AccessReviewInstanceContactedReviewersOperations
+  - Added operation group AlertConfigurationsOperations
+  - Added operation group AlertDefinitionsOperations
+  - Added operation group AlertIncidentsOperations
+  - Added operation group AlertOperationOperations
+  - Added operation group AlertsOperations
+  - Added operation group ScopeAccessReviewDefaultSettingsOperations
+  - Added operation group ScopeAccessReviewHistoryDefinitionInstanceOperations
+  - Added operation group ScopeAccessReviewHistoryDefinitionInstancesOperations
+  - Added operation group ScopeAccessReviewHistoryDefinitionOperations
+  - Added operation group ScopeAccessReviewHistoryDefinitionsOperations
+  - Added operation group ScopeAccessReviewInstanceContactedReviewersOperations
+  - Added operation group ScopeAccessReviewInstanceDecisionsOperations
+  - Added operation group ScopeAccessReviewInstanceOperations
+  - Added operation group ScopeAccessReviewInstancesOperations
+  - Added operation group ScopeAccessReviewScheduleDefinitionsOperations
+  - Added operation group TenantLevelAccessReviewInstanceContactedReviewersOperations
+  - Model AccessReviewDecision has a new parameter insights
+  - Model AccessReviewDecision has a new parameter membership_types
+  - Model AccessReviewDecisionProperties has a new parameter insights
+  - Model AccessReviewDecisionProperties has a new parameter membership_types
+  - Model AccessReviewDefaultSettings has a new parameter recommendation_look_back_duration
+  - Model AccessReviewInstance has a new parameter backup_reviewers
+  - Model AccessReviewInstance has a new parameter reviewers
+  - Model AccessReviewInstance has a new parameter reviewers_type
+  - Model AccessReviewScheduleDefinition has a new parameter exclude_resource_id
+  - Model AccessReviewScheduleDefinition has a new parameter exclude_role_definition_id
+  - Model AccessReviewScheduleDefinition has a new parameter expand_nested_memberships
+  - Model AccessReviewScheduleDefinition has a new parameter include_access_below_resource
+  - Model AccessReviewScheduleDefinition has a new parameter include_inherited_access
+  - Model AccessReviewScheduleDefinition has a new parameter recommendation_look_back_duration
+  - Model AccessReviewScheduleDefinitionProperties has a new parameter exclude_resource_id
+  - Model AccessReviewScheduleDefinitionProperties has a new parameter exclude_role_definition_id
+  - Model AccessReviewScheduleDefinitionProperties has a new parameter expand_nested_memberships
+  - Model AccessReviewScheduleDefinitionProperties has a new parameter include_access_below_resource
+  - Model AccessReviewScheduleDefinitionProperties has a new parameter include_inherited_access
+  - Model AccessReviewScheduleDefinitionProperties has a new parameter recommendation_look_back_duration
+  - Model AccessReviewScheduleSettings has a new parameter recommendation_look_back_duration
+  - Model DenyAssignmentPermission has a new parameter condition
+  - Model DenyAssignmentPermission has a new parameter condition_version
+
+### Breaking Changes
+
+  - Operation RoleAssignmentsOperations.list_for_scope has a new parameter skip_token
+  - Removed operation RoleAssignmentsOperations.validate
+  - Removed operation RoleAssignmentsOperations.validate_by_id
+
 ## 2.0.0 (2021-09-26)
 
 **Features**

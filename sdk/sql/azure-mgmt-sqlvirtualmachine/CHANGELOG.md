@@ -1,5 +1,40 @@
 # Release History
 
+## 1.0.0b6 (2023-06-16)
+
+### Other Changes
+
+  - Regular release
+
+## 1.0.0b5 (2023-01-17)
+
+### Features Added
+
+  - Added operation group SqlVirtualMachineTroubleshootOperations
+  - Model ServerConfigurationsManagementSettings has a new parameter azure_ad_authentication_settings
+  - Model SqlVirtualMachine has a new parameter troubleshooting_status
+
+## 1.0.0b4 (2022-09-26)
+
+### Features Added
+
+  - Model AvailabilityGroupListener has a new parameter multi_subnet_ip_configurations
+  - Model SQLInstanceSettings has a new parameter is_ifi_enabled
+  - Model SQLInstanceSettings has a new parameter is_lpim_enabled
+  - Model SQLTempDbSettings has a new parameter persist_folder
+  - Model SQLTempDbSettings has a new parameter persist_folder_path
+  - Model SqlVirtualMachine has a new parameter enable_automatic_upgrade
+  - Model SqlVirtualMachine has a new parameter least_privilege_mode
+  - Model SqlVirtualMachine has a new parameter wsfc_static_ip
+  - Model WsfcDomainProfile has a new parameter cluster_subnet_type
+
+## 1.0.0b3 (2022-06-06)
+
+**Features**
+
+  - Added model AssessmentDayOfWeek
+  - Added model AutoBackupDaysOfWeek
+
 ## 1.0.0b2 (2022-03-02)
 
 **Features**

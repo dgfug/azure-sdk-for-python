@@ -1,5 +1,78 @@
 # Release History
 
+## 10.3.1 (2024-07-16)
+
+### Other Changes
+
+  - Fix docstring
+
+## 10.3.0 (2023-10-23)
+
+### Features Added
+
+  - Model MHSMPrivateEndpointConnection has a new parameter identity
+  - Model MHSMPrivateLinkResource has a new parameter identity
+  - Model ManagedHsm has a new parameter identity
+  - Model ManagedHsmResource has a new parameter identity
+
+## 10.2.3 (2023-07-25)
+
+### Bugs Fixed
+
+  - Do not use configured api_version to relpace the value in nextLink for `VaultsOperation.list`
+
+## 10.2.2 (2023-05-24)
+
+### Other Changes
+
+  - Added default value back for model Sku.family to avoid breaking
+
+## 10.2.1 (2023-04-03)
+
+### Bugs Fixed
+
+  - Seal enum which has single value as constant by default to avoid breaking change
+
+## 10.2.0 (2023-03-13)
+
+### Features Added
+
+  - Added operation group MHSMRegionsOperations
+  - Added operation group ManagedHsmKeysOperations
+  - Model ManagedHsmProperties has a new parameter regions
+  - Model ManagedHsmProperties has a new parameter security_domain_properties
+
+## 10.2.0b1 (2023-02-14)
+
+### Features Added
+
+  - Model ManagedHsmProperties has a new parameter security_domain_properties
+
+## 10.1.0 (2022-08-10)
+
+### Features Added
+
+  - Added operation ManagedHsmsOperations.check_mhsm_name_availability
+  - Model Key has a new parameter release_policy
+  - Model Key has a new parameter rotation_policy
+  - Model KeyProperties has a new parameter release_policy
+  - Model KeyProperties has a new parameter rotation_policy
+  - Model MHSMPrivateEndpointConnectionItem has a new parameter etag
+  - Model MHSMPrivateEndpointConnectionItem has a new parameter id
+
+### Other Changes
+
+  - Python 3.6 is no longer supported. Please use Python version 3.7 or later.
+
+## 10.0.0 (2022-05-24)
+
+**Breaking changes**
+
+  - Model Key no longer has parameter release_policy
+  - Model Key no longer has parameter rotation_policy
+  - Model KeyProperties no longer has parameter release_policy
+  - Model KeyProperties no longer has parameter rotation_policy
+
 ## 9.3.0 (2021-11-11)
 
 **Features**

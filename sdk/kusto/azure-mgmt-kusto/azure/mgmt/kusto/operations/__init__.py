@@ -8,11 +8,14 @@
 
 from ._clusters_operations import ClustersOperations
 from ._cluster_principal_assignments_operations import ClusterPrincipalAssignmentsOperations
+from ._skus_operations import SkusOperations
 from ._databases_operations import DatabasesOperations
 from ._attached_database_configurations_operations import AttachedDatabaseConfigurationsOperations
 from ._managed_private_endpoints_operations import ManagedPrivateEndpointsOperations
+from ._database_operations import DatabaseOperations
 from ._database_principal_assignments_operations import DatabasePrincipalAssignmentsOperations
 from ._scripts_operations import ScriptsOperations
+from ._sandbox_custom_images_operations import SandboxCustomImagesOperations
 from ._private_endpoint_connections_operations import PrivateEndpointConnectionsOperations
 from ._private_link_resources_operations import PrivateLinkResourcesOperations
 from ._data_connections_operations import DataConnectionsOperations
@@ -20,18 +23,27 @@ from ._operations import Operations
 from ._operations_results_operations import OperationsResultsOperations
 from ._operations_results_location_operations import OperationsResultsLocationOperations
 
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
+
 __all__ = [
-    'ClustersOperations',
-    'ClusterPrincipalAssignmentsOperations',
-    'DatabasesOperations',
-    'AttachedDatabaseConfigurationsOperations',
-    'ManagedPrivateEndpointsOperations',
-    'DatabasePrincipalAssignmentsOperations',
-    'ScriptsOperations',
-    'PrivateEndpointConnectionsOperations',
-    'PrivateLinkResourcesOperations',
-    'DataConnectionsOperations',
-    'Operations',
-    'OperationsResultsOperations',
-    'OperationsResultsLocationOperations',
+    "ClustersOperations",
+    "ClusterPrincipalAssignmentsOperations",
+    "SkusOperations",
+    "DatabasesOperations",
+    "AttachedDatabaseConfigurationsOperations",
+    "ManagedPrivateEndpointsOperations",
+    "DatabaseOperations",
+    "DatabasePrincipalAssignmentsOperations",
+    "ScriptsOperations",
+    "SandboxCustomImagesOperations",
+    "PrivateEndpointConnectionsOperations",
+    "PrivateLinkResourcesOperations",
+    "DataConnectionsOperations",
+    "Operations",
+    "OperationsResultsOperations",
+    "OperationsResultsLocationOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

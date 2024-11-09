@@ -26,11 +26,13 @@ sys.path.append("..")
 
 class SmsSingleRecipientSample(object):
 
-    connection_string = os.getenv("COMMUNICATION_SAMPLES_CONNECTION_STRING")
-    phone_number = os.getenv("AZURE_PHONE_NUMBER")
+    connection_string = os.getenv("COMMUNICATION_LIVETEST_STATIC_CONNECTION_STRING")
+    phone_number = os.getenv("SMS_PHONE_NUMBER")
     
     def send_sms_to_single_recipient(self):
+        # [START auth_from_connection_string]
         sms_client = SmsClient.from_connection_string(self.connection_string)
+        # [END auth_from_connection_string]
 
         # calling send() with sms values
         sms_responses = sms_client.send(

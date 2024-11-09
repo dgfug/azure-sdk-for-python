@@ -1,0 +1,6 @@
+-e ../../../tools/azure-sdk-tools
+../../identity/azure-identity
+aiohttp
+openai
+pillow
+pydantic

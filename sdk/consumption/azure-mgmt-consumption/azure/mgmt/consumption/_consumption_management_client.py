@@ -7,22 +7,42 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
 
-from . import models
+from . import models as _models
 from ._configuration import ConsumptionManagementClientConfiguration
-from .operations import AggregatedCostOperations, BalancesOperations, BudgetsOperations, ChargesOperations, CreditsOperations, EventsOperations, LotsOperations, MarketplacesOperations, Operations, PriceSheetOperations, ReservationRecommendationDetailsOperations, ReservationRecommendationsOperations, ReservationTransactionsOperations, ReservationsDetailsOperations, ReservationsSummariesOperations, TagsOperations, UsageDetailsOperations
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    AggregatedCostOperations,
+    BalancesOperations,
+    BudgetsOperations,
+    ChargesOperations,
+    CreditsOperations,
+    EventsOperations,
+    LotsOperations,
+    MarketplacesOperations,
+    Operations,
+    PriceSheetOperations,
+    ReservationRecommendationDetailsOperations,
+    ReservationRecommendationsOperations,
+    ReservationTransactionsOperations,
+    ReservationsDetailsOperations,
+    ReservationsSummariesOperations,
+    TagsOperations,
+    UsageDetailsOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials import TokenCredential
 
-class ConsumptionManagementClient:
-    """Consumption management client provides access to consumption resources for Azure Enterprise Subscriptions.
+
+class ConsumptionManagementClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
+    """Consumption management client provides access to consumption resources for Azure Enterprise
+    Subscriptions.
 
     :ivar usage_details: UsageDetailsOperations operations
     :vartype usage_details: azure.mgmt.consumption.operations.UsageDetailsOperations
@@ -62,12 +82,15 @@ class ConsumptionManagementClient:
     :vartype lots: azure.mgmt.consumption.operations.LotsOperations
     :ivar credits: CreditsOperations operations
     :vartype credits: azure.mgmt.consumption.operations.CreditsOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: Azure Subscription ID.
+    :param subscription_id: Azure Subscription ID. Required.
     :type subscription_id: str
-    :param base_url: Service URL. Default value is 'https://management.azure.com'.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
+    :keyword api_version: Api Version. Default value is "2021-10-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
     """
 
     def __init__(
@@ -77,10 +100,12 @@ class ConsumptionManagementClient:
         base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        self._config = ConsumptionManagementClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
+        self._config = ConsumptionManagementClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
         self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
@@ -90,11 +115,21 @@ class ConsumptionManagementClient:
         self.tags = TagsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.charges = ChargesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.balances = BalancesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.reservations_summaries = ReservationsSummariesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.reservations_details = ReservationsDetailsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.reservation_recommendations = ReservationRecommendationsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.reservation_recommendation_details = ReservationRecommendationDetailsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.reservation_transactions = ReservationTransactionsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.reservations_summaries = ReservationsSummariesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.reservations_details = ReservationsDetailsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.reservation_recommendations = ReservationRecommendationsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.reservation_recommendation_details = ReservationRecommendationDetailsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.reservation_transactions = ReservationTransactionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.price_sheet = PriceSheetOperations(self._client, self._config, self._serialize, self._deserialize)
         self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
         self.aggregated_cost = AggregatedCostOperations(self._client, self._config, self._serialize, self._deserialize)
@@ -102,12 +137,7 @@ class ConsumptionManagementClient:
         self.lots = LotsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.credits = CreditsOperations(self._client, self._config, self._serialize, self._deserialize)
 
-
-    def _send_request(
-        self,
-        request,  # type: HttpRequest
-        **kwargs: Any
-    ) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
@@ -116,7 +146,7 @@ class ConsumptionManagementClient:
         >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -129,15 +159,12 @@ class ConsumptionManagementClient:
         request_copy.url = self._client.format_url(request_copy.url)
         return self._client.send_request(request_copy, **kwargs)
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> ConsumptionManagementClient
+    def __enter__(self) -> "ConsumptionManagementClient":
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details) -> None:
         self._client.__exit__(*exc_details)

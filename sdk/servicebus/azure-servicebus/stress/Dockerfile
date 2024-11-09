@@ -1,10 +1,10 @@
-# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/cbl-mariner/base/python:3
 
-FROM python:3.8-slim-buster
+RUN yum update -y && yum install -y ca-certificates
 
 WORKDIR /app
 
 COPY ./scripts /app/stress/scripts
 
 WORKDIR /app/stress/scripts
-RUN pip3 install -r dev_requirements.txt
+RUN pip install -r dev_requirements.txt

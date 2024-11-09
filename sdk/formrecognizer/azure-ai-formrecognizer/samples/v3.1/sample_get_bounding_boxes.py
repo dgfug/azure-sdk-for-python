@@ -20,7 +20,7 @@ USAGE:
     python sample_get_bounding_boxes.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_FORM_RECOGNIZER_ENDPOINT - the endpoint to your Cognitive Services resource.
+    1) AZURE_FORM_RECOGNIZER_ENDPOINT - the endpoint to your Form Recognizer resource.
     2) AZURE_FORM_RECOGNIZER_KEY - your Form Recognizer API key
     3) CUSTOM_TRAINED_MODEL_ID - the ID of your custom trained model
         -OR-
@@ -133,7 +133,9 @@ if __name__ == '__main__':
         form_training_client = FormTrainingClient(
             endpoint=endpoint, credential=AzureKeyCredential(key)
         )
-        model = form_training_client.begin_training(os.getenv("CONTAINER_SAS_URL_V2"), use_training_labels=False).result()
-        model_id = model.model_id
+        container_sas_url = os.getenv("CONTAINER_SAS_URL_V2")
+        if container_sas_url is not None:
+            model = form_training_client.begin_training(container_sas_url, use_training_labels=False).result()
+            model_id = model.model_id
 
     sample.get_bounding_boxes(model_id)

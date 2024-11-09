@@ -6,44 +6,52 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-try:
-    from ._models_py3 import Error
-    from ._models_py3 import Key
-    from ._models_py3 import KeyListResult
-    from ._models_py3 import KeyValue
-    from ._models_py3 import KeyValueListResult
-    from ._models_py3 import Label
-    from ._models_py3 import LabelListResult
-except (SyntaxError, ImportError):
-    from ._models import Error  # type: ignore
-    from ._models import Key  # type: ignore
-    from ._models import KeyListResult  # type: ignore
-    from ._models import KeyValue  # type: ignore
-    from ._models import KeyValueListResult  # type: ignore
-    from ._models import Label  # type: ignore
-    from ._models import LabelListResult  # type: ignore
+from ._models_py3 import Error
+from ._models_py3 import ErrorDetail
+from ._models_py3 import InnerError
+from ._models_py3 import Key
+from ._models_py3 import KeyListResult
+from ._models_py3 import KeyValue
+from ._models_py3 import KeyValueFilter
+from ._models_py3 import KeyValueListResult
+from ._models_py3 import Label
+from ._models_py3 import LabelListResult
+from ._models_py3 import OperationDetails
+from ._models_py3 import Snapshot
+from ._models_py3 import SnapshotListResult
+from ._models_py3 import SnapshotUpdateParameters
 
-from ._azure_app_configuration_enums import (
-    Enum4,
-    Enum5,
-    Get6ItemsItem,
-    Get7ItemsItem,
-    Head6ItemsItem,
-    Head7ItemsItem,
-)
+from ._azure_app_configuration_enums import ConfigurationSettingFields
+from ._azure_app_configuration_enums import LabelFields
+from ._azure_app_configuration_enums import SnapshotComposition
+from ._azure_app_configuration_enums import SnapshotFields
+from ._azure_app_configuration_enums import SnapshotStatus
+from ._azure_app_configuration_enums import State
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'Error',
-    'Key',
-    'KeyListResult',
-    'KeyValue',
-    'KeyValueListResult',
-    'Label',
-    'LabelListResult',
-    'Enum4',
-    'Enum5',
-    'Get6ItemsItem',
-    'Get7ItemsItem',
-    'Head6ItemsItem',
-    'Head7ItemsItem',
+    "Error",
+    "ErrorDetail",
+    "InnerError",
+    "Key",
+    "KeyListResult",
+    "KeyValue",
+    "KeyValueFilter",
+    "KeyValueListResult",
+    "Label",
+    "LabelListResult",
+    "OperationDetails",
+    "Snapshot",
+    "SnapshotListResult",
+    "SnapshotUpdateParameters",
+    "ConfigurationSettingFields",
+    "LabelFields",
+    "SnapshotComposition",
+    "SnapshotFields",
+    "SnapshotStatus",
+    "State",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

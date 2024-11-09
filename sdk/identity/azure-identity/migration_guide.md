@@ -20,7 +20,7 @@ equivalent using `azure-identity`.
 
 `azure-common` uses `ServicePrincipalCredentials` to authenticate a service principal:
 
-```py
+```python
 from azure.common.credentials import ServicePrincipalCredentials
 
 credential = ServicePrincipalCredentials(client_id, client_secret, tenant=tenant_id)
@@ -28,7 +28,7 @@ credential = ServicePrincipalCredentials(client_id, client_secret, tenant=tenant
 
 `azure-identity` uses [`ClientSecretCredential`][client_secret_cred] :
 
-```py
+```python
 from azure.identity import ClientSecretCredential
 
 credential = ClientSecretCredential(tenant_id, client_id, client_secret)
@@ -41,7 +41,7 @@ credential = ClientSecretCredential(tenant_id, client_id, client_secret)
 integrate with the Azure CLI for authentication. This code works with older
 versions of `azure-mgmt-resource` such as 10.0.0:
 
-```py
+```python
 from azure.common.client_factory import get_client_from_cli_profile
 from azure.mgmt.resource import SubscriptionClient
 
@@ -52,7 +52,7 @@ subscription_client = get_client_from_cli_profile(SubscriptionClient)
 [`AzureCliCredential`][cli_cred]. This code works with newer versions of
 `azure-mgmt-resource`, starting with 15.0.0:
 
-```py
+```python
 from azure.identity import AzureCliCredential
 from azure.mgmt.resource import SubscriptionClient
 
@@ -114,12 +114,12 @@ control -- for example, by adding the credential file name to your project's `.g
 
 The global documentation for authenticating Python apps on Azure is available [here][authenticate_docs].
 
-[authenticate_docs]: https://docs.microsoft.com/azure/developer/python/azure-sdk-authenticate?tabs=cmd
+[authenticate_docs]: https://learn.microsoft.com/azure/developer/python/sdk/authentication-overview?tabs=cmd
 [cli_cred]: https://aka.ms/azsdk/python/identity/docs#azure.identity.AzureCliCredential
-[client_from_json]: https://docs.microsoft.com/python/api/azure-common/azure.common.client_factory?view=azure-python#get-client-from-json-dict-client-class--config-dict----kwargs-
-[client_from_auth_file]: https://docs.microsoft.com/python/api/azure-common/azure.common.client_factory?view=azure-python#get-client-from-auth-file-client-class--auth-path-none----kwargs-
+[client_from_json]: https://learn.microsoft.com/python/api/azure-common/azure.common.client_factory?view=azure-python#get-client-from-json-dict-client-class--config-dict----kwargs-
+[client_from_auth_file]: https://learn.microsoft.com/python/api/azure-common/azure.common.client_factory?view=azure-python#get-client-from-auth-file-client-class--auth-path-none----kwargs-
 [client_secret_cred]: https://aka.ms/azsdk/python/identity/docs#azure.identity.ClientSecretCredential
-[get_client_from_cli_profile]: https://docs.microsoft.com/python/api/azure-common/azure.common.client_factory?view=azure-python#get-client-from-cli-profile-client-class----kwargs-
+[get_client_from_cli_profile]: https://learn.microsoft.com/python/api/azure-common/azure.common.client_factory?view=azure-python#get-client-from-cli-profile-client-class----kwargs-
 [json]: https://docs.python.org/3/library/json.html#json.load
 
 ![Impressions](https://azure-sdk-impressions.azurewebsites.net/api/impressions/azure-sdk-for-python%2Fsdk%2Fidentity%2Fazure-identity%2Fmigration_guide.png)

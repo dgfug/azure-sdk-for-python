@@ -6,10 +6,16 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from ._authorization_operations_operations import AuthorizationOperationsOperations
-from ._management_locks_operations import ManagementLocksOperations
+from ._operations import AuthorizationOperationsOperations
+from ._operations import ManagementLocksOperations
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'AuthorizationOperationsOperations',
-    'ManagementLocksOperations',
+    "AuthorizationOperationsOperations",
+    "ManagementLocksOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

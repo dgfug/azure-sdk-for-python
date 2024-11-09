@@ -1,10 +1,10 @@
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
-#--------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
-from azure_devtools.perfstress_tests import PerfStressTest
+from devtools_testutils.perfstress_tests import PerfStressTest
 
 from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
@@ -12,6 +12,7 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
 from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
+
 
 class MonitorExporterPerfTest(PerfStressTest):
     def __init__(self, arguments):
@@ -27,16 +28,14 @@ class MonitorExporterPerfTest(PerfStressTest):
         tracer = trace.get_tracer(__name__)
         self.spans_list = []
         for _ in range(self.args.num_spans):
-            with tracer.start_as_current_span(
-                name="name"
-            ) as span:
+            with tracer.start_as_current_span(name="name") as span:
                 self.spans_list.append(span)
 
     def run_sync(self):
         """The synchronous perf test.
-        
+
         Try to keep this minimal and focused. Using only a single client API.
-        Avoid putting any ancilliary logic (e.g. generating UUIDs), and put this in the setup/init instead
+        Avoid putting any ancillary logic (e.g. generating UUIDs), and put this in the setup/init instead
         so that we're only measuring the client API call.
         """
         self.exporter.export(self.spans_list)
@@ -44,4 +43,6 @@ class MonitorExporterPerfTest(PerfStressTest):
     @staticmethod
     def add_arguments(parser):
         super(MonitorExporterPerfTest, MonitorExporterPerfTest).add_arguments(parser)
-        parser.add_argument('-n', '--num-spans', nargs='?', type=int, help='Number of spans to be exported. Defaults to 10', default=10)
+        parser.add_argument(
+            "-n", "--num-spans", nargs="?", type=int, help="Number of spans to be exported. Defaults to 10", default=10
+        )

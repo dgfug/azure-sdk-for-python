@@ -17,6 +17,7 @@ from azure.core.pipeline import Pipeline, PipelineResponse
 from azure.core.pipeline.policies import HTTPPolicy
 from azure.core.pipeline.transport import HttpTransport
 from azure.core.settings import settings
+from azure.core.tracing import SpanKind
 from azure.core.tracing.decorator import distributed_trace
 from azure.core.tracing.decorator_async import distributed_trace_async
 from tracing_common import FakeSpan
@@ -55,7 +56,7 @@ class MockClient:
             return None
         response = self.pipeline.run(self.request, **kwargs)
         await self.get_foo(merge_span=True)
-        kwargs['merge_span'] = True
+        kwargs["merge_span"] = True
         await self.make_request(numb_times - 1, **kwargs)
         return response
 
@@ -76,8 +77,12 @@ class MockClient:
     async def check_name_is_different(self):
         time.sleep(0.001)
 
-    @distributed_trace_async(tracing_attributes={'foo': 'bar'})
-    async def tracing_attr(self):
+    @distributed_trace_async(tracing_attributes={"foo": "bar"})
+    async def tracing_attr(self, **kwargs):
+        time.sleep(0.001)
+
+    @distributed_trace_async(kind=SpanKind.PRODUCER)
+    async def kind_override(self):
         time.sleep(0.001)
 
     @distributed_trace_async
@@ -87,7 +92,6 @@ class MockClient:
 
 @pytest.mark.usefixtures("fake_span")
 class TestAsyncDecorator(object):
-
     @pytest.mark.asyncio
     @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
     async def test_decorator_tracing_attr(self, http_request):
@@ -98,8 +102,21 @@ class TestAsyncDecorator(object):
         assert len(parent.children) == 2
         assert parent.children[0].name == "MockClient.__init__"
         assert parent.children[1].name == "MockClient.tracing_attr"
-        assert parent.children[1].attributes == {'foo': 'bar'}
+        assert parent.children[1].kind == SpanKind.INTERNAL
+        assert parent.children[1].attributes == {"foo": "bar"}
 
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
+    async def test_decorator_tracing_attr_custom(self, http_request):
+        with FakeSpan(name="parent") as parent:
+            client = MockClient(http_request)
+            await client.tracing_attr(tracing_attributes={"biz": "baz"})
+
+        assert len(parent.children) == 2
+        assert parent.children[0].name == "MockClient.__init__"
+        assert parent.children[1].name == "MockClient.tracing_attr"
+        assert parent.children[1].kind == SpanKind.INTERNAL
+        assert parent.children[1].attributes == {"biz": "baz"}
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
@@ -110,7 +127,19 @@ class TestAsyncDecorator(object):
         assert len(parent.children) == 2
         assert parent.children[0].name == "MockClient.__init__"
         assert parent.children[1].name == "different name"
+        assert parent.children[1].kind == SpanKind.INTERNAL
 
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
+    async def test_kind_override(self, http_request):
+        with FakeSpan(name="parent") as parent:
+            client = MockClient(http_request)
+            await client.kind_override()
+
+        assert len(parent.children) == 2
+        assert parent.children[0].name == "MockClient.__init__"
+        assert parent.children[1].name == "MockClient.kind_override"
+        assert parent.children[1].kind == SpanKind.PRODUCER
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
@@ -128,7 +157,6 @@ class TestAsyncDecorator(object):
             assert parent.children[2].name == "MockClient.get_foo"
             assert not parent.children[2].children
 
-
     @pytest.mark.asyncio
     @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
     async def test_span_merge_span(self, http_request):
@@ -144,7 +172,6 @@ class TestAsyncDecorator(object):
         assert not parent.children[1].children
         assert parent.children[2].name == "MockClient.no_merge_span_method"
         assert parent.children[2].children[0].name == "MockClient.get_foo"
-
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
@@ -171,8 +198,7 @@ class TestAsyncDecorator(object):
     @pytest.mark.asyncio
     @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
     async def test_span_with_exception(self, http_request):
-        """Assert that if an exception is raised, the next sibling method is actually a sibling span.
-        """
+        """Assert that if an exception is raised, the next sibling method is actually a sibling span."""
         with FakeSpan(name="parent") as parent:
             client = MockClient(http_request)
             try:
@@ -185,5 +211,5 @@ class TestAsyncDecorator(object):
         assert parent.children[0].name == "MockClient.__init__"
         assert parent.children[1].name == "MockClient.raising_exception"
         # Exception should propagate status for Opencensus
-        assert parent.children[1].status == 'Something went horribly wrong here'
+        assert parent.children[1].status == "Something went horribly wrong here"
         assert parent.children[2].name == "MockClient.get_foo"

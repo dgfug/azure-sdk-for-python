@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 # ------------------------------------
-
+import warnings
 
 DEVELOPER_SIGN_ON_CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
 AZURE_VSCODE_CLIENT_ID = "aebc6443-996d-45c2-90f0-388ff96faa56"
@@ -10,10 +10,24 @@ VSCODE_CREDENTIALS_SECTION = "VS Code Azure"
 DEFAULT_REFRESH_OFFSET = 300
 DEFAULT_TOKEN_REFRESH_RETRY_DELAY = 30
 
+CACHE_NON_CAE_SUFFIX = ".nocae"  # cspell:disable-line
+CACHE_CAE_SUFFIX = ".cae"
 
-class AzureAuthorityHosts:
+
+class AzureAuthorityHostsMeta(type):
+    def __getattr__(cls, name):
+        if name == "AZURE_GERMANY":
+            warnings.warn(
+                "AZURE_GERMANY is deprecated. Microsoft Cloud Germany was closed on October 29th, 2021.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return "login.microsoftonline.de"
+        raise AttributeError(f"{name} not found in {cls.__name__}")
+
+
+class AzureAuthorityHosts(metaclass=AzureAuthorityHostsMeta):
     AZURE_CHINA = "login.chinacloudapi.cn"
-    AZURE_GERMANY = "login.microsoftonline.de"
     AZURE_GOVERNMENT = "login.microsoftonline.us"
     AZURE_PUBLIC_CLOUD = "login.microsoftonline.com"
 
@@ -29,6 +43,8 @@ class EnvironmentVariables:
     CLIENT_SECRET_VARS = (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID)
 
     AZURE_CLIENT_CERTIFICATE_PATH = "AZURE_CLIENT_CERTIFICATE_PATH"
+    AZURE_CLIENT_CERTIFICATE_PASSWORD = "AZURE_CLIENT_CERTIFICATE_PASSWORD"
+    AZURE_CLIENT_SEND_CERTIFICATE_CHAIN = "AZURE_CLIENT_SEND_CERTIFICATE_CHAIN"
     CERT_VARS = (AZURE_CLIENT_ID, AZURE_CLIENT_CERTIFICATE_PATH, AZURE_TENANT_ID)
 
     AZURE_USERNAME = "AZURE_USERNAME"
@@ -48,4 +64,4 @@ class EnvironmentVariables:
     AZURE_REGIONAL_AUTHORITY_NAME = "AZURE_REGIONAL_AUTHORITY_NAME"
 
     AZURE_FEDERATED_TOKEN_FILE = "AZURE_FEDERATED_TOKEN_FILE"
-    TOKEN_EXCHANGE_VARS = (AZURE_AUTHORITY_HOST, AZURE_TENANT_ID, AZURE_FEDERATED_TOKEN_FILE)
+    WORKLOAD_IDENTITY_VARS = (AZURE_AUTHORITY_HOST, AZURE_TENANT_ID, AZURE_FEDERATED_TOKEN_FILE)

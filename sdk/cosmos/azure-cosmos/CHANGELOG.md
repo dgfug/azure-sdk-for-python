@@ -1,14 +1,207 @@
 ## Release History
 
-### 4.3.0b4 (Unreleased)
+### 4.7.1 (Unreleased)
+This version and all future versions will support Python 3.13.
 
 #### Features Added
+* Added response headers directly to SDK item point operation responses. See [PR 35791](https://github.com/Azure/azure-sdk-for-python/pull/35791).
+* SDK will now retry all ServiceRequestErrors (failing outgoing requests) before failing. Default number of retries is 3. See [PR 36514](https://github.com/Azure/azure-sdk-for-python/pull/36514).
+* Added Retry Policy for Container Recreate in the Python SDK. See [PR 36043](https://github.com/Azure/azure-sdk-for-python/pull/36043)
+* Added option to disable write payload on writes. See [PR 37365](https://github.com/Azure/azure-sdk-for-python/pull/37365)
+* Added get feed ranges API. See [PR 37687](https://github.com/Azure/azure-sdk-for-python/pull/37687)
+* Added feed range support in `query_items_change_feed`. See [PR 37687](https://github.com/Azure/azure-sdk-for-python/pull/37687)
+* Added **provisional** helper APIs for managing session tokens. See [PR 36971](https://github.com/Azure/azure-sdk-for-python/pull/36971)
+* Added ability to get feed range for a partition key. See [PR 36971](https://github.com/Azure/azure-sdk-for-python/pull/36971)
 
 #### Breaking Changes
+* Item-level point operations will now return `CosmosDict` and `CosmosList` response types. 
+Responses will still be able to be used directly as previously, but will now have access to their response headers without need for a response hook. See [PR 35791](https://github.com/Azure/azure-sdk-for-python/pull/35791).
+For more information on this, see our README section [here](https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/cosmos/azure-cosmos/README.md#using-item-operation-response-headers).
 
 #### Bugs Fixed
+* Consolidated Container Properties Cache to be in the Client to cache partition key definition and container rid to avoid unnecessary container reads. See [PR 35731](https://github.com/Azure/azure-sdk-for-python/pull/35731).
+* Fixed bug with client hangs when running into WriteForbidden exceptions. See [PR 36514](https://github.com/Azure/azure-sdk-for-python/pull/36514).
+* Added retry handling logic for DatabaseAccountNotFound exceptions. See [PR 36514](https://github.com/Azure/azure-sdk-for-python/pull/36514).
+* Fixed SDK regex validation that would not allow for item ids to be longer than 255 characters. See [PR 36569](https://github.com/Azure/azure-sdk-for-python/pull/36569).
+* Fixed issue where 'NoneType' object has no attribute error was raised when a session retry happened during a query. See [PR 37578](https://github.com/Azure/azure-sdk-for-python/pull/37578).
+* Batch requests will now be properly considered as Write operation. See [PR 38365](https://github.com/Azure/azure-sdk-for-python/pull/38365).
 
 #### Other Changes
+* Getting offer thoughput when it has not been defined in a container will now give a 404/10004 instead of just a 404. See [PR 36043](https://github.com/Azure/azure-sdk-for-python/pull/36043)
+* Incomplete Partition Key Extractions in documents for Subpartitioning now gives 400/1001 instead of just a 400. See [PR 36043](https://github.com/Azure/azure-sdk-for-python/pull/36043)
+* SDK will now make database account calls every 5 minutes to refresh location cache. See [PR 36514](https://github.com/Azure/azure-sdk-for-python/pull/36514).
+
+### 4.7.0 (2024-05-15)
+
+#### Features Added
+* Adds vector embedding policy and vector indexing policy. See [PR 34882](https://github.com/Azure/azure-sdk-for-python/pull/34882).
+* Adds support for vector search non-streaming order by queries. See [PR 35468](https://github.com/Azure/azure-sdk-for-python/pull/35468).
+* Adds support for using the start time option for change feed query API. See [PR 35090](https://github.com/Azure/azure-sdk-for-python/pull/35090).
+
+#### Bugs Fixed
+* Fixed a bug where change feed query in Async client was not returning all pages due to case-sensitive response headers. See [PR 35090](https://github.com/Azure/azure-sdk-for-python/pull/35090).
+* Fixed a bug when a retryable exception occurs in the first page of a query execution causing query to return 0 results. See [PR 35090](https://github.com/Azure/azure-sdk-for-python/pull/35090).
+
+### 4.6.1 (2024-05-15)
+
+### 4.6.0 (2024-03-14)
+
+#### Features Added
+* GA release of hierarchical partitioning, index metrics and transactional batch.
+
+#### Bugs Fixed
+* Keyword arguments were not being passed down for `create_container_if_not_exists()` methods. See [PR 34286](https://github.com/Azure/azure-sdk-for-python/pull/34286).
+
+#### Other Changes
+* Made several updates to the type hints used throughout the SDK for greater detail. See [PR 33269](https://github.com/Azure/azure-sdk-for-python/pull/33269), [PR 33341](https://github.com/Azure/azure-sdk-for-python/pull/33341), [PR 33738](https://github.com/Azure/azure-sdk-for-python/pull/33738).
+
+### 4.5.2b5 (2024-03-02)
+
+#### Bugs Fixed
+* Fixed bug with async lock not properly releasing on async global endpoint manager. see [PR 34579](https://github.com/Azure/azure-sdk-for-python/pull/34579).
+
+#### Other Changes
+* Marked `computed_properties` keyword as provisional, un-marked `continuation_token_limit` as provisional. See [PR 34207](https://github.com/Azure/azure-sdk-for-python/pull/34207).
+
+### 4.5.2b4 (2024-02-02)
+This version and all future versions will require Python 3.8+.
+
+#### Features Added
+* Added **preview** support for Computed Properties on Python SDK (Must be enabled on the account level before it can be used). See [PR 33626](https://github.com/Azure/azure-sdk-for-python/pull/33626).
+
+#### Bugs Fixed
+* Made use of `response_hook` thread-safe in the sync client. See [PR 33790](https://github.com/Azure/azure-sdk-for-python/pull/33790).
+* Fixed bug with the session container not being properly maintained. See [33738](https://github.com/Azure/azure-sdk-for-python/pull/33738).
+
+### 4.5.2b3 (2023-11-10)
+
+#### Features Added
+* Added support for capturing Index Metrics in query operations. See [PR 33034](https://github.com/Azure/azure-sdk-for-python/pull/33034).
+
+### 4.5.2b2 (2023-10-31)
+
+#### Features Added
+* Added support for Transactional Batch. See [PR 32508](https://github.com/Azure/azure-sdk-for-python/pull/32508).
+* Added **preview** support for Priority Based Throttling/Priority Based Execution (Must be enabled at the account level before it can be used). See [PR 32441](https://github.com/Azure/azure-sdk-for-python/pull/32441/).
+
+### 4.5.2b1 (2023-10-17)
+
+#### Features Added
+* Added support for Hierarchical Partitioning, also known as Subpartitioning. See [PR 31121](https://github.com/Azure/azure-sdk-for-python/pull/31121).
+
+#### Bugs Fixed
+* Small fix to the `offer_throughput` option in the async client's `create_database_if_not_exists` method, which was previously misspelled as `offerThroughput`.
+See [PR 32076](https://github.com/Azure/azure-sdk-for-python/pull/32076).
+
+#### Other Changes
+* Marked the outdated `diagnostics.py` file for deprecation since we now recommend the use of our `CosmosHttpLoggingPolicy` for diagnostics.
+For more on the `CosmosHttpLoggingPolicy` see our [README](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/cosmos/azure-cosmos#logging-diagnostics).
+
+### 4.5.1 (2023-09-12)
+
+#### Bugs Fixed
+* Fixed bug when query with DISTINCT + OFFSET/LIMIT operators returns unexpected result. See [PR 31925](https://github.com/Azure/azure-sdk-for-python/pull/31925).
+
+#### Other Changes
+* Added additional checks for resource creation using specific characters that cause issues. See [PR 31861](https://github.com/Azure/azure-sdk-for-python/pull/31861).
+
+### 4.5.0 (2023-08-09)
+
+#### Features Added
+* Added support for continuation tokens for streamable cross partition queries. See [PR 31189](https://github.com/Azure/azure-sdk-for-python/pull/31189).
+
+#### Bugs Fixed
+* Fixed bug with async `create_database_if_not_exists` method not working when passing `offer_throughput` as an option. See [PR 31478](https://github.com/Azure/azure-sdk-for-python/pull/31478).
+
+#### Other Changes
+* Renamed `response_continuation_token_limit_in_kb` to `continuation_token_limit` for GA. See [PR 31532](https://github.com/Azure/azure-sdk-for-python/pull/31532).
+
+### 4.4.1b1 (2023-07-25)
+
+#### Features Added
+* Added ability to limit continuation token size when querying for items. See [PR 30731](https://github.com/Azure/azure-sdk-for-python/pull/30731)
+
+#### Bugs Fixed
+* Fixed bug with async patch_item method. See [PR 30804](https://github.com/Azure/azure-sdk-for-python/pull/30804).
+
+### 4.4.0 (2023-06-09)
+
+#### Features Added
+- GA release of Patch API and Delete All Items By Partition Key
+
+### 4.4.0b2 (2023-05-22)
+
+#### Features Added
+* Added conditional patching for Patch operations. See [PR 30455](https://github.com/Azure/azure-sdk-for-python/pull/30455).
+
+#### Bugs Fixed
+* Fixed bug with non english locales causing an error with the RFC 1123 Date Format. See [PR 30125](https://github.com/Azure/azure-sdk-for-python/pull/30125).
+
+#### Other Changes
+* Refactoring of our client `connection_timeout` and `request_timeout` configurations. See [PR 30171](https://github.com/Azure/azure-sdk-for-python/pull/30171).
+
+### 4.4.0b1 (2023-04-11)
+
+#### Features Added
+ - Added **preview** delete all items by partition key functionality. See [PR 29186](https://github.com/Azure/azure-sdk-for-python/pull/29186). For more information on Partition Key Delete, please see [Azure Cosmos DB Partition Key Delete](https://learn.microsoft.com/azure/cosmos-db/nosql/how-to-delete-by-partition-key?tabs=python-example).
+ - Added **preview** partial document update (Patch API) functionality and container methods for patching items with operations. See [PR 29497](https://github.com/Azure/azure-sdk-for-python/pull/29497). For more information on Patch, please see [Azure Cosmos DB Partial Document Update](https://learn.microsoft.com/azure/cosmos-db/partial-document-update).
+
+#### Bugs Fixed
+* Fixed bug in method `create_container_if_not_exists()` of async database client for unexpected kwargs being passed into `read()` method used internally. See [PR 29136](https://github.com/Azure/azure-sdk-for-python/pull/29136).
+* Fixed bug with method `query_items()` of our async container class, where partition key and cross partition headers would both be set when using partition keys. See [PR 29366](https://github.com/Azure/azure-sdk-for-python/pull/29366/).
+* Fixed bug with client not properly surfacing errors for invalid credentials and identities with insufficient permissions. Users running into 'NoneType has no attribute ConsistencyPolicy' errors when initializing their clients will now see proper authentication exceptions. See [PR 29256](https://github.com/Azure/azure-sdk-for-python/pull/29256).
+
+#### Other Changes
+* Removed use of `six` package within the SDK.
+
+### 4.3.1 (2023-02-23)
+
+#### Features Added
+ - Added `correlated_activity_id` for query operations.
+ - Added cross regional retries for Service Unavailable/Request Timeouts for read/Query Plan operations.
+ - GA release of CosmosHttpLoggingPolicy and autoscale feature.
+
+#### Bugs Fixed
+- Bug fix to address queries with VALUE MAX (or any other aggregate) that run into an issue if the query is executed on a container with at least one "empty" partition.
+
+### 4.3.1b1 (2022-09-19)
+
+#### Features Added
+- GA release of integrated cache functionality. For more information on integrated cache please see [Azure Cosmos DB integrated cache](https://docs.microsoft.com/azure/cosmos-db/integrated-cache).
+- Added ability to replace analytical ttl on containers. For more information on analytical ttl please see [Azure Cosmos DB analytical store](https://docs.microsoft.com/azure/cosmos-db/analytical-store-introduction).
+- Added `CosmosHttpLoggingPolicy` to replace `HttpLoggingPolicy` for logging HTTP sessions.
+- Added the ability to create containers and databases with autoscale properties for the sync and async clients.
+- Added the ability to update autoscale throughput properties.
+
+#### Bugs Fixed
+- Fixed parsing of args for overloaded `container.read()` method.
+- Fixed `validate_cache_staleness_value()` method to allow max_integrated_cache_staleness to be an integer greater than or equal to 0.
+- Fixed `__aiter__()` method by removing the async keyword.
+
+### 4.3.0 (2022-05-23)
+#### Features Added
+- GA release of Async I/O APIs, including all changes from 4.3.0b1 to 4.3.0b4.
+
+#### Breaking Changes
+- Method signatures have been updated to use keyword arguments instead of positional arguments for most method options in the async client.
+- Bugfix: Automatic Id generation for items was turned on for `upsert_items()` method when no 'id' value was present in document body.
+Method call will now require an 'id' field to be present in the document body.
+
+#### Other Changes
+- Deprecated offer-named methods in favor of their new throughput-named counterparts (`read_offer` -> `get_throughput`).
+- Marked the GetAuthorizationHeader method for deprecation since it will no longer be public in a future release.
+- Added samples showing how to configure retry options for both the sync and async clients.
+- Deprecated the `connection_retry_policy` and `retry_options` options in the sync client.
+- Added user warning to non-query methods trying to use `populate_query_metrics` options.
+
+### 4.3.0b4 (2022-04-07)
+
+#### Features Added
+- Added support for AAD authentication for the async client.
+- Added support for AAD authentication for the sync client.
+
+#### Other Changes
+- Changed `_set_partition_key` return typehint in async client.
 
 ### 4.3.0b3 (2022-03-10)
 
@@ -23,9 +216,9 @@
 
 #### Features Added
 - Added new **provisional** `max_integrated_cache_staleness_in_ms` parameter to read item and query items APIs in order
-  to make use of the **preview** CosmosDB integrated cache functionality.
+  to make use of the **preview** CosmosDB integrated cache functionality [See PR #22946](https://github.com/Azure/azure-sdk-for-python/pull/22946).
   Please see [Azure Cosmos DB integrated cache](https://docs.microsoft.com/azure/cosmos-db/integrated-cache) for more details.
-- Added support for split-proof queries for the async client
+- Added support for split-proof queries for the async client.
 
 ### Bugs fixed
 - Default consistency level for the sync and async clients is no longer `Session` and will instead be set to the 
@@ -155,7 +348,7 @@ Version 4.0.0b2 is the second iteration in our efforts to build a more Pythonic 
     - `Database.read_all_users` -> `DatabaseProxy.list_users`
     - `User.read_all_permissions` -> `UserProxy.list_permissions`
 - All operations that take `request_options` or `feed_options` parameters, these have been moved to keyword only parameters. In addition, while these options dictionaries are still supported, each of the individual options within the dictionary are now supported as explicit keyword arguments.
-- The error heirarchy is now inherited from `azure.core.AzureError` instead of `CosmosError` which has been removed.
+- The error hierarchy is now inherited from `azure.core.AzureError` instead of `CosmosError` which has been removed.
     - `HTTPFailure` has been renamed to `CosmosHttpResponseError`
     - `JSONParseFailure` has been removed and replaced by `azure.core.DecodeError`
     - Added additional errors for specific response codes:
@@ -173,7 +366,7 @@ Version 4.0.0b1 is the first preview of our efforts to create a user-friendly an
 
 - Operations are now scoped to a particular client:
     - `CosmosClient`: This client handles account-level operations. This includes managing service properties and listing the databases within an account.
-    - `Database`: This client handles database-level operations. This includes creating and deleting containers, users and stored procedurs. It can be accessed from a `CosmosClient` instance by name.
+    - `Database`: This client handles database-level operations. This includes creating and deleting containers, users and stored procedures. It can be accessed from a `CosmosClient` instance by name.
     - `Container`: This client handles operations for a particular container. This includes querying and inserting items and managing properties.
     - `User`: This client handles operations for a particular user. This includes adding and deleting permissions and managing user properties.
     
@@ -262,10 +455,10 @@ Version 4.0.0b1 is the first preview of our efforts to create a user-friendly an
   By default, DocumentDB retries nine times for each request when error code 429 is encountered, honoring the retryAfter time in the response header.
   A fixed retry interval time can now be set as part of the RetryOptions property on the ConnectionPolicy object if you want to ignore the retryAfter time returned by server between the retries.
   DocumentDB now waits for a maximum of 30 seconds for each request that is being throttled (irrespective of retry count) and returns the response with error code 429.
-  This time can also be overriden in the RetryOptions property on ConnectionPolicy object.
+  This time can also be overridden in the RetryOptions property on ConnectionPolicy object.
 
 - DocumentDB now returns x-ms-throttle-retry-count and x-ms-throttle-retry-wait-time-ms as the response headers in every request to denote the throttle retry count
-  and the cummulative time the request waited between the retries.
+  and the cumulative time the request waited between the retries.
 
 - Removed the RetryPolicy class and the corresponding property (retry_policy) exposed on the document_client class and instead introduced a RetryOptions class
   exposing the RetryOptions property on ConnectionPolicy class that can be used to override some of the default retry options.

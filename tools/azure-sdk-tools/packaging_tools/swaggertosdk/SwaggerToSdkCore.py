@@ -8,22 +8,23 @@ import re
 import tempfile
 from pathlib import Path
 
-import requests
-
-from github import Github, UnknownObjectException
+from urllib3 import PoolManager, Retry
 
 from .autorest_tools import (
     autorest_latest_version_finder,
     autorest_bootstrap_version_finder,
     autorest_swagger_to_sdk_conf,
 )
-from azure_devtools.ci_tools.github_tools import get_files, GithubLink
+from ci_tools.github_tools import get_files, GithubLink
 
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_FILE = "swagger_to_sdk_config_autorest.json"
+CONFIG_FILE_DPG = "swagger_to_sdk_config_dpg.json"
 
 DEFAULT_COMMIT_MESSAGE = "Generated from {hexsha}"
+
+http_client = PoolManager(retries=Retry(total=3, raise_on_status=False))
 
 
 def build_file_content():
@@ -175,14 +176,14 @@ def read_config_from_github(sdk_id, branch="main", gh_token=None):
     _LOGGER.debug("Will try to download: %s", raw_link)
     _LOGGER.debug("Token is defined: %s", gh_token is not None)
     headers = {"Authorization": "token {}".format(gh_token)} if gh_token else {}
-    response = requests.get(raw_link, headers=headers)
-    if response.status_code != 200:
+    response = http_client.request(method="GET", url=raw_link, headers=headers)
+    if response.status != 200:
         raise ValueError(
             "Unable to download conf file for SDK {} branch {}: status code {}".format(
-                sdk_id, branch, response.status_code
+                sdk_id, branch, response.status
             )
         )
-    return json.loads(response.text)
+    return json.loads(response.data.decode('utf-8'))
 
 
 def extract_conf_from_readmes(swagger_files_in_pr, restapi_git_folder, sdk_git_id, config, force_generation=False):
@@ -191,7 +192,11 @@ def extract_conf_from_readmes(swagger_files_in_pr, restapi_git_folder, sdk_git_i
     }
     for readme_file in readme_files_in_pr:
         build_swaggertosdk_conf_from_json_readme(
-            readme_file, sdk_git_id, config, base_folder=restapi_git_folder, force_generation=force_generation
+            readme_file,
+            sdk_git_id,
+            config,
+            base_folder=restapi_git_folder,
+            force_generation=force_generation,
         )
 
 

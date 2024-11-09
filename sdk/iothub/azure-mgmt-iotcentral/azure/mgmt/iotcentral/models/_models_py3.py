@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-many-lines
 # --------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -6,14 +7,16 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
-import msrest.serialization
+from .. import _serialization
 
-from ._iot_central_client_enums import *
+if TYPE_CHECKING:
+    # pylint: disable=unused-import,ungrouped-imports
+    from .. import models as _models
 
 
-class Resource(msrest.serialization.Model):
+class Resource(_serialization.Model):
     """The common properties of an ARM resource.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -26,35 +29,35 @@ class Resource(msrest.serialization.Model):
     :vartype name: str
     :ivar type: The resource type.
     :vartype type: str
-    :param location: Required. The resource location.
-    :type location: str
-    :param tags: A set of tags. The resource tags.
-    :type tags: dict[str, str]
+    :ivar location: The resource location. Required.
+    :vartype location: str
+    :ivar tags: The resource tags.
+    :vartype tags: dict[str, str]
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True, 'pattern': r'^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{2,99}[a-zA-Z0-9]$'},
-        'type': {'readonly': True},
-        'location': {'required': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True, "pattern": r"^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{2,99}[a-zA-Z0-9]$"},
+        "type": {"readonly": True},
+        "location": {"required": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
-        'tags': {'key': 'tags', 'type': '{str}'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
     }
 
-    def __init__(
-        self,
-        *,
-        location: str,
-        tags: Optional[Dict[str, str]] = None,
-        **kwargs
-    ):
-        super(Resource, self).__init__(**kwargs)
+    def __init__(self, *, location: str, tags: Optional[Dict[str, str]] = None, **kwargs):
+        """
+        :keyword location: The resource location. Required.
+        :paramtype location: str
+        :keyword tags: The resource tags.
+        :paramtype tags: dict[str, str]
+        """
+        super().__init__(**kwargs)
         self.id = None
         self.name = None
         self.type = None
@@ -62,7 +65,7 @@ class Resource(msrest.serialization.Model):
         self.tags = tags
 
 
-class App(Resource):
+class App(Resource):  # pylint: disable=too-many-instance-attributes
     """The IoT Central application.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -75,67 +78,84 @@ class App(Resource):
     :vartype name: str
     :ivar type: The resource type.
     :vartype type: str
-    :param location: Required. The resource location.
-    :type location: str
-    :param tags: A set of tags. The resource tags.
-    :type tags: dict[str, str]
-    :param sku: Required. A valid instance SKU.
-    :type sku: ~azure.mgmt.iotcentral.models.AppSkuInfo
-    :param identity: The managed identities for the IoT Central application.
-    :type identity: ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentity
+    :ivar location: The resource location. Required.
+    :vartype location: str
+    :ivar tags: The resource tags.
+    :vartype tags: dict[str, str]
+    :ivar sku: A valid instance SKU. Required.
+    :vartype sku: ~azure.mgmt.iotcentral.models.AppSkuInfo
+    :ivar identity: The managed identities for the IoT Central application.
+    :vartype identity: ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentity
     :ivar application_id: The ID of the application.
     :vartype application_id: str
-    :param display_name: The display name of the application.
-    :type display_name: str
-    :param subdomain: The subdomain of the application.
-    :type subdomain: str
-    :param template: The ID of the application template, which is a blueprint that defines the
+    :ivar display_name: The display name of the application.
+    :vartype display_name: str
+    :ivar subdomain: The subdomain of the application.
+    :vartype subdomain: str
+    :ivar template: The ID of the application template, which is a blueprint that defines the
      characteristics and behaviors of an application. Optional; if not specified, defaults to a
      blank blueprint and allows the application to be defined from scratch.
-    :type template: str
-    :ivar state: The current state of the application. Possible values include: "created",
-     "suspended".
+    :vartype template: str
+    :ivar state: The current state of the application. Known values are: "created" and "suspended".
     :vartype state: str or ~azure.mgmt.iotcentral.models.AppState
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'name': {'readonly': True, 'pattern': r'^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{2,99}[a-zA-Z0-9]$'},
-        'type': {'readonly': True},
-        'location': {'required': True},
-        'sku': {'required': True},
-        'application_id': {'readonly': True},
-        'state': {'readonly': True},
+        "id": {"readonly": True},
+        "name": {"readonly": True, "pattern": r"^(?![0-9]+$)(?!-)[a-zA-Z0-9-]{2,99}[a-zA-Z0-9]$"},
+        "type": {"readonly": True},
+        "location": {"required": True},
+        "sku": {"required": True},
+        "application_id": {"readonly": True},
+        "state": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
-        'location': {'key': 'location', 'type': 'str'},
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'sku': {'key': 'sku', 'type': 'AppSkuInfo'},
-        'identity': {'key': 'identity', 'type': 'SystemAssignedServiceIdentity'},
-        'application_id': {'key': 'properties.applicationId', 'type': 'str'},
-        'display_name': {'key': 'properties.displayName', 'type': 'str'},
-        'subdomain': {'key': 'properties.subdomain', 'type': 'str'},
-        'template': {'key': 'properties.template', 'type': 'str'},
-        'state': {'key': 'properties.state', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
+        "location": {"key": "location", "type": "str"},
+        "tags": {"key": "tags", "type": "{str}"},
+        "sku": {"key": "sku", "type": "AppSkuInfo"},
+        "identity": {"key": "identity", "type": "SystemAssignedServiceIdentity"},
+        "application_id": {"key": "properties.applicationId", "type": "str"},
+        "display_name": {"key": "properties.displayName", "type": "str"},
+        "subdomain": {"key": "properties.subdomain", "type": "str"},
+        "template": {"key": "properties.template", "type": "str"},
+        "state": {"key": "properties.state", "type": "str"},
     }
 
     def __init__(
         self,
         *,
         location: str,
-        sku: "AppSkuInfo",
+        sku: "_models.AppSkuInfo",
         tags: Optional[Dict[str, str]] = None,
-        identity: Optional["SystemAssignedServiceIdentity"] = None,
+        identity: Optional["_models.SystemAssignedServiceIdentity"] = None,
         display_name: Optional[str] = None,
         subdomain: Optional[str] = None,
         template: Optional[str] = None,
         **kwargs
     ):
-        super(App, self).__init__(location=location, tags=tags, **kwargs)
+        """
+        :keyword location: The resource location. Required.
+        :paramtype location: str
+        :keyword tags: The resource tags.
+        :paramtype tags: dict[str, str]
+        :keyword sku: A valid instance SKU. Required.
+        :paramtype sku: ~azure.mgmt.iotcentral.models.AppSkuInfo
+        :keyword identity: The managed identities for the IoT Central application.
+        :paramtype identity: ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentity
+        :keyword display_name: The display name of the application.
+        :paramtype display_name: str
+        :keyword subdomain: The subdomain of the application.
+        :paramtype subdomain: str
+        :keyword template: The ID of the application template, which is a blueprint that defines the
+         characteristics and behaviors of an application. Optional; if not specified, defaults to a
+         blank blueprint and allows the application to be defined from scratch.
+        :paramtype template: str
+        """
+        super().__init__(location=location, tags=tags, **kwargs)
         self.sku = sku
         self.identity = identity
         self.application_id = None
@@ -145,7 +165,7 @@ class App(Resource):
         self.state = None
 
 
-class AppAvailabilityInfo(msrest.serialization.Model):
+class AppAvailabilityInfo(_serialization.Model):
     """The properties indicating whether a given IoT Central application name or subdomain is available.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -159,107 +179,120 @@ class AppAvailabilityInfo(msrest.serialization.Model):
     """
 
     _validation = {
-        'name_available': {'readonly': True},
-        'reason': {'readonly': True},
-        'message': {'readonly': True},
+        "name_available": {"readonly": True},
+        "reason": {"readonly": True},
+        "message": {"readonly": True},
     }
 
     _attribute_map = {
-        'name_available': {'key': 'nameAvailable', 'type': 'bool'},
-        'reason': {'key': 'reason', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
+        "name_available": {"key": "nameAvailable", "type": "bool"},
+        "reason": {"key": "reason", "type": "str"},
+        "message": {"key": "message", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(AppAvailabilityInfo, self).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        """ """
+        super().__init__(**kwargs)
         self.name_available = None
         self.reason = None
         self.message = None
 
 
-class AppListResult(msrest.serialization.Model):
+class AppListResult(_serialization.Model):
     """A list of IoT Central Applications with a next link.
 
-    :param next_link: The link used to get the next page of IoT Central Applications.
-    :type next_link: str
-    :param value: A list of IoT Central Applications.
-    :type value: list[~azure.mgmt.iotcentral.models.App]
+    :ivar next_link: The link used to get the next page of IoT Central Applications.
+    :vartype next_link: str
+    :ivar value: A list of IoT Central Applications.
+    :vartype value: list[~azure.mgmt.iotcentral.models.App]
     """
 
     _attribute_map = {
-        'next_link': {'key': 'nextLink', 'type': 'str'},
-        'value': {'key': 'value', 'type': '[App]'},
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[App]"},
     }
 
-    def __init__(
-        self,
-        *,
-        next_link: Optional[str] = None,
-        value: Optional[List["App"]] = None,
-        **kwargs
-    ):
-        super(AppListResult, self).__init__(**kwargs)
+    def __init__(self, *, next_link: Optional[str] = None, value: Optional[List["_models.App"]] = None, **kwargs):
+        """
+        :keyword next_link: The link used to get the next page of IoT Central Applications.
+        :paramtype next_link: str
+        :keyword value: A list of IoT Central Applications.
+        :paramtype value: list[~azure.mgmt.iotcentral.models.App]
+        """
+        super().__init__(**kwargs)
         self.next_link = next_link
         self.value = value
 
 
-class AppPatch(msrest.serialization.Model):
+class AppPatch(_serialization.Model):
     """The description of the IoT Central application.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param tags: A set of tags. Instance tags.
-    :type tags: dict[str, str]
-    :param sku: A valid instance SKU.
-    :type sku: ~azure.mgmt.iotcentral.models.AppSkuInfo
-    :param identity: The managed identities for the IoT Central application.
-    :type identity: ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentity
+    :ivar tags: Instance tags.
+    :vartype tags: dict[str, str]
+    :ivar sku: A valid instance SKU.
+    :vartype sku: ~azure.mgmt.iotcentral.models.AppSkuInfo
+    :ivar identity: The managed identities for the IoT Central application.
+    :vartype identity: ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentity
     :ivar application_id: The ID of the application.
     :vartype application_id: str
-    :param display_name: The display name of the application.
-    :type display_name: str
-    :param subdomain: The subdomain of the application.
-    :type subdomain: str
-    :param template: The ID of the application template, which is a blueprint that defines the
+    :ivar display_name: The display name of the application.
+    :vartype display_name: str
+    :ivar subdomain: The subdomain of the application.
+    :vartype subdomain: str
+    :ivar template: The ID of the application template, which is a blueprint that defines the
      characteristics and behaviors of an application. Optional; if not specified, defaults to a
      blank blueprint and allows the application to be defined from scratch.
-    :type template: str
-    :ivar state: The current state of the application. Possible values include: "created",
-     "suspended".
+    :vartype template: str
+    :ivar state: The current state of the application. Known values are: "created" and "suspended".
     :vartype state: str or ~azure.mgmt.iotcentral.models.AppState
     """
 
     _validation = {
-        'application_id': {'readonly': True},
-        'state': {'readonly': True},
+        "application_id": {"readonly": True},
+        "state": {"readonly": True},
     }
 
     _attribute_map = {
-        'tags': {'key': 'tags', 'type': '{str}'},
-        'sku': {'key': 'sku', 'type': 'AppSkuInfo'},
-        'identity': {'key': 'identity', 'type': 'SystemAssignedServiceIdentity'},
-        'application_id': {'key': 'properties.applicationId', 'type': 'str'},
-        'display_name': {'key': 'properties.displayName', 'type': 'str'},
-        'subdomain': {'key': 'properties.subdomain', 'type': 'str'},
-        'template': {'key': 'properties.template', 'type': 'str'},
-        'state': {'key': 'properties.state', 'type': 'str'},
+        "tags": {"key": "tags", "type": "{str}"},
+        "sku": {"key": "sku", "type": "AppSkuInfo"},
+        "identity": {"key": "identity", "type": "SystemAssignedServiceIdentity"},
+        "application_id": {"key": "properties.applicationId", "type": "str"},
+        "display_name": {"key": "properties.displayName", "type": "str"},
+        "subdomain": {"key": "properties.subdomain", "type": "str"},
+        "template": {"key": "properties.template", "type": "str"},
+        "state": {"key": "properties.state", "type": "str"},
     }
 
     def __init__(
         self,
         *,
         tags: Optional[Dict[str, str]] = None,
-        sku: Optional["AppSkuInfo"] = None,
-        identity: Optional["SystemAssignedServiceIdentity"] = None,
+        sku: Optional["_models.AppSkuInfo"] = None,
+        identity: Optional["_models.SystemAssignedServiceIdentity"] = None,
         display_name: Optional[str] = None,
         subdomain: Optional[str] = None,
         template: Optional[str] = None,
         **kwargs
     ):
-        super(AppPatch, self).__init__(**kwargs)
+        """
+        :keyword tags: Instance tags.
+        :paramtype tags: dict[str, str]
+        :keyword sku: A valid instance SKU.
+        :paramtype sku: ~azure.mgmt.iotcentral.models.AppSkuInfo
+        :keyword identity: The managed identities for the IoT Central application.
+        :paramtype identity: ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentity
+        :keyword display_name: The display name of the application.
+        :paramtype display_name: str
+        :keyword subdomain: The subdomain of the application.
+        :paramtype subdomain: str
+        :keyword template: The ID of the application template, which is a blueprint that defines the
+         characteristics and behaviors of an application. Optional; if not specified, defaults to a
+         blank blueprint and allows the application to be defined from scratch.
+        :paramtype template: str
+        """
+        super().__init__(**kwargs)
         self.tags = tags
         self.sku = sku
         self.identity = identity
@@ -270,34 +303,33 @@ class AppPatch(msrest.serialization.Model):
         self.state = None
 
 
-class AppSkuInfo(msrest.serialization.Model):
+class AppSkuInfo(_serialization.Model):
     """Information about the SKU of the IoT Central application.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param name: Required. The name of the SKU. Possible values include: "ST0", "ST1", "ST2".
-    :type name: str or ~azure.mgmt.iotcentral.models.AppSku
+    :ivar name: The name of the SKU. Required. Known values are: "ST0", "ST1", and "ST2".
+    :vartype name: str or ~azure.mgmt.iotcentral.models.AppSku
     """
 
     _validation = {
-        'name': {'required': True},
+        "name": {"required": True},
     }
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        name: Union[str, "AppSku"],
-        **kwargs
-    ):
-        super(AppSkuInfo, self).__init__(**kwargs)
+    def __init__(self, *, name: Union[str, "_models.AppSku"], **kwargs):
+        """
+        :keyword name: The name of the SKU. Required. Known values are: "ST0", "ST1", and "ST2".
+        :paramtype name: str or ~azure.mgmt.iotcentral.models.AppSku
+        """
+        super().__init__(**kwargs)
         self.name = name
 
 
-class AppTemplate(msrest.serialization.Model):
+class AppTemplate(_serialization.Model):
     """IoT Central Application Template.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -321,32 +353,30 @@ class AppTemplate(msrest.serialization.Model):
     """
 
     _validation = {
-        'manifest_id': {'readonly': True},
-        'manifest_version': {'readonly': True},
-        'name': {'readonly': True},
-        'title': {'readonly': True},
-        'order': {'readonly': True},
-        'description': {'readonly': True},
-        'industry': {'readonly': True},
-        'locations': {'readonly': True},
+        "manifest_id": {"readonly": True},
+        "manifest_version": {"readonly": True},
+        "name": {"readonly": True},
+        "title": {"readonly": True},
+        "order": {"readonly": True},
+        "description": {"readonly": True},
+        "industry": {"readonly": True},
+        "locations": {"readonly": True},
     }
 
     _attribute_map = {
-        'manifest_id': {'key': 'manifestId', 'type': 'str'},
-        'manifest_version': {'key': 'manifestVersion', 'type': 'str'},
-        'name': {'key': 'name', 'type': 'str'},
-        'title': {'key': 'title', 'type': 'str'},
-        'order': {'key': 'order', 'type': 'float'},
-        'description': {'key': 'description', 'type': 'str'},
-        'industry': {'key': 'industry', 'type': 'str'},
-        'locations': {'key': 'locations', 'type': '[AppTemplateLocations]'},
+        "manifest_id": {"key": "manifestId", "type": "str"},
+        "manifest_version": {"key": "manifestVersion", "type": "str"},
+        "name": {"key": "name", "type": "str"},
+        "title": {"key": "title", "type": "str"},
+        "order": {"key": "order", "type": "float"},
+        "description": {"key": "description", "type": "str"},
+        "industry": {"key": "industry", "type": "str"},
+        "locations": {"key": "locations", "type": "[AppTemplateLocations]"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(AppTemplate, self).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        """ """
+        super().__init__(**kwargs)
         self.manifest_id = None
         self.manifest_version = None
         self.name = None
@@ -357,7 +387,7 @@ class AppTemplate(msrest.serialization.Model):
         self.locations = None
 
 
-class AppTemplateLocations(msrest.serialization.Model):
+class AppTemplateLocations(_serialization.Model):
     """IoT Central Application Template Locations.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -369,56 +399,53 @@ class AppTemplateLocations(msrest.serialization.Model):
     """
 
     _validation = {
-        'id': {'readonly': True},
-        'display_name': {'readonly': True},
+        "id": {"readonly": True},
+        "display_name": {"readonly": True},
     }
 
     _attribute_map = {
-        'id': {'key': 'id', 'type': 'str'},
-        'display_name': {'key': 'displayName', 'type': 'str'},
+        "id": {"key": "id", "type": "str"},
+        "display_name": {"key": "displayName", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(AppTemplateLocations, self).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        """ """
+        super().__init__(**kwargs)
         self.id = None
         self.display_name = None
 
 
-class AppTemplatesResult(msrest.serialization.Model):
+class AppTemplatesResult(_serialization.Model):
     """A list of IoT Central Application Templates with a next link.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param next_link: The link used to get the next page of IoT Central application templates.
-    :type next_link: str
+    :ivar next_link: The link used to get the next page of IoT Central application templates.
+    :vartype next_link: str
     :ivar value: A list of IoT Central Application Templates.
     :vartype value: list[~azure.mgmt.iotcentral.models.AppTemplate]
     """
 
     _validation = {
-        'value': {'readonly': True},
+        "value": {"readonly": True},
     }
 
     _attribute_map = {
-        'next_link': {'key': 'nextLink', 'type': 'str'},
-        'value': {'key': 'value', 'type': '[AppTemplate]'},
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[AppTemplate]"},
     }
 
-    def __init__(
-        self,
-        *,
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
-        super(AppTemplatesResult, self).__init__(**kwargs)
+    def __init__(self, *, next_link: Optional[str] = None, **kwargs):
+        """
+        :keyword next_link: The link used to get the next page of IoT Central application templates.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
         self.next_link = next_link
         self.value = None
 
 
-class CloudErrorBody(msrest.serialization.Model):
+class CloudErrorBody(_serialization.Model):
     """Details of error response.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -429,78 +456,76 @@ class CloudErrorBody(msrest.serialization.Model):
     :vartype message: str
     :ivar target: The target of the particular error.
     :vartype target: str
-    :param details: A list of additional details about the error.
-    :type details: list[~azure.mgmt.iotcentral.models.CloudErrorBody]
+    :ivar details: A list of additional details about the error.
+    :vartype details: list[~azure.mgmt.iotcentral.models.CloudErrorBody]
     """
 
     _validation = {
-        'code': {'readonly': True},
-        'message': {'readonly': True},
-        'target': {'readonly': True},
+        "code": {"readonly": True},
+        "message": {"readonly": True},
+        "target": {"readonly": True},
     }
 
     _attribute_map = {
-        'code': {'key': 'code', 'type': 'str'},
-        'message': {'key': 'message', 'type': 'str'},
-        'target': {'key': 'target', 'type': 'str'},
-        'details': {'key': 'details', 'type': '[CloudErrorBody]'},
+        "code": {"key": "code", "type": "str"},
+        "message": {"key": "message", "type": "str"},
+        "target": {"key": "target", "type": "str"},
+        "details": {"key": "details", "type": "[CloudErrorBody]"},
     }
 
-    def __init__(
-        self,
-        *,
-        details: Optional[List["CloudErrorBody"]] = None,
-        **kwargs
-    ):
-        super(CloudErrorBody, self).__init__(**kwargs)
+    def __init__(self, *, details: Optional[List["_models.CloudErrorBody"]] = None, **kwargs):
+        """
+        :keyword details: A list of additional details about the error.
+        :paramtype details: list[~azure.mgmt.iotcentral.models.CloudErrorBody]
+        """
+        super().__init__(**kwargs)
         self.code = None
         self.message = None
         self.target = None
         self.details = details
 
 
-class Operation(msrest.serialization.Model):
+class Operation(_serialization.Model):
     """IoT Central REST API operation.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
     :ivar name: Operation name: {provider}/{resource}/{read | write | action | delete}.
     :vartype name: str
-    :param display: The object that represents the operation.
-    :type display: ~azure.mgmt.iotcentral.models.OperationDisplay
+    :ivar display: The object that represents the operation.
+    :vartype display: ~azure.mgmt.iotcentral.models.OperationDisplay
     :ivar origin: The intended executor of the operation.
     :vartype origin: str
     :ivar properties: Additional descriptions for the operation.
-    :vartype properties: any
+    :vartype properties: JSON
     """
 
     _validation = {
-        'name': {'readonly': True},
-        'origin': {'readonly': True},
-        'properties': {'readonly': True},
+        "name": {"readonly": True},
+        "origin": {"readonly": True},
+        "properties": {"readonly": True},
     }
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'display': {'key': 'display', 'type': 'OperationDisplay'},
-        'origin': {'key': 'origin', 'type': 'str'},
-        'properties': {'key': 'properties', 'type': 'object'},
+        "name": {"key": "name", "type": "str"},
+        "display": {"key": "display", "type": "OperationDisplay"},
+        "origin": {"key": "origin", "type": "str"},
+        "properties": {"key": "properties", "type": "object"},
     }
 
-    def __init__(
-        self,
-        *,
-        display: Optional["OperationDisplay"] = None,
-        **kwargs
-    ):
-        super(Operation, self).__init__(**kwargs)
+    def __init__(self, *, display: Optional["_models.OperationDisplay"] = None, **kwargs):
+        """
+        :keyword display: The object that represents the operation.
+        :paramtype display: ~azure.mgmt.iotcentral.models.OperationDisplay
+        """
+        super().__init__(**kwargs)
         self.name = None
         self.display = display
         self.origin = None
         self.properties = None
 
 
-class OperationDisplay(msrest.serialization.Model):
+class OperationDisplay(_serialization.Model):
     """The object that represents the operation.
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -516,94 +541,91 @@ class OperationDisplay(msrest.serialization.Model):
     """
 
     _validation = {
-        'provider': {'readonly': True},
-        'resource': {'readonly': True},
-        'operation': {'readonly': True},
-        'description': {'readonly': True},
+        "provider": {"readonly": True},
+        "resource": {"readonly": True},
+        "operation": {"readonly": True},
+        "description": {"readonly": True},
     }
 
     _attribute_map = {
-        'provider': {'key': 'provider', 'type': 'str'},
-        'resource': {'key': 'resource', 'type': 'str'},
-        'operation': {'key': 'operation', 'type': 'str'},
-        'description': {'key': 'description', 'type': 'str'},
+        "provider": {"key": "provider", "type": "str"},
+        "resource": {"key": "resource", "type": "str"},
+        "operation": {"key": "operation", "type": "str"},
+        "description": {"key": "description", "type": "str"},
     }
 
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super(OperationDisplay, self).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        """ """
+        super().__init__(**kwargs)
         self.provider = None
         self.resource = None
         self.operation = None
         self.description = None
 
 
-class OperationInputs(msrest.serialization.Model):
+class OperationInputs(_serialization.Model):
     """Input values.
 
     All required parameters must be populated in order to send to Azure.
 
-    :param name: Required. The name of the IoT Central application instance to check.
-    :type name: str
-    :param type: The type of the IoT Central resource to query.
-    :type type: str
+    :ivar name: The name of the IoT Central application instance to check. Required.
+    :vartype name: str
+    :ivar type: The type of the IoT Central resource to query.
+    :vartype type: str
     """
 
     _validation = {
-        'name': {'required': True},
+        "name": {"required": True},
     }
 
     _attribute_map = {
-        'name': {'key': 'name', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
+        "name": {"key": "name", "type": "str"},
+        "type": {"key": "type", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        name: str,
-        type: Optional[str] = "IoTApps",
-        **kwargs
-    ):
-        super(OperationInputs, self).__init__(**kwargs)
+    def __init__(self, *, name: str, type: str = "IoTApps", **kwargs):
+        """
+        :keyword name: The name of the IoT Central application instance to check. Required.
+        :paramtype name: str
+        :keyword type: The type of the IoT Central resource to query.
+        :paramtype type: str
+        """
+        super().__init__(**kwargs)
         self.name = name
         self.type = type
 
 
-class OperationListResult(msrest.serialization.Model):
+class OperationListResult(_serialization.Model):
     """A list of IoT Central operations. It contains a list of operations and a URL link to get the next set of results.
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    :param next_link: The link used to get the next page of IoT Central description objects.
-    :type next_link: str
+    :ivar next_link: The link used to get the next page of IoT Central description objects.
+    :vartype next_link: str
     :ivar value: A list of operations supported by the Microsoft.IoTCentral resource provider.
     :vartype value: list[~azure.mgmt.iotcentral.models.Operation]
     """
 
     _validation = {
-        'value': {'readonly': True},
+        "value": {"readonly": True},
     }
 
     _attribute_map = {
-        'next_link': {'key': 'nextLink', 'type': 'str'},
-        'value': {'key': 'value', 'type': '[Operation]'},
+        "next_link": {"key": "nextLink", "type": "str"},
+        "value": {"key": "value", "type": "[Operation]"},
     }
 
-    def __init__(
-        self,
-        *,
-        next_link: Optional[str] = None,
-        **kwargs
-    ):
-        super(OperationListResult, self).__init__(**kwargs)
+    def __init__(self, *, next_link: Optional[str] = None, **kwargs):
+        """
+        :keyword next_link: The link used to get the next page of IoT Central description objects.
+        :paramtype next_link: str
+        """
+        super().__init__(**kwargs)
         self.next_link = next_link
         self.value = None
 
 
-class SystemAssignedServiceIdentity(msrest.serialization.Model):
+class SystemAssignedServiceIdentity(_serialization.Model):
     """Managed service identity (either system assigned, or none).
 
     Variables are only populated by the server, and will be ignored when sending a request.
@@ -616,30 +638,30 @@ class SystemAssignedServiceIdentity(msrest.serialization.Model):
     :ivar tenant_id: The tenant ID of the system assigned identity. This property will only be
      provided for a system assigned identity.
     :vartype tenant_id: str
-    :param type: Required. Type of managed service identity (either system assigned, or none).
-     Possible values include: "None", "SystemAssigned".
-    :type type: str or ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentityType
+    :ivar type: Type of managed service identity (either system assigned, or none). Required. Known
+     values are: "None" and "SystemAssigned".
+    :vartype type: str or ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentityType
     """
 
     _validation = {
-        'principal_id': {'readonly': True},
-        'tenant_id': {'readonly': True},
-        'type': {'required': True},
+        "principal_id": {"readonly": True},
+        "tenant_id": {"readonly": True},
+        "type": {"required": True},
     }
 
     _attribute_map = {
-        'principal_id': {'key': 'principalId', 'type': 'str'},
-        'tenant_id': {'key': 'tenantId', 'type': 'str'},
-        'type': {'key': 'type', 'type': 'str'},
+        "principal_id": {"key": "principalId", "type": "str"},
+        "tenant_id": {"key": "tenantId", "type": "str"},
+        "type": {"key": "type", "type": "str"},
     }
 
-    def __init__(
-        self,
-        *,
-        type: Union[str, "SystemAssignedServiceIdentityType"],
-        **kwargs
-    ):
-        super(SystemAssignedServiceIdentity, self).__init__(**kwargs)
+    def __init__(self, *, type: Union[str, "_models.SystemAssignedServiceIdentityType"], **kwargs):
+        """
+        :keyword type: Type of managed service identity (either system assigned, or none). Required.
+         Known values are: "None" and "SystemAssigned".
+        :paramtype type: str or ~azure.mgmt.iotcentral.models.SystemAssignedServiceIdentityType
+        """
+        super().__init__(**kwargs)
         self.principal_id = None
         self.tenant_id = None
         self.type = type

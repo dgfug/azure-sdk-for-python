@@ -5,7 +5,7 @@
 # ------------------------------------
 
 import os
-from azure_devtools.perfstress_tests import PerfStressTest
+from devtools_testutils.perfstress_tests import PerfStressTest
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.formrecognizer import DocumentModelAdministrationClient
 from azure.ai.formrecognizer.aio import DocumentModelAdministrationClient as AsyncDocumentModelAdministrationClient
@@ -32,10 +32,10 @@ class BuildModelRequestPreparation(PerfStressTest):
 
     def run_sync(self):
         """The synchronous perf test."""
-        poller = self.admin_client.begin_build_model(self.formrecognizer_storage_container_sas_url)
+        poller = self.admin_client.begin_build_document_model("template", blob_container_url=self.formrecognizer_storage_container_sas_url)
         assert poller
 
     async def run_async(self):
         """The asynchronous perf test."""
-        poller = await self.async_admin_client.begin_build_model(self.formrecognizer_storage_container_sas_url)
+        poller = await self.async_admin_client.begin_build_document_model("template", blob_container_url=self.formrecognizer_storage_container_sas_url)
         assert poller

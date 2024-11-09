@@ -1,5 +1,62 @@
 # Release History
 
+## 9.2.0b2 (2024-07-18)
+
+### Other Changes
+
+  - Regular release
+
+## 9.2.0b1 (2024-03-18)
+
+### Features Added
+
+  - Added operation group NetworkSecurityPerimeterConfigurationsOperations
+  - Model Identity has a new parameter user_assigned_identities
+  - Model NetworkRuleSet has a new parameter bypass
+  - Model Operation has a new parameter is_data_action
+  - Model Operation has a new parameter origin
+  - Model Operation has a new parameter properties
+  - Model SearchService has a new parameter disabled_data_exfiltration_options
+  - Model SearchService has a new parameter e_tag
+  - Model SearchServiceUpdate has a new parameter disabled_data_exfiltration_options
+  - Model SearchServiceUpdate has a new parameter e_tag
+
+## 9.1.0 (2023-10-23)
+
+### Features Added
+
+  - Added operation group SearchManagementClientOperationsMixin
+  - Added operation group UsagesOperations
+  - Model SearchService has a new parameter semantic_search
+  - Model SearchServiceUpdate has a new parameter semantic_search
+
+## 9.0.0 (2023-02-15)
+
+### Features Added
+
+  - Model PrivateEndpointConnectionProperties has a new parameter group_id
+  - Model PrivateEndpointConnectionProperties has a new parameter provisioning_state
+  - Model SearchService has a new parameter auth_options
+  - Model SearchService has a new parameter disable_local_auth
+  - Model SearchService has a new parameter encryption_with_cmk
+  - Model SearchServiceUpdate has a new parameter auth_options
+  - Model SearchServiceUpdate has a new parameter disable_local_auth
+  - Model SearchServiceUpdate has a new parameter encryption_with_cmk
+
+## 9.0.0b1 (2022-10-28)
+
+### Features Added
+
+  - Model Resource has a new parameter identity
+  - Model Resource has a new parameter location
+  - Model Resource has a new parameter tags
+
+### Breaking Changes
+
+  - Model PrivateLinkResourceProperties no longer has parameter shareable_private_link_resource_types
+  - Model SearchService no longer has parameter shared_private_link_resources
+  - Removed operation group SharedPrivateLinkResourcesOperations
+
 ## 8.0.0 (2020-12-22)
 
 - GA release

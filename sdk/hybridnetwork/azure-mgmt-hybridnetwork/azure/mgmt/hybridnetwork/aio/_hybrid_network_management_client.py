@@ -6,115 +6,165 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import Any, Optional, TYPE_CHECKING
+from copy import deepcopy
+from typing import Any, Awaitable, TYPE_CHECKING
 
-from azure.core.pipeline.transport import AsyncHttpResponse, HttpRequest
+from azure.core.rest import AsyncHttpResponse, HttpRequest
 from azure.mgmt.core import AsyncARMPipelineClient
-from msrest import Deserializer, Serializer
+
+from .. import models as _models
+from .._serialization import Deserializer, Serializer
+from ._configuration import HybridNetworkManagementClientConfiguration
+from .operations import (
+    ArtifactManifestsOperations,
+    ArtifactStoresOperations,
+    ComponentsOperations,
+    ConfigurationGroupSchemasOperations,
+    ConfigurationGroupValuesOperations,
+    NetworkFunctionDefinitionGroupsOperations,
+    NetworkFunctionDefinitionVersionsOperations,
+    NetworkFunctionsOperations,
+    NetworkServiceDesignGroupsOperations,
+    NetworkServiceDesignVersionsOperations,
+    Operations,
+    ProxyArtifactOperations,
+    PublishersOperations,
+    SiteNetworkServicesOperations,
+    SitesOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials_async import AsyncTokenCredential
 
-from ._configuration import HybridNetworkManagementClientConfiguration
-from .operations import NetworkFunctionsOperations
-from .operations import DevicesOperations
-from .operations import Operations
-from .operations import VendorsOperations
-from .operations import VendorSkusOperations
-from .operations import VendorSkuPreviewOperations
-from .operations import NetworkFunctionVendorsOperations
-from .operations import NetworkFunctionVendorSkusOperations
-from .operations import VendorNetworkFunctionsOperations
-from .operations import RoleInstancesOperations
-from .. import models
 
+class HybridNetworkManagementClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
+    """The definitions in this swagger specification will be used to manage the Hybrid Network
+    resources.
 
-class HybridNetworkManagementClient(object):
-    """The definitions in this swagger specification will be used to manage the Hybrid Network resources.
-
+    :ivar configuration_group_schemas: ConfigurationGroupSchemasOperations operations
+    :vartype configuration_group_schemas:
+     azure.mgmt.hybridnetwork.aio.operations.ConfigurationGroupSchemasOperations
+    :ivar configuration_group_values: ConfigurationGroupValuesOperations operations
+    :vartype configuration_group_values:
+     azure.mgmt.hybridnetwork.aio.operations.ConfigurationGroupValuesOperations
     :ivar network_functions: NetworkFunctionsOperations operations
-    :vartype network_functions: hybrid_network_management_client.aio.operations.NetworkFunctionsOperations
-    :ivar devices: DevicesOperations operations
-    :vartype devices: hybrid_network_management_client.aio.operations.DevicesOperations
+    :vartype network_functions: azure.mgmt.hybridnetwork.aio.operations.NetworkFunctionsOperations
+    :ivar components: ComponentsOperations operations
+    :vartype components: azure.mgmt.hybridnetwork.aio.operations.ComponentsOperations
+    :ivar network_function_definition_groups: NetworkFunctionDefinitionGroupsOperations operations
+    :vartype network_function_definition_groups:
+     azure.mgmt.hybridnetwork.aio.operations.NetworkFunctionDefinitionGroupsOperations
+    :ivar network_function_definition_versions: NetworkFunctionDefinitionVersionsOperations
+     operations
+    :vartype network_function_definition_versions:
+     azure.mgmt.hybridnetwork.aio.operations.NetworkFunctionDefinitionVersionsOperations
+    :ivar network_service_design_groups: NetworkServiceDesignGroupsOperations operations
+    :vartype network_service_design_groups:
+     azure.mgmt.hybridnetwork.aio.operations.NetworkServiceDesignGroupsOperations
+    :ivar network_service_design_versions: NetworkServiceDesignVersionsOperations operations
+    :vartype network_service_design_versions:
+     azure.mgmt.hybridnetwork.aio.operations.NetworkServiceDesignVersionsOperations
     :ivar operations: Operations operations
-    :vartype operations: hybrid_network_management_client.aio.operations.Operations
-    :ivar vendors: VendorsOperations operations
-    :vartype vendors: hybrid_network_management_client.aio.operations.VendorsOperations
-    :ivar vendor_skus: VendorSkusOperations operations
-    :vartype vendor_skus: hybrid_network_management_client.aio.operations.VendorSkusOperations
-    :ivar vendor_sku_preview: VendorSkuPreviewOperations operations
-    :vartype vendor_sku_preview: hybrid_network_management_client.aio.operations.VendorSkuPreviewOperations
-    :ivar network_function_vendors: NetworkFunctionVendorsOperations operations
-    :vartype network_function_vendors: hybrid_network_management_client.aio.operations.NetworkFunctionVendorsOperations
-    :ivar network_function_vendor_skus: NetworkFunctionVendorSkusOperations operations
-    :vartype network_function_vendor_skus: hybrid_network_management_client.aio.operations.NetworkFunctionVendorSkusOperations
-    :ivar vendor_network_functions: VendorNetworkFunctionsOperations operations
-    :vartype vendor_network_functions: hybrid_network_management_client.aio.operations.VendorNetworkFunctionsOperations
-    :ivar role_instances: RoleInstancesOperations operations
-    :vartype role_instances: hybrid_network_management_client.aio.operations.RoleInstancesOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :vartype operations: azure.mgmt.hybridnetwork.aio.operations.Operations
+    :ivar publishers: PublishersOperations operations
+    :vartype publishers: azure.mgmt.hybridnetwork.aio.operations.PublishersOperations
+    :ivar artifact_stores: ArtifactStoresOperations operations
+    :vartype artifact_stores: azure.mgmt.hybridnetwork.aio.operations.ArtifactStoresOperations
+    :ivar artifact_manifests: ArtifactManifestsOperations operations
+    :vartype artifact_manifests:
+     azure.mgmt.hybridnetwork.aio.operations.ArtifactManifestsOperations
+    :ivar proxy_artifact: ProxyArtifactOperations operations
+    :vartype proxy_artifact: azure.mgmt.hybridnetwork.aio.operations.ProxyArtifactOperations
+    :ivar sites: SitesOperations operations
+    :vartype sites: azure.mgmt.hybridnetwork.aio.operations.SitesOperations
+    :ivar site_network_services: SiteNetworkServicesOperations operations
+    :vartype site_network_services:
+     azure.mgmt.hybridnetwork.aio.operations.SiteNetworkServicesOperations
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials_async.AsyncTokenCredential
-    :param subscription_id: The ID of the target subscription.
+    :param subscription_id: The ID of the target subscription. Required.
     :type subscription_id: str
-    :param str base_url: Service URL
-    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no Retry-After header is present.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
+    :keyword api_version: Api Version. Default value is "2023-09-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
+    :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
+     Retry-After header is present.
     """
 
     def __init__(
         self,
         credential: "AsyncTokenCredential",
         subscription_id: str,
-        base_url: Optional[str] = None,
+        base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        if not base_url:
-            base_url = 'https://management.azure.com'
-        self._config = HybridNetworkManagementClientConfiguration(credential, subscription_id, **kwargs)
-        self._client = AsyncARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = HybridNetworkManagementClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        self._client: AsyncARMPipelineClient = AsyncARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
-        self._serialize.client_side_validation = False
         self._deserialize = Deserializer(client_models)
-
+        self._serialize.client_side_validation = False
+        self.configuration_group_schemas = ConfigurationGroupSchemasOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.configuration_group_values = ConfigurationGroupValuesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.network_functions = NetworkFunctionsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.devices = DevicesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.operations = Operations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.vendors = VendorsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.vendor_skus = VendorSkusOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.vendor_sku_preview = VendorSkuPreviewOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.network_function_vendors = NetworkFunctionVendorsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.network_function_vendor_skus = NetworkFunctionVendorSkusOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.vendor_network_functions = VendorNetworkFunctionsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.role_instances = RoleInstancesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.components = ComponentsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.network_function_definition_groups = NetworkFunctionDefinitionGroupsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.network_function_definition_versions = NetworkFunctionDefinitionVersionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.network_service_design_groups = NetworkServiceDesignGroupsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.network_service_design_versions = NetworkServiceDesignVersionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
+        self.publishers = PublishersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.artifact_stores = ArtifactStoresOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.artifact_manifests = ArtifactManifestsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.proxy_artifact = ProxyArtifactOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.sites = SitesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.site_network_services = SiteNetworkServicesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
 
-    async def _send_request(self, http_request: HttpRequest, **kwargs: Any) -> AsyncHttpResponse:
+    def _send_request(self, request: HttpRequest, **kwargs: Any) -> Awaitable[AsyncHttpResponse]:
         """Runs the network request through the client's chained policies.
 
-        :param http_request: The network request you want to make. Required.
-        :type http_request: ~azure.core.pipeline.transport.HttpRequest
-        :keyword bool stream: Whether the response payload will be streamed. Defaults to True.
+        >>> from azure.core.rest import HttpRequest
+        >>> request = HttpRequest("GET", "https://www.example.org/")
+        <HttpRequest [GET], url: 'https://www.example.org/'>
+        >>> response = await client._send_request(request)
+        <AsyncHttpResponse: 200 OK>
+
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
+
+        :param request: The network request you want to make. Required.
+        :type request: ~azure.core.rest.HttpRequest
+        :keyword bool stream: Whether the response payload will be streamed. Defaults to False.
         :return: The response of your network call. Does not do error handling on your response.
-        :rtype: ~azure.core.pipeline.transport.AsyncHttpResponse
+        :rtype: ~azure.core.rest.AsyncHttpResponse
         """
-        path_format_arguments = {
-            'subscriptionId': self._serialize.url("self._config.subscription_id", self._config.subscription_id, 'str', min_length=1),
-        }
-        http_request.url = self._client.format_url(http_request.url, **path_format_arguments)
-        stream = kwargs.pop("stream", True)
-        pipeline_response = await self._client._pipeline.run(http_request, stream=stream, **kwargs)
-        return pipeline_response.http_response
+
+        request_copy = deepcopy(request)
+        request_copy.url = self._client.format_url(request_copy.url)
+        return self._client.send_request(request_copy, **kwargs)
 
     async def close(self) -> None:
         await self._client.close()
@@ -123,5 +173,5 @@ class HybridNetworkManagementClient(object):
         await self._client.__aenter__()
         return self
 
-    async def __aexit__(self, *exc_details) -> None:
+    async def __aexit__(self, *exc_details: Any) -> None:
         await self._client.__aexit__(*exc_details)

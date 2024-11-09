@@ -17,7 +17,7 @@ USAGE:
     python sample_manage_custom_models_async.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_FORM_RECOGNIZER_ENDPOINT - the endpoint to your Cognitive Services resource.
+    1) AZURE_FORM_RECOGNIZER_ENDPOINT - the endpoint to your Form Recognizer resource.
     2) AZURE_FORM_RECOGNIZER_KEY - your Form Recognizer API key
     3) CONTAINER_SAS_URL_V2 - The shared access signature (SAS) Url of your Azure Blob Storage container
 """
@@ -59,11 +59,11 @@ class ManageCustomModelsSampleAsync(object):
 
             # let's train a model to use for this sample
             poller = await form_training_client.begin_training(container_sas_url, use_training_labels=False)
-            model = await poller.result()
+            model_info = await poller.result()
 
             # Now we'll get information for the model we just trained
             # [START get_custom_model_async]
-            custom_model = await form_training_client.get_custom_model(model_id=model.model_id)
+            custom_model = await form_training_client.get_custom_model(model_id=model_info.model_id)
             print("\nModel ID: {}".format(custom_model.model_id))
             print("Status: {}".format(custom_model.status))
             print("Model name: {}".format(custom_model.model_name))

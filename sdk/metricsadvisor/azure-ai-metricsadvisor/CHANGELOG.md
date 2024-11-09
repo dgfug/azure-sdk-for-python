@@ -1,15 +1,9 @@
 # Release History
 
-## 1.1.0 (Unreleased)
-
-### Features Added
-
-### Breaking Changes
-
-### Bugs Fixed
+## 1.0.1 (2024-08-26)
 
 ### Other Changes
-- Python 2.7 is no longer supported. Please use Python version 3.6 or later.
+- This package is no longer being maintained, as the service has been retired. There is no replacement package for this package.
 
 ## 1.0.0 (2021-07-06)
 

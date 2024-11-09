@@ -15,13 +15,19 @@ from ._resource_health_metadata_operations import ResourceHealthMetadataOperatio
 from ._web_site_management_client_operations import WebSiteManagementClientOperationsMixin
 from ._billing_meters_operations import BillingMetersOperations
 
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
+
 __all__ = [
-    'CertificatesOperations',
-    'DeletedWebAppsOperations',
-    'DiagnosticsOperations',
-    'ProviderOperations',
-    'RecommendationsOperations',
-    'ResourceHealthMetadataOperations',
-    'WebSiteManagementClientOperationsMixin',
-    'BillingMetersOperations',
+    "CertificatesOperations",
+    "DeletedWebAppsOperations",
+    "DiagnosticsOperations",
+    "ProviderOperations",
+    "RecommendationsOperations",
+    "ResourceHealthMetadataOperations",
+    "WebSiteManagementClientOperationsMixin",
+    "BillingMetersOperations",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

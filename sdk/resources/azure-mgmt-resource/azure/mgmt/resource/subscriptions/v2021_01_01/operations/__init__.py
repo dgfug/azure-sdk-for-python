@@ -6,12 +6,18 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from ._subscriptions_operations import SubscriptionsOperations
-from ._tenants_operations import TenantsOperations
-from ._subscription_client_operations import SubscriptionClientOperationsMixin
+from ._operations import SubscriptionsOperations
+from ._operations import TenantsOperations
+from ._operations import SubscriptionClientOperationsMixin
+
+from ._patch import __all__ as _patch_all
+from ._patch import *  # pylint: disable=unused-wildcard-import
+from ._patch import patch_sdk as _patch_sdk
 
 __all__ = [
-    'SubscriptionsOperations',
-    'TenantsOperations',
-    'SubscriptionClientOperationsMixin',
+    "SubscriptionsOperations",
+    "TenantsOperations",
+    "SubscriptionClientOperationsMixin",
 ]
+__all__.extend([p for p in _patch_all if p not in __all__])
+_patch_sdk()

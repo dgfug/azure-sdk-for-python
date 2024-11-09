@@ -6,38 +6,37 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+class AutoRunState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enabling this field will trigger an automatic build on image template creation or update."""
+
+    AUTO_RUN_ENABLED = "Enabled"
+    """Autorun is enabled"""
+    AUTO_RUN_DISABLED = "Disabled"
+    """Autorun is disabled"""
+
+
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class ProvisioningErrorCode(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Error code of the provisioning failure
-    """
+
+class OnBuildError(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Error handling behavior upon build failure."""
+
+    CLEANUP = "cleanup"
+    ABORT = "abort"
+
+
+class ProvisioningErrorCode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Error code of the provisioning failure."""
 
     BAD_SOURCE_TYPE = "BadSourceType"
     BAD_PIR_SOURCE = "BadPIRSource"
@@ -46,22 +45,28 @@ class ProvisioningErrorCode(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum))
     BAD_CUSTOMIZER_TYPE = "BadCustomizerType"
     UNSUPPORTED_CUSTOMIZER_TYPE = "UnsupportedCustomizerType"
     NO_CUSTOMIZER_SCRIPT = "NoCustomizerScript"
+    BAD_VALIDATOR_TYPE = "BadValidatorType"
+    UNSUPPORTED_VALIDATOR_TYPE = "UnsupportedValidatorType"
+    NO_VALIDATOR_SCRIPT = "NoValidatorScript"
     BAD_DISTRIBUTE_TYPE = "BadDistributeType"
     BAD_SHARED_IMAGE_DISTRIBUTE = "BadSharedImageDistribute"
+    BAD_STAGING_RESOURCE_GROUP = "BadStagingResourceGroup"
     SERVER_ERROR = "ServerError"
     OTHER = "Other"
 
-class ProvisioningState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Provisioning state of the resource
-    """
+
+class ProvisioningState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Provisioning state of the resource."""
 
     CREATING = "Creating"
     UPDATING = "Updating"
     SUCCEEDED = "Succeeded"
     FAILED = "Failed"
     DELETING = "Deleting"
+    CANCELED = "Canceled"
 
-class ResourceIdentityType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class ResourceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The type of identity used for the image template. The type 'None' will remove any identities
     from the image template.
     """
@@ -69,9 +74,9 @@ class ResourceIdentityType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     USER_ASSIGNED = "UserAssigned"
     NONE = "None"
 
-class RunState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """State of the last run
-    """
+
+class RunState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """State of the last run."""
 
     RUNNING = "Running"
     CANCELING = "Canceling"
@@ -80,19 +85,30 @@ class RunState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     FAILED = "Failed"
     CANCELED = "Canceled"
 
-class RunSubState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Sub-state of the last run
-    """
+
+class RunSubState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Sub-state of the last run."""
 
     QUEUED = "Queued"
     BUILDING = "Building"
     CUSTOMIZING = "Customizing"
+    OPTIMIZING = "Optimizing"
+    VALIDATING = "Validating"
     DISTRIBUTING = "Distributing"
 
-class SharedImageStorageAccountType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Storage account type to be used to store the shared image. Omit to use the default
-    (Standard_LRS).
+
+class SharedImageStorageAccountType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Specifies the storage account type to be used to store the Azure Compute Gallery image version
+    in.
     """
 
     STANDARD_LRS = "Standard_LRS"
     STANDARD_ZRS = "Standard_ZRS"
+    PREMIUM_LRS = "Premium_LRS"
+
+
+class VMBootOptimizationState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enabling this field will improve VM boot time by optimizing the final customized image output."""
+
+    ENABLED = "Enabled"
+    DISABLED = "Disabled"

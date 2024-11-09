@@ -6,13 +6,9 @@ parameters:
   TestPipeline: false
   VerifyAutorest: false
   ValidateFormatting: false
+  GenerateApiReviewForManualOnly: false
 
-# The variable TargetingString is set by template `eng/pipelines/templates/steps/targeting-string-resolve.yml`. This template is invoked from yml files:
-#     eng/pipelines/templates/jobs/ci.tests.yml
-#     eng/pipelines/templates/jobs/ci.yml
-#     eng/pipelines/templates/jobs/live.test.yml
-
-# Please use `$(TargetingString)` to refer to the python packages glob string. This was previously `${{ parameters.BuildTargetingString }}`.
+# Please use `$(TargetingString)` to refer to the python packages glob string. This variable is set from resolve-package-targeting.yml.
 steps:
   - template: /eng/pipelines/templates/steps/analyze_dependency.yml
     parameters:
@@ -24,23 +20,31 @@ steps:
       ServiceDirectory: "template"
       TestPipeline: ${{ parameters.TestPipeline }}
 
-  - ${{ each artifact in parameters.Artifacts }}:
-    - ${{if ne(artifact.skipVerifyChangeLog, 'true')}}:
-      - template: /eng/common/pipelines/templates/steps/verify-changelog.yml
-        parameters:
-          PackageName: ${{artifact.name}}
-          ServiceName: ${{parameters.ServiceDirectory}}
-          ForRelease: false
-
-  - pwsh: |
-     pip install -r eng/ci_tools.txt $(if($IsWindows) {"--user" })
-    displayName: 'Install Necessary Dependencies'
+  - task: PythonScript@0
+    displayName: 'Set Tox Environment Skips'
     condition: succeededOrFailed()
+    inputs:
+      scriptPath: 'scripts/devops_tasks/set_tox_environment.py'
+      arguments: '"$(TargetingString)" --team-project="$(System.TeamProject)" --service="${{ parameters.ServiceDirectory }}"'
+
+  - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+    - template: /eng/common/pipelines/templates/steps/verify-changelogs.yml
+      parameters:
+        PackagePropertiesFolder: $(Build.ArtifactStagingDirectory)/PackageInfo
+        Condition: succeededOrFailed()
+  - ${{ else }}:
+    - ${{ each artifact in parameters.Artifacts }}:
+      - ${{if ne(artifact.skipVerifyChangeLog, 'true')}}:
+        - template: /eng/common/pipelines/templates/steps/verify-changelog.yml
+          parameters:
+            PackageName: ${{artifact.name}}
+            ServiceName: ${{parameters.ServiceDirectory}}
+            ForRelease: false
+            Condition: succeededOrFailed()
 
   - script: |
-      cd eng/versioning
-      pip install -r requirements.txt
-      python find_invalid_versions.py --always-succeed --service=${{parameters.ServiceDirectory}}
+      python -m pip install "./tools/azure-sdk-tools[build]" -q -I
+      sdk_find_invalid_versions --always-succeed --service=${{parameters.ServiceDirectory}}
     displayName: Find Invalid Versions
     condition: succeededOrFailed()
 
@@ -59,44 +63,52 @@ steps:
         }
       }
     displayName: Check for CRLF Line endings
+    condition: succeededOrFailed()
 
   - template: /eng/common/pipelines/templates/steps/verify-path-length.yml
     parameters:
       SourceDirectory: $(Build.SourcesDirectory)
+      Condition: succeededOrFailed()
 
   - template: ../steps/verify-autorest.yml
     parameters:
       ServiceDirectory: ${{ parameters.ServiceDirectory }}
       VerifyAutorest: ${{ parameters.VerifyAutorest }}
 
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    # ComponentGovernance is currently unable to run on pull requests of public projects. Running on non-PR
-    # builds should be sufficient.
-    condition: and(succeededOrFailed(), ne(variables['Build.Reason'],'PullRequest'))
-    displayName: 'Component Detection'
+  - template: ../steps/set-dev-build.yml
+    parameters:
+      ServiceDirectory: ${{ parameters.ServiceDirectory }}
 
   - task: PythonScript@0
     displayName: 'Verify sdist'
     condition: and(succeededOrFailed(), ne(variables['Skip.VerifySdist'],'true'))
     inputs:
-     scriptPath: 'scripts/devops_tasks/setup_execute_tests.py'
-     arguments: '"$(TargetingString)" --service=${{parameters.ServiceDirectory}} --toxenv=verifysdist'
+     scriptPath: 'scripts/devops_tasks/dispatch_tox.py'
+     arguments: '"$(TargetingString)" --service=${{parameters.ServiceDirectory}} --toxenv=verifysdist ${{ parameters.AdditionalTestArgs }}'
 
   - task: PythonScript@0
     displayName: 'Verify whl'
     condition: and(succeededOrFailed(), ne(variables['Skip.VerifyWhl'],'true'))
     inputs:
-     scriptPath: 'scripts/devops_tasks/setup_execute_tests.py'
-     arguments: '"$(TargetingString)" --service=${{parameters.ServiceDirectory}} --toxenv=verifywhl'
+     scriptPath: 'scripts/devops_tasks/dispatch_tox.py'
+     arguments: '"$(TargetingString)" --service=${{parameters.ServiceDirectory}} --toxenv=verifywhl ${{ parameters.AdditionalTestArgs }}'
 
   - template: run_mypy.yml
     parameters:
       ServiceDirectory: ${{ parameters.ServiceDirectory }}
       TestMarkArgument: ${{ parameters.TestMarkArgument }}
+      AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
+
+  - template: run_pyright.yml
+    parameters:
+      ServiceDirectory: ${{ parameters.ServiceDirectory }}
+      TestMarkArgument: ${{ parameters.TestMarkArgument }}
+      AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
 
   - template: run_pylint.yml
     parameters:
       ServiceDirectory: ${{ parameters.ServiceDirectory }}
+      AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
 
   - ${{ if parameters.ValidateFormatting }}:
     - template: run_black.yml
@@ -104,35 +116,49 @@ steps:
         ServiceDirectory: ${{ parameters.ServiceDirectory }}
         ValidateFormatting: ${{ parameters.ValidateFormatting }}
 
-  - task: DownloadPipelineArtifact@2
-    condition: succeededOrFailed()
+  - task: PythonScript@0
+    displayName: 'Run Keyword Validation Check'
     inputs:
-      artifactName: 'packages'
-      targetPath: $(Build.ArtifactStagingDirectory)
+      scriptPath: 'scripts/devops_tasks/dispatch_tox.py'
+      arguments: '"$(TargetingString)" --service=${{parameters.ServiceDirectory}} --toxenv=verify_keywords ${{ parameters.AdditionalTestArgs }}'
+    condition: and(succeededOrFailed(), ne(variables['Skip.KeywordCheck'],'true'))
 
   - template: ../steps/run_bandit.yml
     parameters:
       ServiceDirectory: ${{ parameters.ServiceDirectory }}
       TestMarkArgument: ${{ parameters.TestMarkArgument }}
-      AdditionalTestArgs: ${{parameters.AdditionalTestArgs}}
+      AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
+
+  - template: /eng/pipelines/templates/steps/update_snippet.yml
+    parameters:
+      ScanPath: $(Build.SourcesDirectory)/sdk/${{ parameters.ServiceDirectory }}
+      AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
 
   - template: ../steps/run_breaking_changes.yml
     parameters:
       ServiceDirectory: ${{ parameters.ServiceDirectory }}
       TestMarkArgument: ${{ parameters.TestMarkArgument }}
-      AdditionalTestArgs: ${{parameters.AdditionalTestArgs}}
+      AdditionalTestArgs: ${{ parameters.AdditionalTestArgs }}
 
   - template: /eng/common/pipelines/templates/steps/create-apireview.yml
     parameters:
       Artifacts: ${{ parameters.Artifacts }}
+      GenerateApiReviewForManualOnly: ${{ parameters.GenerateApiReviewForManualOnly }}
+      ArtifactName: "packages_extended"
 
   - template: /eng/common/pipelines/templates/steps/detect-api-changes.yml
     parameters:
       Artifacts: ${{ parameters.Artifacts }}
+      ArtifactName: "packages_extended"
+
+  - template: /eng/common/pipelines/templates/steps/validate-all-packages.yml
+    parameters:
+      Artifacts: ${{ parameters.Artifacts }}
+      ArtifactName: "packages_extended"
 
   - template: /eng/common/pipelines/templates/steps/eng-common-workflow-enforcer.yml
 
-  - template: /eng/common/pipelines/templates/steps/publish-artifact.yml
+  - template: /eng/common/pipelines/templates/steps/publish-1es-artifact.yml
     parameters:
       ArtifactPath: '$(Build.ArtifactStagingDirectory)/reports'
       ArtifactName: 'reports'

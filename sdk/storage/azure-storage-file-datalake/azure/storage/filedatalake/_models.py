@@ -5,9 +5,9 @@
 # --------------------------------------------------------------------------
 # pylint: disable=too-few-public-methods, too-many-instance-attributes
 # pylint: disable=super-init-not-called, too-many-lines
-from datetime import datetime
 from enum import Enum
 
+from azure.core import CaseInsensitiveEnumMeta
 from azure.storage.blob import LeaseProperties as BlobLeaseProperties
 from azure.storage.blob import AccountSasPermissions as BlobAccountSasPermissions
 from azure.storage.blob import ResourceTypes as BlobResourceTypes
@@ -17,10 +17,14 @@ from azure.storage.blob import AccessPolicy as BlobAccessPolicy
 from azure.storage.blob import DelimitedTextDialect as BlobDelimitedTextDialect
 from azure.storage.blob import DelimitedJsonDialect as BlobDelimitedJSON
 from azure.storage.blob import ArrowDialect as BlobArrowDialect
+from azure.storage.blob import ContainerEncryptionScope as BlobContainerEncryptionScope
+from azure.storage.blob import CustomerProvidedEncryptionKey as BlobCustomerProvidedEncryptionKey
 from azure.storage.blob._models import ContainerPropertiesPaged
 from azure.storage.blob._generated.models import Logging as GenLogging, Metrics as GenMetrics, \
     RetentionPolicy as GenRetentionPolicy, StaticWebsite as GenStaticWebsite, CorsRule as GenCorsRule
+
 from ._shared.models import DictMixin
+from ._shared.parser import _filetime_to_datetime, _rfc_1123_to_datetime
 
 
 class FileSystemProperties(DictMixin):
@@ -43,6 +47,8 @@ class FileSystemProperties(DictMixin):
         Represents whether the file system has a legal hold.
     :ivar dict metadata: A dict with name-value pairs to associate with the
         file system as metadata.
+    :ivar ~azure.storage.filedatalake.EncryptionScopeOptions encryption_scope:
+        The default encryption scope configuration for the file system.
     :ivar bool deleted:
         Whether this file system was deleted.
     :ivar str deleted_version:
@@ -53,7 +59,7 @@ class FileSystemProperties(DictMixin):
     Additionally, the file system name is available as ``file_system_props["name"]``.
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.name = None
         self.last_modified = None
         self.etag = None
@@ -64,6 +70,12 @@ class FileSystemProperties(DictMixin):
         self.metadata = None
         self.deleted = None
         self.deleted_version = None
+        default_encryption_scope = kwargs.get('x-ms-default-encryption-scope')
+        if default_encryption_scope:
+            self.encryption_scope = EncryptionScopeOptions(
+                default_encryption_scope=default_encryption_scope,
+                prevent_encryption_scope_override=kwargs.get('x-ms-deny-encryption-scope-override', False)
+            )
 
     @classmethod
     def _from_generated(cls, generated):
@@ -79,6 +91,7 @@ class FileSystemProperties(DictMixin):
         props.has_immutability_policy = generated.properties.has_immutability_policy
         props.has_legal_hold = generated.properties.has_legal_hold
         props.metadata = generated.metadata
+        props.encryption_scope = EncryptionScopeOptions._from_generated(generated)  #pylint: disable=protected-access
         return props
 
     @classmethod
@@ -125,10 +138,20 @@ class FileSystemPropertiesPaged(ContainerPropertiesPaged):
 class DirectoryProperties(DictMixin):
     """
     :ivar str name: name of the directory
+    :ivar str owner: The owner of the file or directory.
+    :ivar str group: The owning group of the file or directory.
+    :ivar str permissions: The permissions that are set for user, group, and other on the file or directory.
+        Each individual permission is in [r,w,x,-]{3} format.
+    :ivar str acl: The POSIX ACL permissions of the file or directory.
     :ivar str etag: The ETag contains a value that you can use to perform operations
         conditionally.
     :ivar bool deleted: if the current directory marked as deleted
     :ivar dict metadata: Name-value pairs associated with the directory as metadata.
+    :ivar str encryption_scope:
+        A predefined encryption scope used to encrypt the data on the service. An encryption
+        scope can be created using the Management API and referenced here by name. If a default
+        encryption scope has been defined at the file system, this value will override it if the
+        file system level scope is configured to allow overrides. Otherwise an error will be raised.
     :ivar ~azure.storage.filedatalake.LeaseProperties lease:
         Stores all the lease information for the directory.
     :ivar ~datetime.datetime last_modified:
@@ -150,15 +173,32 @@ class DirectoryProperties(DictMixin):
         self.creation_time = kwargs.get('x-ms-creation-time')
         self.deleted_time = None
         self.remaining_retention_days = None
+        self.encryption_scope = kwargs.get('x-ms-encryption-scope')
+
+        # This is being passed directly not coming from headers
+        self.owner = kwargs.get('owner', None)
+        self.group = kwargs.get('group', None)
+        self.permissions = kwargs.get('permissions', None)
+        self.acl = kwargs.get('acl', None)
 
 
 class FileProperties(DictMixin):
     """
     :ivar str name: name of the file
+    :ivar str owner: The owner of the file or directory.
+    :ivar str group: The owning group of the file or directory.
+    :ivar str permissions: The permissions that are set for user, group, and other on the file or directory.
+        Each individual permission is in [r,w,x,-]{3} format.
+    :ivar str acl: The POSIX ACL permissions of the file or directory.
     :ivar str etag: The ETag contains a value that you can use to perform operations
         conditionally.
     :ivar bool deleted: if the current file marked as deleted
     :ivar dict metadata: Name-value pairs associated with the file as metadata.
+    :ivar str encryption_scope:
+        A predefined encryption scope used to encrypt the data on the service. An encryption
+        scope can be created using the Management API and referenced here by name. If a default
+        encryption scope has been defined at the file system, this value will override it if the
+        file system level scope is configured to allow overrides. Otherwise an error will be raised.
     :ivar ~azure.storage.filedatalake.LeaseProperties lease:
         Stores all the lease information for the file.
     :ivar ~datetime.datetime last_modified:
@@ -168,6 +208,7 @@ class FileProperties(DictMixin):
     :ivar int size: size of the file
     :ivar int remaining_retention_days: The number of days that the file will be retained
         before being permanently deleted by the service.
+    :ivar str encryption_context: Specifies the encryption context to set on the file.
     :var ~azure.storage.filedatalake.ContentSettings content_settings:
     """
 
@@ -184,24 +225,37 @@ class FileProperties(DictMixin):
         self.expiry_time = kwargs.get("x-ms-expiry-time")
         self.remaining_retention_days = None
         self.content_settings = ContentSettings(**kwargs)
+        self.encryption_scope = kwargs.get('x-ms-encryption-scope')
+
+        # This is being passed directly not coming from headers
+        self.encryption_context = kwargs.get('encryption_context')
+        self.owner = kwargs.get('owner', None)
+        self.group = kwargs.get('group', None)
+        self.permissions = kwargs.get('permissions', None)
+        self.acl = kwargs.get('acl', None)
 
 
 class PathProperties(DictMixin):
     """Path properties listed by get_paths api.
 
-    :ivar str name: the full path for a file or directory.
+    :ivar str name: The full path for a file or directory.
     :ivar str owner: The owner of the file or directory.
-    :ivar str group: he owning group of the file or directory.
-    :ivar str permissions: Sets POSIX access permissions for the file
-         owner, the file owning group, and others. Each class may be granted
-         read, write, or execute permission.  The sticky bit is also supported.
-         Both symbolic (rwxrw-rw-) and 4-digit octal notation (e.g. 0766) are
-         supported.
+    :ivar str group: The owning group of the file or directory.
+    :ivar str permissions: The permissions that are set for user, group, and other on the file or directory.
+        Each individual permission is in [r,w,x,-]{3} format.
     :ivar datetime last_modified:  A datetime object representing the last time the directory/file was modified.
-    :ivar bool is_directory: is the path a directory or not.
+    :ivar bool is_directory: Is the path a directory or not.
     :ivar str etag: The ETag contains a value that you can use to perform operations
         conditionally.
-    :ivar content_length: the size of file if the path is a file.
+    :ivar int content_length: The size of file if the path is a file.
+    :ivar datetime creation_time: The creation time of the file/directory.
+    :ivar datetime expiry_time: The expiry time of the file/directory.
+    :ivar str encryption_scope:
+        A predefined encryption scope used to encrypt the data on the service. An encryption
+        scope can be created using the Management API and referenced here by name. If a default
+        encryption scope has been defined at the file system, this value will override it if the
+        file system level scope is configured to allow overrides. Otherwise an error will be raised.
+    :ivar str encryption_context: Specifies the encryption context to set on the file.
     """
 
     def __init__(self, **kwargs):
@@ -213,6 +267,10 @@ class PathProperties(DictMixin):
         self.is_directory = kwargs.get('is_directory', False)
         self.etag = kwargs.get('etag', None)
         self.content_length = kwargs.get('content_length', None)
+        self.creation_time = kwargs.get('creation_time', None)
+        self.expiry_time = kwargs.get('expiry_time', None)
+        self.encryption_scope = kwargs.get('x-ms-encryption-scope', None)
+        self.encryption_context = kwargs.get('x-ms-encryption-context', None)
 
     @classmethod
     def _from_generated(cls, generated):
@@ -221,10 +279,14 @@ class PathProperties(DictMixin):
         path_prop.owner = generated.owner
         path_prop.group = generated.group
         path_prop.permissions = generated.permissions
-        path_prop.last_modified = datetime.strptime(generated.last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+        path_prop.last_modified = _rfc_1123_to_datetime(generated.last_modified)
         path_prop.is_directory = bool(generated.is_directory)
         path_prop.etag = generated.additional_properties.get('etag')
         path_prop.content_length = generated.content_length
+        path_prop.creation_time = _filetime_to_datetime(generated.creation_time)
+        path_prop.expiry_time = _filetime_to_datetime(generated.expiry_time)
+        path_prop.encryption_scope = generated.encryption_scope
+        path_prop.encryption_context = generated.encryption_context
         return path_prop
 
 
@@ -371,7 +433,7 @@ class FileSystemSasPermissions(object):
         :param str permission: The string which dictates the read, add, create,
             write, or delete permissions.
         :return: A FileSystemSasPermissions object
-        :rtype: ~azure.storage.fildatalake.FileSystemSasPermissions
+        :rtype: ~azure.storage.filedatalake.FileSystemSasPermissions
         """
         p_read = 'r' in permission
         p_add = 'a' in permission
@@ -542,7 +604,7 @@ class FileSasPermissions(object):
         :param str permission: The string which dictates the read, add, create,
             write, or delete permissions.
         :return: A FileSasPermissions object
-        :rtype: ~azure.storage.fildatalake.FileSasPermissions
+        :rtype: ~azure.storage.filedatalake.FileSasPermissions
         """
         p_read = 'r' in permission
         p_add = 'a' in permission
@@ -598,9 +660,8 @@ class AccessPolicy(BlobAccessPolicy):
     :keyword start:
         The time at which the shared access signature becomes valid. If
         omitted, start time for this call is assumed to be the time when the
-        storage service receives the request. Azure will always convert values
-        to UTC. If a date is passed in without timezone info, it is assumed to
-        be UTC.
+        storage service receives the request. The provided datetime will always
+        be interpreted as UTC.
     :paramtype start: ~datetime.datetime or str
     """
 
@@ -666,19 +727,19 @@ class UserDelegationKey(BlobUserDelegationKey):
         return delegation_key
 
 
-class PublicAccess(str, Enum):
+class PublicAccess(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """
     Specifies whether data in the file system may be accessed publicly and the level of access.
     """
 
-    File = 'blob'
+    FILE = 'blob'
     """
     Specifies public read access for files. file data within this file system can be read
     via anonymous request, but file system data is not available. Clients cannot enumerate
     files within the container via anonymous request.
     """
 
-    FileSystem = 'container'
+    FILESYSTEM = 'container'
     """
     Specifies full public read access for file system and file data. Clients can enumerate
     files within the file system via anonymous request, but cannot enumerate file systems
@@ -709,7 +770,7 @@ class LocationMode(object):
 class DelimitedJsonDialect(BlobDelimitedJSON):
     """Defines the input or output JSON serialization for a datalake query.
 
-    :keyword str delimiter: The line separator character, default value is '\n'
+    :keyword str delimiter: The line separator character, default value is '\\\\n'.
     """
 
 
@@ -721,7 +782,7 @@ class DelimitedTextDialect(BlobDelimitedTextDialect):
     :keyword str quotechar:
         Field quote, defaults to '"'.
     :keyword str lineterminator:
-        Record separator, defaults to '\n'.
+        Record separator, defaults to '\\\\n'.
     :keyword str escapechar:
         Escape char, defaults to empty.
     :keyword bool has_header:
@@ -743,15 +804,54 @@ class ArrowDialect(BlobArrowDialect):
     """
 
 
-class QuickQueryDialect(str, Enum):
+class CustomerProvidedEncryptionKey(BlobCustomerProvidedEncryptionKey):
+    """
+    All data in Azure Storage is encrypted at-rest using an account-level encryption key.
+    In versions 2021-06-08 and newer, you can manage the key used to encrypt file contents
+    and application metadata per-file by providing an AES-256 encryption key in requests to the storage service.
+
+    When you use a customer-provided key, Azure Storage does not manage or persist your key.
+    When writing data to a file, the provided key is used to encrypt your data before writing it to disk.
+    A SHA-256 hash of the encryption key is written alongside the file contents,
+    and is used to verify that all subsequent operations against the file use the same encryption key.
+    This hash cannot be used to retrieve the encryption key or decrypt the contents of the file.
+    When reading a file, the provided key is used to decrypt your data after reading it from disk.
+    In both cases, the provided encryption key is securely discarded
+    as soon as the encryption or decryption process completes.
+
+    :param str key_value:
+        Base64-encoded AES-256 encryption key value.
+    :param str key_hash:
+        Base64-encoded SHA256 of the encryption key.
+    :ivar str algorithm:
+        Specifies the algorithm to use when encrypting data using the given key. Must be AES256.
+    """
+
+class EncryptionScopeOptions(BlobContainerEncryptionScope):
+    """The default encryption scope configuration for a file system.
+
+    This scope is used implicitly for all future writes within the file system,
+    but can be overridden per blob operation.
+
+    .. versionadded:: 12.9.0
+
+    :param str default_encryption_scope:
+        Specifies the default encryption scope to set on the file system and use for
+        all future writes.
+    :param bool prevent_encryption_scope_override:
+        If true, prevents any request from specifying a different encryption scope than the scope
+        set on the file system. Default value is false.
+    """
+
+class QuickQueryDialect(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Specifies the quick query input/output dialect."""
 
-    DelimitedText = 'DelimitedTextDialect'
-    DelimitedJson = 'DelimitedJsonDialect'
-    Parquet = 'ParquetDialect'
+    DELIMITEDTEXT = 'DelimitedTextDialect'
+    DELIMITEDJSON = 'DelimitedJsonDialect'
+    PARQUET = 'ParquetDialect'
 
 
-class ArrowType(str, Enum):
+class ArrowType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
 
     INT64 = "int64"
     BOOL = "bool"
@@ -895,7 +995,7 @@ class AnalyticsLogging(GenLogging):
     """
 
     def __init__(self, **kwargs):
-        self.version = kwargs.get('version', u'1.0')
+        self.version = kwargs.get('version', '1.0')
         self.delete = kwargs.get('delete', False)
         self.read = kwargs.get('read', False)
         self.write = kwargs.get('write', False)
@@ -930,7 +1030,7 @@ class Metrics(GenMetrics):
     """
 
     def __init__(self, **kwargs):
-        self.version = kwargs.get('version', u'1.0')
+        self.version = kwargs.get('version', '1.0')
         self.enabled = kwargs.get('enabled', False)
         self.include_apis = kwargs.get('include_apis')
         self.retention_policy = kwargs.get('retention_policy') or RetentionPolicy()

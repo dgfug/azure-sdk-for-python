@@ -3,6 +3,7 @@
 # Licensed under the MIT License.
 # ------------------------------------
 import datetime
+from unittest.mock import ANY, Mock, patch
 
 from azure.core.exceptions import ClientAuthenticationError
 from azure.core.pipeline.policies import SansIOHTTPPolicy
@@ -18,12 +19,8 @@ from helpers import (
     mock_response,
     Request,
     validating_transport,
+    GET_TOKEN_METHODS,
 )
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:  # python < 3.3
-    from mock import Mock, patch  # type: ignore
 
 
 def test_tenant_id_validation():
@@ -39,15 +36,17 @@ def test_tenant_id_validation():
             DeviceCodeCredential(tenant_id=tenant)
 
 
-def test_no_scopes():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_no_scopes(get_token_method):
     """The credential should raise when get_token is called with no scopes"""
 
     credential = DeviceCodeCredential("client_id")
     with pytest.raises(ValueError):
-        credential.get_token()
+        getattr(credential, get_token_method)()
 
 
-def test_authenticate():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_authenticate(get_token_method):
     client_id = "client-id"
     environment = "localhost"
     issuer = "https://" + environment
@@ -57,7 +56,7 @@ def test_authenticate():
     access_token = "***"
     scope = "scope"
 
-    # mock AAD response with id token
+    # mock Microsoft Entra ID response with id token
     object_id = "object-id"
     home_tenant = "home-tenant-id"
     username = "me@work.com"
@@ -96,21 +95,23 @@ def test_authenticate():
     assert record.username == username
 
     # credential should have a cached access token for the scope used in authenticate
-    token = credential.get_token(scope)
+    token = getattr(credential, get_token_method)(scope)
     assert token.token == access_token
 
 
-def test_disable_automatic_authentication():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_disable_automatic_authentication(get_token_method):
     """When configured for strict silent auth, the credential should raise when silent auth fails"""
 
     transport = Mock(send=Mock(side_effect=Exception("no request should be sent")))
     credential = DeviceCodeCredential("client-id", disable_automatic_authentication=True, transport=transport)
 
     with pytest.raises(AuthenticationRequiredError):
-        credential.get_token("scope")
+        getattr(credential, get_token_method)("scope")
 
 
-def test_policies_configurable():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_policies_configurable(get_token_method):
     policy = Mock(spec_set=SansIOHTTPPolicy, on_request=Mock())
 
     client_id = "client-id"
@@ -139,12 +140,13 @@ def test_policies_configurable():
         client_id=client_id, prompt_callback=Mock(), policies=[policy], transport=transport
     )
 
-    credential.get_token("scope")
+    getattr(credential, get_token_method)("scope")
 
     assert policy.on_request.called
 
 
-def test_user_agent():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_user_agent(get_token_method):
     client_id = "client-id"
     transport = validating_transport(
         requests=[Request()] * 2 + [Request(required_headers={"User-Agent": USER_AGENT})],
@@ -168,10 +170,11 @@ def test_user_agent():
 
     credential = DeviceCodeCredential(client_id=client_id, prompt_callback=Mock(), transport=transport)
 
-    credential.get_token("scope")
+    getattr(credential, get_token_method)("scope")
 
 
-def test_device_code_credential():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_device_code_credential(get_token_method):
     client_id = "client-id"
     expected_token = "access-token"
     user_code = "user-code"
@@ -182,7 +185,7 @@ def test_device_code_credential():
         requests=[Request()] * 3,  # not validating requests because they're formed by MSAL
         responses=[
             # expected requests: discover tenant, start device code flow, poll for completion
-            mock_response(json_payload={"authorization_endpoint": "https://a/b", "token_endpoint": "https://a/b"}),
+            get_discovery_response(),
             mock_response(
                 json_payload={
                     "device_code": "_",
@@ -207,11 +210,14 @@ def test_device_code_credential():
 
     callback = Mock()
     credential = DeviceCodeCredential(
-        client_id=client_id, prompt_callback=callback, transport=transport, instance_discovery=False,
+        client_id=client_id,
+        prompt_callback=callback,
+        transport=transport,
+        disable_instance_discovery=True,
     )
 
-    now = datetime.datetime.utcnow()
-    token = credential.get_token("scope")
+    now = datetime.datetime.now(datetime.timezone.utc)
+    token = getattr(credential, get_token_method)("scope")
     assert token.token == expected_token
 
     # prompt_callback should have been called as documented
@@ -227,7 +233,8 @@ def test_device_code_credential():
     assert expires_on - now >= datetime.timedelta(seconds=expires_in)
 
 
-def test_tenant_id():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_tenant_id(get_token_method):
     client_id = "client-id"
     expected_token = "access-token"
     user_code = "user-code"
@@ -238,7 +245,7 @@ def test_tenant_id():
         requests=[Request()] * 3,  # not validating requests because they're formed by MSAL
         responses=[
             # expected requests: discover tenant, start device code flow, poll for completion
-            mock_response(json_payload={"authorization_endpoint": "https://a/b", "token_endpoint": "https://a/b"}),
+            get_discovery_response(),
             mock_response(
                 json_payload={
                     "device_code": "_",
@@ -263,56 +270,56 @@ def test_tenant_id():
 
     callback = Mock()
     credential = DeviceCodeCredential(
-        client_id=client_id, prompt_callback=callback, transport=transport, instance_discovery=False,
+        client_id=client_id,
+        prompt_callback=callback,
+        transport=transport,
+        disable_instance_discovery=True,
+        additionally_allowed_tenants=["*"],
     )
 
-    now = datetime.datetime.utcnow()
-    token = credential.get_token("scope", tenant_id="tenant_id")
+    kwargs = {"tenant_id": "tenant_id"}
+    if get_token_method == "get_token_info":
+        kwargs = {"options": kwargs}
+    token = getattr(credential, get_token_method)("scope", **kwargs)
     assert token.token == expected_token
 
 
-def test_timeout():
-    transport = validating_transport(
-        requests=[Request()] * 3,  # not validating requests because they're formed by MSAL
-        responses=[
-            # expected requests: discover tenant, start device code flow, poll for completion
-            mock_response(json_payload={"authorization_endpoint": "https://a/b", "token_endpoint": "https://a/b"}),
-            mock_response(json_payload={"device_code": "_", "user_code": "_", "verification_uri": "_"}),
-            mock_response(json_payload={"error": "authorization_pending"}),
-        ],
-    )
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_timeout(get_token_method):
+    flow = {"expires_in": 1800, "message": "foo"}
+    with patch.object(DeviceCodeCredential, "_get_app") as get_app:
+        msal_app = get_app()
+        msal_app.initiate_device_flow.return_value = flow
+        msal_app.acquire_token_by_device_flow.return_value = {"error": "authorization_pending"}
 
-    credential = DeviceCodeCredential(
-        client_id="_", prompt_callback=Mock(), transport=transport, timeout=0.01, instance_discovery=False,
-    )
-
-    with pytest.raises(ClientAuthenticationError) as ex:
-        credential.get_token("scope")
-    assert "timed out" in ex.value.message.lower()
+        credential = DeviceCodeCredential(client_id="_", timeout=1, disable_instance_discovery=True)
+        with pytest.raises(ClientAuthenticationError) as ex:
+            getattr(credential, get_token_method)("scope")
+        assert "timed out" in ex.value.message.lower()
+        msal_app.acquire_token_by_device_flow.assert_called_once_with(flow, exit_condition=ANY, claims_challenge=None)
 
 
 def test_client_capabilities():
-    """the credential should configure MSAL for capability CP1 unless AZURE_IDENTITY_DISABLE_CP1 is set"""
+    """the credential should configure MSAL for capability CP1 only if enable_cae is passed."""
 
     transport = Mock(send=Mock(side_effect=Exception("this test mocks MSAL, so no request should be sent")))
-
+    credential = DeviceCodeCredential(transport=transport)
     with patch("msal.PublicClientApplication") as PublicClientApplication:
-        DeviceCodeCredential(transport=transport)._get_app()
+        credential._get_app()
 
-    assert PublicClientApplication.call_count == 1
-    _, kwargs = PublicClientApplication.call_args
-    assert kwargs["client_capabilities"] == ["CP1"]
+        assert PublicClientApplication.call_count == 1
+        _, kwargs = PublicClientApplication.call_args
+        assert kwargs["client_capabilities"] == None
 
-    with patch.dict("os.environ", {"AZURE_IDENTITY_DISABLE_CP1": "true"}):
-        with patch("msal.PublicClientApplication") as PublicClientApplication:
-            DeviceCodeCredential(transport=transport)._get_app()
+        credential._get_app(enable_cae=True)
 
-    assert PublicClientApplication.call_count == 1
-    _, kwargs = PublicClientApplication.call_args
-    assert kwargs["client_capabilities"] is None
+        assert PublicClientApplication.call_count == 2
+        _, kwargs = PublicClientApplication.call_args
+        assert kwargs["client_capabilities"] == ["CP1"]
 
 
-def test_claims_challenge():
+@pytest.mark.parametrize("get_token_method", GET_TOKEN_METHODS)
+def test_claims_challenge(get_token_method):
     """get_token and authenticate should pass any claims challenge to MSAL token acquisition APIs"""
 
     msal_acquire_token_result = dict(
@@ -334,7 +341,10 @@ def test_claims_challenge():
         args, kwargs = msal_app.acquire_token_by_device_flow.call_args
         assert kwargs["claims_challenge"] == expected_claims
 
-        credential.get_token("scope", claims=expected_claims)
+        kwargs = {"claims": expected_claims}
+        if get_token_method == "get_token_info":
+            kwargs = {"options": kwargs}
+        getattr(credential, get_token_method)("scope", **kwargs)
 
         assert msal_app.acquire_token_by_device_flow.call_count == 2
         args, kwargs = msal_app.acquire_token_by_device_flow.call_args
@@ -342,7 +352,11 @@ def test_claims_challenge():
 
         msal_app.get_accounts.return_value = [{"home_account_id": credential._auth_record.home_account_id}]
         msal_app.acquire_token_silent_with_error.return_value = msal_acquire_token_result
-        credential.get_token("scope", claims=expected_claims)
+
+        kwargs = {"claims": expected_claims}
+        if get_token_method == "get_token_info":
+            kwargs = {"options": kwargs}
+        getattr(credential, get_token_method)("scope", **kwargs)
 
         assert msal_app.acquire_token_silent_with_error.call_count == 1
         args, kwargs = msal_app.acquire_token_silent_with_error.call_args

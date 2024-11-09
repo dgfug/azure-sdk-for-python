@@ -10,7 +10,8 @@ import subprocess
 import sys
 import types
 import tempfile
-from typing import Dict, Any, Optional
+import re
+from typing import Dict, Any, Optional, List, ForwardRef
 
 # Because I'm subprocessing myself, I need to do weird thing as import.
 try:
@@ -37,24 +38,35 @@ def parse_input(input_parameter):
 
 
 def create_empty_report():
-    return {"models": {"enums": {}, "exceptions": {}, "models": {}}, "operations": {}}
+    return {"client": {}, "models": {"enums": {}, "exceptions": {}, "models": {}}, "operations": {}}
+
+
+def is_model(model_cls: object, is_new_model: bool) -> bool:
+    return hasattr(model_cls, "_is_model" if is_new_model else "_attribute_map")
 
 
 def create_report(module_name: str) -> Dict[str, Any]:
     module_to_generate = importlib.import_module(module_name)
+    client_name = getattr(module_to_generate, "__all__")
 
     report = create_empty_report()
 
+    try:
+        report["client"] = client_name
+    except:
+        report["client"] = []
+
     # Look for models first
     model_names = [model_name for model_name in dir(module_to_generate.models) if model_name[0].isupper()]
+    is_new_model = hasattr(module_to_generate, "_model_base")
     for model_name in model_names:
         model_cls = getattr(module_to_generate.models, model_name)
-        if hasattr(model_cls, "_attribute_map"):
-            report["models"]["models"][model_name] = create_model_report(model_cls)
+        if is_model(model_cls, is_new_model):
+            report["models"]["models"][model_name] = create_model_report(model_cls, is_new_model)
         elif issubclass(model_cls, Exception):  # If not, might be an exception
-            report["models"]["exceptions"][model_name] = create_model_report(model_cls)
+            report["models"]["exceptions"][model_name] = create_model_report(model_cls, is_new_model)
         else:
-            report["models"]["enums"][model_name] = create_model_report(model_cls)
+            report["models"]["enums"][model_name] = create_model_report(model_cls, is_new_model)
     # Look for operation groups
     try:
         operations_classes = [op_name for op_name in dir(module_to_generate.operations) if op_name[0].isupper()]
@@ -76,22 +88,69 @@ def create_report(module_name: str) -> Dict[str, Any]:
     return report
 
 
-def create_model_report(model_cls):
+def get_attr_map(model_cls: object, is_new_model: bool) -> Dict[str, Any]:
+    if is_new_model:
+        return getattr(model_cls(), "_attr_to_rest_field")
+    return getattr(model_cls, "_attribute_map")
+
+
+def get_type_annotation(model_cls: object, attribute: str) -> List[str]:
+    # make sure to get the annotations from the base class
+    mros = model_cls.__mro__[:-3][::-1]
+    annotations = {
+        k: v
+        for mro_class in mros
+        if hasattr(mro_class, "__annotations__")  # pylint: disable=no-member
+        for k, v in mro_class.__annotations__.items()  # pylint: disable=no-member
+    }
+    attr_type = annotations.get(attribute)
+    type_list = getattr(attr_type, "__args__", [attr_type])
+    return sorted(
+        [
+            item.__forward_arg__.replace("_models.", "")
+            if isinstance(item, ForwardRef)
+            else getattr(item, "__name__", str(item))
+            for item in type_list
+        ]
+    )
+
+
+def get_type(model_cls: object, attribute: str, conf: Dict[str, Any], is_new_model: bool) -> str:
+    if is_new_model:
+        return " or ".join(filter(lambda x: x != "NoneType", get_type_annotation(model_cls, attribute)))
+    return conf["type"]
+
+
+def _get_validation(model_cls: object, attribute: str) -> Dict[str, Any]:
+    return getattr(model_cls, "_validation", {}).get(attribute, {})
+
+
+def is_required(model_cls: object, attribute: str, is_new_model: bool) -> bool:
+    if is_new_model:
+        return "NoneType" not in get_type_annotation(model_cls, attribute)
+    return _get_validation(model_cls, attribute).get("required", False)
+
+
+def is_readonly(model_cls: object, attribute: str, is_new_model: bool) -> bool:
+    if is_new_model:
+        return getattr(getattr(model_cls, "_attr_to_rest_field").get(attribute), "_visibility") == ["read"]
+    return _get_validation(model_cls, attribute).get("readonly", False)
+
+
+def create_model_report(model_cls: object, is_new_model: bool):
     result = {
         "name": model_cls.__name__,
     }
     # If _attribute_map, it's a model
-    if hasattr(model_cls, "_attribute_map"):
+    if is_model(model_cls, is_new_model):
         result["type"] = "Model"
-        for attribute, conf in model_cls._attribute_map.items():
-            attribute_validation = getattr(model_cls, "_validation", {}).get(attribute, {})
-
+        for attribute, conf in get_attr_map(model_cls, is_new_model).items():
             result.setdefault("parameters", {})[attribute] = {
                 "name": attribute,
                 "properties": {
-                    "type": conf["type"],
-                    "required": attribute_validation.get("required", False),
-                    "readonly": attribute_validation.get("readonly", False),
+                    "type": get_type(model_cls, attribute, conf, is_new_model),
+                    "required": is_required(model_cls, attribute, is_new_model),
+                    "readonly": is_readonly(model_cls, attribute, is_new_model),
                 },
             }
     elif issubclass(model_cls, Exception):  # If not, might be an exception
@@ -119,6 +178,7 @@ def create_report_from_func(function_attr):
         func_content["parameters"].append(
             {
                 "name": parameter.name,
+                "has_default_value": not (parameter.default is parameter.empty),
             }
         )
     return func_content
@@ -156,7 +216,20 @@ def merge_report(report_paths):
         merged_report["models"]["exceptions"].update(report_json["models"]["exceptions"])
         merged_report["models"]["models"].update(report_json["models"]["models"])
         merged_report["operations"].update(report_json["operations"])
+        merged_report["client"] = report_json["client"]
     return merged_report
+
+
+# find last version or last stable version
+def select_versions(versions: List[str], last_pypi_stable: bool) -> List[str]:
+    versions.reverse()
+    if last_pypi_stable:
+        for version in versions:
+            if not re.search("[a-zA-Z]", version):
+                return [version]
+        _LOGGER.info(f"Do not find stable version during {versions}")
+        return [versions[0]]
+    return [versions[0]]
 
 
 def main(
@@ -167,8 +240,8 @@ def main(
     last_pypi: bool = False,
     output: Optional[str] = None,
     metadata_path: Optional[str] = None,
+    last_pypi_stable: bool = False,
 ):
-
     output_msg = output if output else "default folder"
     _LOGGER.info(
         f"Building code report of {input_parameter} for version {version} in {output_msg} ({no_venv}/{pypi}/{last_pypi})"
@@ -190,7 +263,7 @@ def main(
             _LOGGER.info(f"Got {versions}")
             if last_pypi:
                 _LOGGER.info(f"Only keep last PyPI version")
-                versions = [versions[-1]]
+                versions = select_versions(versions, last_pypi_stable)
 
         for version in versions:
             _LOGGER.info(f"Installing version {version} of {package_name} in a venv")
@@ -274,7 +347,12 @@ def find_autorest_generated_folder(module_prefix="azure"):
     _LOGGER.info(f"Looking for Autorest generated package in {module_prefix}")
 
     # Manually skip some namespaces for now
-    if module_prefix in ["azure.cli", "azure.storage", "azure.servicemanagement", "azure.servicebus"]:
+    if module_prefix in [
+        "azure.cli",
+        "azure.storage",
+        "azure.servicemanagement",
+        "azure.servicebus",
+    ]:
         _LOGGER.info(f"Skip {module_prefix}")
         return []
 
@@ -339,13 +417,29 @@ if __name__ == "__main__":
         action="store_true",
         help="If provided, build report for last version on pypi of this package.",
     )
+    parser.add_argument(
+        "--last-pypi-stable",
+        dest="last_pypi_stable",
+        action="store_true",
+        help="If provided, select last stable version on pypi",
+    )
     parser.add_argument("--debug", dest="debug", action="store_true", help="Verbosity in DEBUG mode")
     parser.add_argument("--output", dest="output", help="Override output path.")
     parser.add_argument(
-        "--metadata-path", dest="metadata", help="Write a metadata file about what happen. Mostly used for automation."
+        "--metadata-path",
+        dest="metadata",
+        help="Write a metadata file about what happen. Mostly used for automation.",
     )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
-    main(args.package_name, args.version, args.no_venv, args.pypi, args.last_pypi, args.output, args.metadata)
+    main(
+        args.package_name,
+        args.version,
+        args.no_venv,
+        args.pypi,
+        args.last_pypi,
+        args.output,
+        args.metadata,
+    )

@@ -11,7 +11,7 @@ from azure.core import MatchConditions
 from azure.core.exceptions import HttpResponseError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from devtools_testutils.aio import recorded_by_proxy_async
-from devtools_testutils import AzureRecordedTestCase
+from devtools_testutils import AzureRecordedTestCase, get_credential
 from azure.search.documents.indexes.models import (
     AnalyzeTextOptions,
     CorsOptions,
@@ -29,8 +29,8 @@ class TestSearchClientAlias(AzureRecordedTestCase):
     @SearchEnvVarPreparer()
     @search_decorator(schema="hotel_schema.json", index_batch="hotel_small.json")
     @recorded_by_proxy_async
-    async def test_alias(self, endpoint, api_key):
-        client = SearchIndexClient(endpoint, api_key)
+    async def test_alias(self, endpoint):
+        client = SearchIndexClient(endpoint, get_credential(is_async=True), retry_backoff_factor=60)
         aliases = ["resort", "motel"]
 
         async with client:
@@ -103,6 +103,9 @@ class TestSearchClientAlias(AzureRecordedTestCase):
         scoring_profiles.append(scoring_profile)
         cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
         index = SearchIndex(
-            name=index_name, fields=fields, scoring_profiles=scoring_profiles, cors_options=cors_options
+            name=index_name,
+            fields=fields,
+            scoring_profiles=scoring_profiles,
+            cors_options=cors_options,
         )
         result = await client.create_index(index)

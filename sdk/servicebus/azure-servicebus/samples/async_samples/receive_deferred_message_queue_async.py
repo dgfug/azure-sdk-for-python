@@ -13,14 +13,16 @@ import os
 import asyncio
 from azure.servicebus import ServiceBusMessage
 from azure.servicebus.aio import ServiceBusClient
+from azure.identity.aio import DefaultAzureCredential
 
 
-CONNECTION_STR = os.environ['SERVICE_BUS_CONNECTION_STR']
-QUEUE_NAME = os.environ["SERVICE_BUS_QUEUE_NAME"]
+FULLY_QUALIFIED_NAMESPACE = os.environ["SERVICEBUS_FULLY_QUALIFIED_NAMESPACE"]
+QUEUE_NAME = os.environ["SERVICEBUS_QUEUE_NAME"]
 
 
 async def main():
-    servicebus_client = ServiceBusClient.from_connection_string(conn_str=CONNECTION_STR)
+    credential = DefaultAzureCredential()
+    servicebus_client = ServiceBusClient(FULLY_QUALIFIED_NAMESPACE, credential)
 
     async with servicebus_client:
         sender = servicebus_client.get_queue_sender(queue_name=QUEUE_NAME)
@@ -34,7 +36,8 @@ async def main():
             deferred_sequenced_numbers = []
             for msg in received_msgs:
                 print("Deferring msg: {}".format(str(msg)))
-                deferred_sequenced_numbers.append(msg.sequence_number)
+                if msg.sequence_number:
+                    deferred_sequenced_numbers.append(msg.sequence_number)
                 await receiver.defer_message(msg)
 
             if deferred_sequenced_numbers:

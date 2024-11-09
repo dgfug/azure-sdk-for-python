@@ -6,123 +6,178 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from typing import TYPE_CHECKING
+from copy import deepcopy
+from typing import Any, TYPE_CHECKING
 
+from azure.core.pipeline import policies
+from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
+
+from . import models as _models
+from ._configuration import MaintenanceManagementClientConfiguration
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    ApplyUpdateForResourceGroupOperations,
+    ApplyUpdatesOperations,
+    ConfigurationAssignmentsForResourceGroupOperations,
+    ConfigurationAssignmentsForSubscriptionsOperations,
+    ConfigurationAssignmentsOperations,
+    ConfigurationAssignmentsWithinSubscriptionOperations,
+    MaintenanceConfigurationsForResourceGroupOperations,
+    MaintenanceConfigurationsOperations,
+    Operations,
+    PublicMaintenanceConfigurationsOperations,
+    ScheduledEventOperations,
+    UpdatesOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
-    from typing import Any, Optional
-
     from azure.core.credentials import TokenCredential
-    from azure.core.pipeline.transport import HttpRequest, HttpResponse
-
-from ._configuration import MaintenanceManagementClientConfiguration
-from .operations import PublicMaintenanceConfigurationsOperations
-from .operations import ApplyUpdatesOperations
-from .operations import ConfigurationAssignmentsOperations
-from .operations import MaintenanceConfigurationsOperations
-from .operations import MaintenanceConfigurationsForResourceGroupOperations
-from .operations import ApplyUpdateForResourceGroupOperations
-from .operations import ConfigurationAssignmentsWithinSubscriptionOperations
-from .operations import Operations
-from .operations import UpdatesOperations
-from . import models
 
 
-class MaintenanceManagementClient(object):
+class MaintenanceManagementClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """Azure Maintenance Management Client.
 
+    :ivar scheduled_event: ScheduledEventOperations operations
+    :vartype scheduled_event: azure.mgmt.maintenance.operations.ScheduledEventOperations
     :ivar public_maintenance_configurations: PublicMaintenanceConfigurationsOperations operations
-    :vartype public_maintenance_configurations: azure.mgmt.maintenance.operations.PublicMaintenanceConfigurationsOperations
+    :vartype public_maintenance_configurations:
+     azure.mgmt.maintenance.operations.PublicMaintenanceConfigurationsOperations
     :ivar apply_updates: ApplyUpdatesOperations operations
     :vartype apply_updates: azure.mgmt.maintenance.operations.ApplyUpdatesOperations
     :ivar configuration_assignments: ConfigurationAssignmentsOperations operations
-    :vartype configuration_assignments: azure.mgmt.maintenance.operations.ConfigurationAssignmentsOperations
+    :vartype configuration_assignments:
+     azure.mgmt.maintenance.operations.ConfigurationAssignmentsOperations
     :ivar maintenance_configurations: MaintenanceConfigurationsOperations operations
-    :vartype maintenance_configurations: azure.mgmt.maintenance.operations.MaintenanceConfigurationsOperations
-    :ivar maintenance_configurations_for_resource_group: MaintenanceConfigurationsForResourceGroupOperations operations
-    :vartype maintenance_configurations_for_resource_group: azure.mgmt.maintenance.operations.MaintenanceConfigurationsForResourceGroupOperations
+    :vartype maintenance_configurations:
+     azure.mgmt.maintenance.operations.MaintenanceConfigurationsOperations
+    :ivar maintenance_configurations_for_resource_group:
+     MaintenanceConfigurationsForResourceGroupOperations operations
+    :vartype maintenance_configurations_for_resource_group:
+     azure.mgmt.maintenance.operations.MaintenanceConfigurationsForResourceGroupOperations
     :ivar apply_update_for_resource_group: ApplyUpdateForResourceGroupOperations operations
-    :vartype apply_update_for_resource_group: azure.mgmt.maintenance.operations.ApplyUpdateForResourceGroupOperations
-    :ivar configuration_assignments_within_subscription: ConfigurationAssignmentsWithinSubscriptionOperations operations
-    :vartype configuration_assignments_within_subscription: azure.mgmt.maintenance.operations.ConfigurationAssignmentsWithinSubscriptionOperations
+    :vartype apply_update_for_resource_group:
+     azure.mgmt.maintenance.operations.ApplyUpdateForResourceGroupOperations
+    :ivar configuration_assignments_within_subscription:
+     ConfigurationAssignmentsWithinSubscriptionOperations operations
+    :vartype configuration_assignments_within_subscription:
+     azure.mgmt.maintenance.operations.ConfigurationAssignmentsWithinSubscriptionOperations
+    :ivar configuration_assignments_for_subscriptions:
+     ConfigurationAssignmentsForSubscriptionsOperations operations
+    :vartype configuration_assignments_for_subscriptions:
+     azure.mgmt.maintenance.operations.ConfigurationAssignmentsForSubscriptionsOperations
+    :ivar configuration_assignments_for_resource_group:
+     ConfigurationAssignmentsForResourceGroupOperations operations
+    :vartype configuration_assignments_for_resource_group:
+     azure.mgmt.maintenance.operations.ConfigurationAssignmentsForResourceGroupOperations
     :ivar operations: Operations operations
     :vartype operations: azure.mgmt.maintenance.operations.Operations
     :ivar updates: UpdatesOperations operations
     :vartype updates: azure.mgmt.maintenance.operations.UpdatesOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: Subscription credentials that uniquely identify a Microsoft Azure subscription. The subscription ID forms part of the URI for every service call.
+    :param subscription_id: The ID of the target subscription. The value must be an UUID. Required.
     :type subscription_id: str
-    :param str base_url: Service URL
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
+    :keyword api_version: Api Version. Default value is "2023-10-01-preview". Note that overriding
+     this default value may result in unsupported behavior.
+    :paramtype api_version: str
     """
 
     def __init__(
         self,
-        credential,  # type: "TokenCredential"
-        subscription_id,  # type: str
-        base_url=None,  # type: Optional[str]
-        **kwargs  # type: Any
-    ):
-        # type: (...) -> None
-        if not base_url:
-            base_url = 'https://management.azure.com'
-        self._config = MaintenanceManagementClientConfiguration(credential, subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        credential: "TokenCredential",
+        subscription_id: str,
+        base_url: str = "https://management.azure.com",
+        **kwargs: Any
+    ) -> None:
+        self._config = MaintenanceManagementClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
-        self._serialize.client_side_validation = False
         self._deserialize = Deserializer(client_models)
-
+        self._serialize.client_side_validation = False
+        self.scheduled_event = ScheduledEventOperations(self._client, self._config, self._serialize, self._deserialize)
         self.public_maintenance_configurations = PublicMaintenanceConfigurationsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.apply_updates = ApplyUpdatesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.apply_updates = ApplyUpdatesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.configuration_assignments = ConfigurationAssignmentsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.maintenance_configurations = MaintenanceConfigurationsOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.maintenance_configurations_for_resource_group = MaintenanceConfigurationsForResourceGroupOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.apply_update_for_resource_group = ApplyUpdateForResourceGroupOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.configuration_assignments_within_subscription = ConfigurationAssignmentsWithinSubscriptionOperations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.operations = Operations(
-            self._client, self._config, self._serialize, self._deserialize)
-        self.updates = UpdatesOperations(
-            self._client, self._config, self._serialize, self._deserialize)
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.configuration_assignments_for_subscriptions = ConfigurationAssignmentsForSubscriptionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.configuration_assignments_for_resource_group = ConfigurationAssignmentsForResourceGroupOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
+        self.updates = UpdatesOperations(self._client, self._config, self._serialize, self._deserialize)
 
-    def _send_request(self, http_request, **kwargs):
-        # type: (HttpRequest, Any) -> HttpResponse
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
-        :param http_request: The network request you want to make. Required.
-        :type http_request: ~azure.core.pipeline.transport.HttpRequest
-        :keyword bool stream: Whether the response payload will be streamed. Defaults to True.
-        :return: The response of your network call. Does not do error handling on your response.
-        :rtype: ~azure.core.pipeline.transport.HttpResponse
-        """
-        path_format_arguments = {
-            'subscriptionId': self._serialize.url("self._config.subscription_id", self._config.subscription_id, 'str'),
-        }
-        http_request.url = self._client.format_url(http_request.url, **path_format_arguments)
-        stream = kwargs.pop("stream", True)
-        pipeline_response = self._client._pipeline.run(http_request, stream=stream, **kwargs)
-        return pipeline_response.http_response
+        >>> from azure.core.rest import HttpRequest
+        >>> request = HttpRequest("GET", "https://www.example.org/")
+        <HttpRequest [GET], url: 'https://www.example.org/'>
+        >>> response = client._send_request(request)
+        <HttpResponse: 200 OK>
 
-    def close(self):
-        # type: () -> None
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
+
+        :param request: The network request you want to make. Required.
+        :type request: ~azure.core.rest.HttpRequest
+        :keyword bool stream: Whether the response payload will be streamed. Defaults to False.
+        :return: The response of your network call. Does not do error handling on your response.
+        :rtype: ~azure.core.rest.HttpResponse
+        """
+
+        request_copy = deepcopy(request)
+        request_copy.url = self._client.format_url(request_copy.url)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
+
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> MaintenanceManagementClient
+    def __enter__(self) -> "MaintenanceManagementClient":
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

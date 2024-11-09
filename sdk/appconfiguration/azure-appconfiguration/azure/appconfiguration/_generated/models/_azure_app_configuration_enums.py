@@ -6,27 +6,12 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class Enum4(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+class ConfigurationSettingFields(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """ConfigurationSettingFields."""
 
     KEY = "key"
     LABEL = "label"
@@ -37,57 +22,53 @@ class Enum4(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     LOCKED = "locked"
     ETAG = "etag"
 
-class Enum5(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class LabelFields(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """LabelFields."""
+
+    NAME = "name"
+
+
+class SnapshotComposition(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The composition type describes how the key-values within the snapshot are composed. The 'key'
+    composition type ensures there are no two key-values containing the same key. The 'key_label'
+    composition type ensures there are no two key-values containing the same key and label.
+    """
 
     KEY = "key"
-    LABEL = "label"
-    CONTENT_TYPE = "content_type"
-    VALUE = "value"
-    LAST_MODIFIED = "last_modified"
+    KEY_LABEL = "key_label"
+
+
+class SnapshotFields(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """SnapshotFields."""
+
+    NAME = "name"
+    STATUS = "status"
+    FILTERS = "filters"
+    COMPOSITION_TYPE = "composition_type"
+    CREATED = "created"
+    EXPIRES = "expires"
+    RETENTION_PERIOD = "retention_period"
+    SIZE = "size"
+    ITEMS_COUNT = "items_count"
     TAGS = "tags"
-    LOCKED = "locked"
     ETAG = "etag"
 
-class Get6ItemsItem(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
 
-    KEY = "key"
-    LABEL = "label"
-    CONTENT_TYPE = "content_type"
-    VALUE = "value"
-    LAST_MODIFIED = "last_modified"
-    TAGS = "tags"
-    LOCKED = "locked"
-    ETAG = "etag"
+class SnapshotStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current status of the snapshot."""
 
-class Get7ItemsItem(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+    PROVISIONING = "provisioning"
+    READY = "ready"
+    ARCHIVED = "archived"
+    FAILED = "failed"
 
-    KEY = "key"
-    LABEL = "label"
-    CONTENT_TYPE = "content_type"
-    VALUE = "value"
-    LAST_MODIFIED = "last_modified"
-    TAGS = "tags"
-    LOCKED = "locked"
-    ETAG = "etag"
 
-class Head6ItemsItem(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+class State(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The current status of the operation."""
 
-    KEY = "key"
-    LABEL = "label"
-    CONTENT_TYPE = "content_type"
-    VALUE = "value"
-    LAST_MODIFIED = "last_modified"
-    TAGS = "tags"
-    LOCKED = "locked"
-    ETAG = "etag"
-
-class Head7ItemsItem(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-
-    KEY = "key"
-    LABEL = "label"
-    CONTENT_TYPE = "content_type"
-    VALUE = "value"
-    LAST_MODIFIED = "last_modified"
-    TAGS = "tags"
-    LOCKED = "locked"
-    ETAG = "etag"
+    NOT_STARTED = "NotStarted"
+    RUNNING = "Running"
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
+    CANCELED = "Canceled"

@@ -1,8 +1,163 @@
 # Release History
 
-## 3.2.0b4 (Unreleased)
+## 3.3.4 (Unreleased)
 
 ### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 3.3.3 (2024-04-09)
+
+### Other Changes
+- Added support for Python 3.12.
+- Python 3.7 is no longer supported. Please use Python version 3.8 or later.
+- Changed the default polling interval from 5s to 1s.
+
+## 3.3.2 (2023-11-07)
+
+### Bugs Fixed
+- Fixed incorrect data type for returned formula objects.
+
+## 3.3.1 (2023-10-10)
+
+### Features Added
+- Exposed `send_request()` method in each client to send custom requests using the client's existing pipeline. ([#32151](https://github.com/Azure/azure-sdk-for-python/issues/32151))
+
+## 3.3.0 (2023-08-08)
+
+This version of the client library defaults to the service API version `2023-07-31`.
+
+### Breaking Changes
+ > Note: The following changes are only breaking from the previous beta. They are not breaking against previous stable versions.
+ 
+- Going forward this library will default to service API version `2023-07-31`.
+- Removed `query_fields` keyword argument from `begin_analyze_document()` and `begin_analyze_document_from_url()`.
+- Removed `kind` property from `DocumentPage`.
+- Removed `images` property from `DocumentPage`.
+- Removed `DocumentImage` model.
+- Removed `annotations` property from `DocumentPage`.
+- Removed `DocumentAnnotation` model.
+- Removed `common_name` property from `DocumentKeyValuePair`.
+- Changed `AnalysisFeature` enum member names and values. Supported enum members are: `OCR_HIGH_RESOLUTION`, `LANGUAGES`, `BARCODES`, `FORMULAS`, `KEY_VALUE_PAIRS`, `STYLE_FONT`.
+- Renamed `custom_neural_document_model_builds` property to `neural_document_model_quota` on `ResourceDetails` model.
+- Renamed `AzureBlobSource` model to `BlobSource`.
+- Renamed `AzureBlobFileListSource` model to `BlobFileListSource`.
+- Marked `neural_document_model_quota` as optional on `ResourceDetails`.
+
+### Other Changes
+- Corrected typing for the `polygon` property on `DocumentWord`, `DocumentSelectionMark`, `DocumentLine`.
+- Corrected typing for `words`, `lines`, and `selection_marks` properties on `DocumentPage`.
+- Renamed the samples directory to `v3.2_and_later/` for samples that support 3.2 and later.
+
+## 3.3.0b1 (2023-04-13)
+
+This version of the client library defaults to the service API version `2023-02-28-preview`.
+
+### Features Added
+
+- Added `features` keyword argument on `begin_analyze_document()` and `begin_analyze_document_from_url()`.
+- Added `query_fields` keyword argument on `begin_analyze_document()` and `begin_analyze_document_from_url()`.
+- Added `AnalysisFeature` enum with optional document analysis feature to enable.
+- Added `file_list` keyword argument on `begin_build_document_model()`.
+- Added the following optional properties on `DocumentStyle` class: `similar_font_family`, `font_style`, `font_weight`, `color`, `background_color`.
+- Added support for custom document classification on `DocumentModelAdministrationClient`: `begin_build_document_classifier`, 
+  `list_document_classifiers`, `get_document_classifier`, and `delete_document_classifier`.
+- Added support for classifying documents on `DocumentAnalysisClient`: `begin_classify_document` and `begin_classify_document_from_url`.
+- Added `ClassifierDocumentTypeDetails` to use with `begin_build_document_classifier()`.
+- Added model `QuotaDetails` and property `custom_neural_document_model_builds` on `ResourceDetails`.
+- Added kind `documentClassifierBuild` to `OperationSummary` and `OperationDetails`.
+- Added property `expires_on` to `DocumentModelDetails` and `DocumentModelSummary`.
+- Added kind `formulaBlock` to `DocumentParagraph`.
+- Added property `common_name` to `DocumentKeyValuePair`.
+- Added property `code` to `CurrencyValue`.
+- Added properties `unit`, `city_district`, `state_district`, `suburb`, `house`, and `level` to `AddressValue`.
+- Added "boolean" `value_type` and `bool` `value` to `DocumentField`.
+- Added properties `annotations`, `images`, `formulas`, and `barcodes` to `DocumentPage`. 
+- Added models `DocumentAnnotation`, `DocumentImage`, `DocumentFormula`, and `DocumentBarcode`.
+
+## 3.2.1 (2023-03-07)
+
+### Bugs Fixed
+- Corrected typing for `invoice` argument in `begin_recognize_invoices()` on async `FormRecognizerClient`.
+- Fixed issue when calling `to_dict()` on `DocumentField` where `value` is not returned for address and currency fields.
+- Corrected typing for `form_type_confidence` property on `RecognizedForm`.
+- Corrected typing for `appearance` property on `FormLine`.
+
+### Other Changes
+- Improved static typing.
+
+## 3.2.0 (2022-09-08)
+
+### Features Added
+- Content type `image/heif` is supported for document analysis and building models.
+- Added `custom_document_models` property on `ResourceDetails`.
+- Added new `CustomDocumentModelsDetails` model to represent the details of the custom document models in a given Form Recognizer resource.
+
+### Breaking Changes
+- This library will default to service API version `2022-08-31` going forward.
+- Removed `kind` property on `DocumentPage`.
+- Renamed `begin_build_model()` to `begin_build_document_model()` on the `DocumentModelAdministrationClient`.
+- Renamed `begin_compose_model()` to `begin_compose_document_model()` on the `DocumentModelAdministrationClient`.
+- Renamed `begin_copy_model_to()` to `begin_copy_document_model_to()` on the `DocumentModelAdministrationClient`.
+- Renamed `list_models()` to `list_document_models()` on the `DocumentModelAdministrationClient`.
+- Renamed `get_model()` to `get_document_model()` on the `DocumentModelAdministrationClient`.
+- Renamed `delete_model()` to `delete_document_model()` on the `DocumentModelAdministrationClient`.
+- Removed `document_model_count` and `document_model_limit` properties on `ResourceDetails`.
+- Renamed `DocumentModelOperationDetails` to `OperationDetails`.
+- Renamed `DocumentModelOperationSummary` to `OperationSummary`.
+- Removed `DocumentContentElement`.
+- Removed `kind` and `content` properties from `DocumentSelectionMark`.
+- Removed `kind` from `DocumentWord`.
+
+### Bugs Fixed
+- Added `DocumentParagraph` to `__all__`.
+
+## 3.2.0b6 (2022-08-09)
+
+### Features Added
+- Added `TargetAuthorization` of type `dict[str, str]`.
+
+### Breaking Changes
+- Renamed `source` argument to `blob_container_url` on `begin_build_model()` and made it a required keyword-only argument.
+- Changed argument order on `begin_build_model()`. `build_mode` is the first expected argument, followed by `blob_container_url`.
+- Renamed `begin_create_composed_model()` on `DocumentModelAdministrationClient` to `begin_compose_model()`.
+- Renamed `get_account_info()` on `DocumentModelAdministrationClient` to `get_resource_details()`.
+- Renamed `DocumentBuildMode` to `ModelBuildMode`.
+- Renamed `AccountInfo` model to `ResourceDetails`.
+- Renamed `DocTypeInfo` model to `DocumentTypeDetails`.
+- Renamed `DocumentModelInfo` model to `DocumentModelSummary`.
+- Renamed `DocumentModel` to `DocumentModelDetails`.
+- Renamed `ModelOperation` to `DocumentModelOperationDetails`.
+- Renamed `ModelOperationInfo` to `DocumentModelOperationSummary`.
+- Renamed `model` parameter to `model_id` on `begin_analyze_document()` and `begin_analyze_document_from_url()`.
+- Removed `continuation_token` keyword from `begin_analyze_document()` and `begin_analyze_document_from_url()` on `DocumentAnalysisClient` and from `begin_build_model()`, `begin_compose_model()` and `begin_copy_model_to()` on `DocumentModelAdministrationClient`.
+- Changed return type of `get_copy_authorization()` from `dict[str, str]` to `TargetAuthorization`.
+- Changed expected `target` parameter in `begin_copy_to()` from `dict[str, str]` to `TargetAuthorization`.
+- Long-running operation metadata is now accessible through the `details` property on the returned `DocumentModelAdministrationLROPoller` and `AsyncDocumentModelAdministrationLROPoller` instances.
+
+### Other Changes
+- Python 3.6 is no longer supported in this release. Please use Python 3.7 or later.
+
+## 3.2.0b5 (2022-06-07)
+
+### Features Added
+- Added `paragraphs` property on `AnalyzeResult`.
+- Added new `DocumentParagraph` model to represent document paragraphs.
+- Added new `AddressValue` model to represent address fields found in documents.
+- Added `kind` property on `DocumentPage`.
+
+### Breaking Changes
+- Renamed `bounding_box` to `polygon` on `BoundingRegion`, `DocumentContentElement`, `DocumentLine`, `DocumentSelectionMark`, `DocumentWord`.
+- Renamed `language_code` to `locale` on `DocumentLanguage`.
+- Some models that previously returned string for address related fields may now return `AddressValue`. TIP: Use `get_model()` on `DocumentModelAdministrationClient` to see updated prebuilt model schemas.
+- Removed `entities` property on `AnalyzeResult`.
+- Removed `DocumentEntity` model.
+
+## 3.2.0b4 (2022-04-05)
 
 ### Breaking Changes
 - Renamed `begin_copy_model()` to `begin_copy_model_to()`.
@@ -10,6 +165,7 @@
 - Renamed `model_count` and `model_limit` on `AccountInfo` to `document_model_count` and `document_model_limit`.
 
 ### Bugs Fixed
+- Fixed `to_dict()` and `from_dict()` methods on `DocumentField` to support converting lists, dictionaries, and CurrenyValue field types to and from a dictionary.
 
 ### Other Changes
 - Renamed `sample_copy_model.py` and `sample_copy_model_async.py` to `sample_copy_model_to.py` and `sample_copy_model_to_async.py` under the `3.2-beta` samples folder. Updated the samples to use renamed copy model method.
@@ -29,7 +185,7 @@
 
 ### Breaking Changes
 - Added new required parameter `build_mode` to `begin_build_model()`.
-- Some models that previously returned float for currency related fields may now return a `CurrencyValue`. TIP: Use `get_model()` to see updated prebuilt model schemas.
+- Some models that previously returned float for currency related fields may now return a `CurrencyValue`. TIP: Use `get_model()` on `DocumentModelAdministrationClient` to see updated prebuilt model schemas.
 
 ### Bugs Fixed
 - Default the `percent_completed` property to 0 when not returned with model operation information.

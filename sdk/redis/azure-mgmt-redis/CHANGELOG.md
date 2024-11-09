@@ -1,5 +1,72 @@
 # Release History
 
+## 14.4.0 (2024-07-21)
+
+### Features Added
+
+  - Model RedisCommonProperties has a new parameter disable_access_key_authentication
+  - Model RedisCommonPropertiesRedisConfiguration has a new parameter notify_keyspace_events
+  - Model RedisCreateParameters has a new parameter disable_access_key_authentication
+  - Model RedisCreateProperties has a new parameter disable_access_key_authentication
+  - Model RedisProperties has a new parameter disable_access_key_authentication
+  - Model RedisResource has a new parameter disable_access_key_authentication
+  - Model RedisUpdateParameters has a new parameter disable_access_key_authentication
+  - Model RedisUpdateProperties has a new parameter disable_access_key_authentication
+
+## 14.3.0 (2023-09-19)
+
+### Features Added
+
+  - Added operation RedisOperations.begin_flush_cache
+  - Added operation group AccessPolicyAssignmentOperations
+  - Added operation group AccessPolicyOperations
+  - Model RedisCommonProperties has a new parameter update_channel
+  - Model RedisCommonPropertiesRedisConfiguration has a new parameter aad_enabled
+  - Model RedisCreateParameters has a new parameter update_channel
+  - Model RedisCreateProperties has a new parameter update_channel
+  - Model RedisProperties has a new parameter update_channel
+  - Model RedisResource has a new parameter update_channel
+  - Model RedisUpdateParameters has a new parameter update_channel
+  - Model RedisUpdateProperties has a new parameter update_channel
+
+## 14.2.0 (2023-06-16)
+
+### Features Added
+
+  - Model ExportRDBParameters has a new parameter storage_subscription_id
+  - Model ImportRDBParameters has a new parameter storage_subscription_id
+  - Model RedisCommonPropertiesRedisConfiguration has a new parameter storage_subscription_id
+
+## 14.1.0 (2022-10-28)
+
+### Features Added
+
+  - Model RedisLinkedServerCreateParameters has a new parameter geo_replicated_primary_host_name
+  - Model RedisLinkedServerCreateParameters has a new parameter primary_host_name
+  - Model RedisLinkedServerCreateProperties has a new parameter geo_replicated_primary_host_name
+  - Model RedisLinkedServerCreateProperties has a new parameter primary_host_name
+  - Model RedisLinkedServerProperties has a new parameter geo_replicated_primary_host_name
+  - Model RedisLinkedServerProperties has a new parameter primary_host_name
+  - Model RedisLinkedServerWithProperties has a new parameter geo_replicated_primary_host_name
+  - Model RedisLinkedServerWithProperties has a new parameter primary_host_name
+
+## 14.0.0 (2022-09-05)
+
+### Features Added
+
+  - Added operation group AsyncOperationStatusOperations
+  - Model ExportRDBParameters has a new parameter preferred_data_archive_auth_method
+  - Model ImportRDBParameters has a new parameter preferred_data_archive_auth_method
+  - Model RedisCommonPropertiesRedisConfiguration has a new parameter aof_backup_enabled
+  - Model RedisCommonPropertiesRedisConfiguration has a new parameter authnotrequired
+  - Model RedisCommonPropertiesRedisConfiguration has a new parameter zonal_configuration
+  - Model RedisPatchSchedule has a new parameter location
+
+### Breaking Changes
+
+  - Renamed operation LinkedServerOperations.delete to LinkedServerOperations.begin_delete
+  - Renamed operation RedisOperations.update to RedisOperations.begin_update
+
 ## 13.1.0 (2021-12-16)
 
 **Features**

@@ -22,8 +22,9 @@ import azure.mgmt.compute
 from azure.core.exceptions import HttpResponseError, ResourceExistsError
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer, recorded_by_proxy
 
-AZURE_LOCATION = 'eastus'
+AZURE_LOCATION = 'eastus2'
 
+@pytest.mark.live_test_only
 class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
     def setup_method(self, method):
@@ -185,7 +186,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "1",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "storage_profile": {
@@ -282,7 +283,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "1",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "storage_profile": {
@@ -352,7 +353,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create VMSS vm extension (TODO: need swagger file)
         BODY = {
-          "location": "eastus",
+          "location": "eastus2",
           "auto_upgrade_minor_version": False,
           "publisher": "Microsoft.Azure.NetworkWatcher",
           "virtual_machine_extension_type": "NetworkWatcherAgentWindows",
@@ -393,7 +394,6 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         result = self.mgmt_client.virtual_machine_scale_sets.begin_delete(resource_group.name, VIRTUAL_MACHINE_SCALE_SET_NAME)
         result = result.result()
 
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_vmss_vm(self, resource_group):
@@ -413,7 +413,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "1",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "storage_profile": {
@@ -493,7 +493,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Update a virtual machine scale set vm (TODO: need a swagger file)
         BODY = {
-          "location": "eastus",
+          "location": "eastus2",
           "tags": {
             "department": "HR"
           }
@@ -550,7 +550,6 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         result = self.mgmt_client.virtual_machine_scale_sets.begin_delete(resource_group.name, VIRTUAL_MACHINE_SCALE_SET_NAME)
         result = result.result()
 
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_vmss_vm_2(self, resource_group):
@@ -569,7 +568,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "1",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "storage_profile": {
@@ -684,7 +683,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "2",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "storage_profile": {
@@ -758,7 +757,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create virtual machine sacle set extension (TODO: need swagger file)
         BODY = {
-          "location": "eastus",
+          "location": "eastus2",
           "auto_upgrade_minor_version": True,
           "publisher": "Microsoft.Azure.NetworkWatcher",
           "type_properties_type": "NetworkWatcherAgentWindows",
@@ -881,7 +880,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "2",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "extension_profile": {
@@ -986,7 +985,6 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
     # can not test it, see: 
     # https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-maintenance-notifications
     # """)
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_vmss_perform_maintenance(self, resource_group):
@@ -1005,7 +1003,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
             "capacity": "1",
             "name": "Standard_D1_v2"
           },
-          "location": "eastus",
+          "location": "eastus2",
           "overprovision": True,
           "virtual_machine_profile": {
             "storage_profile": {

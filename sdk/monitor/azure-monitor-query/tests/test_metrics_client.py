@@ -1,91 +1,55 @@
-import pytest
-import os
-from datetime import datetime, timedelta
-from azure.identity import ClientSecretCredential
-from azure.monitor.query import MetricsQueryClient, MetricAggregationType, Metric
+# -------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See LICENSE.txt in the project root for
+# license information.
+# -------------------------------------------------------------------------
+from datetime import timedelta
 
-def _credential():
-    credential  = ClientSecretCredential(
-        client_id = os.environ['AZURE_CLIENT_ID'],
-        client_secret = os.environ['AZURE_CLIENT_SECRET'],
-        tenant_id = os.environ['AZURE_TENANT_ID']
-    )
-    return credential
+from azure.monitor.query import MetricsClient, MetricAggregationType
 
-@pytest.mark.live_test_only
-def test_metrics_auth():
-    credential = _credential()
-    client = MetricsQueryClient(credential)
-    response = client.query_resource(
-        os.environ['METRICS_RESOURCE_URI'],
-        metric_names=["MatchedEventCount"],
-        timespan=timedelta(days=1),
-        aggregations=[MetricAggregationType.COUNT]
+from base_testcase import MetricsClientTestCase
+
+
+METRIC_NAME = "requests/count"
+METRIC_RESOURCE_PROVIDER = "Microsoft.Insights/components"
+
+
+class TestMetricsClient(MetricsClientTestCase):
+
+    def test_batch_metrics_auth(self, recorded_test, monitor_info):
+        client: MetricsClient = self.get_client(MetricsClient, self.get_credential(MetricsClient))
+        responses = client.query_resources(
+            resource_ids=[monitor_info["metrics_resource_id"]],
+            metric_namespace=METRIC_RESOURCE_PROVIDER,
+            metric_names=[METRIC_NAME],
+            aggregations=[MetricAggregationType.COUNT],
         )
-    assert response
-    assert response.metrics
+        assert responses
+        assert len(responses) == 1
 
-@pytest.mark.live_test_only
-def test_metrics_granularity():
-    credential = _credential()
-    client = MetricsQueryClient(credential)
-    response = client.query_resource(
-        os.environ['METRICS_RESOURCE_URI'],
-        metric_names=["MatchedEventCount"],
-        timespan=timedelta(days=1),
-        granularity=timedelta(minutes=5),
-        aggregations=[MetricAggregationType.COUNT]
+    def test_batch_metrics_granularity(self, recorded_test, monitor_info):
+        client: MetricsClient = self.get_client(MetricsClient, self.get_credential(MetricsClient))
+        responses = client.query_resources(
+            resource_ids=[monitor_info["metrics_resource_id"]],
+            metric_namespace=METRIC_RESOURCE_PROVIDER,
+            metric_names=[METRIC_NAME],
+            granularity=timedelta(minutes=5),
+            aggregations=[MetricAggregationType.COUNT],
         )
-    assert response
-    assert response.granularity == timedelta(minutes=5)
+        assert responses
+        for response in responses:
+            assert response.granularity == timedelta(minutes=5)
+            response.metrics
+            metric = response.metrics[METRIC_NAME]
+            assert metric.timeseries
+            for t in metric.timeseries:
+                assert t.metadata_values is not None
 
-@pytest.mark.live_test_only
-def test_metrics_filter():
-    credential = _credential()
-    client = MetricsQueryClient(credential)
-    response = client.query_resource(
-        os.environ['METRICS_RESOURCE_URI'],
-        metric_names=["MatchedEventCount"],
-        timespan=timedelta(days=1),
-        granularity=timedelta(minutes=5),
-        filter="EventSubscriptionName eq '*'",
-        aggregations=[MetricAggregationType.COUNT]
-        )
-    assert response
-    metric = response.metrics['MatchedEventCount']
-    for t in metric.timeseries:
-        assert t.metadata_values is not None
+    def test_client_different_endpoint(self):
+        credential = self.get_credential(MetricsClient)
+        endpoint = "https://usgovvirginia.metrics.monitor.azure.us"
+        audience = "https://metrics.monitor.azure.us"
+        client = MetricsClient(endpoint, credential, audience=audience)
 
-@pytest.mark.live_test_only
-def test_metrics_list():
-    credential = _credential()
-    client = MetricsQueryClient(credential)
-    response = client.query_resource(
-        os.environ['METRICS_RESOURCE_URI'],
-        metric_names=["MatchedEventCount"],
-        timespan=timedelta(days=1),
-        granularity=timedelta(minutes=5),
-        aggregations=[MetricAggregationType.COUNT]
-        )
-    assert response
-    metrics = response.metrics
-    assert len(metrics) == 1
-    assert metrics[0].__class__ == Metric
-    assert metrics['MatchedEventCount'].__class__ == Metric
-    assert metrics['MatchedEventCount'] == metrics[0]
-
-@pytest.mark.live_test_only
-def test_metrics_namespaces():
-    client = MetricsQueryClient(_credential())
-
-    response = client.list_metric_namespaces(os.environ['METRICS_RESOURCE_URI'])
-
-    assert response is not None
-
-@pytest.mark.live_test_only
-def test_metrics_definitions():
-    client = MetricsQueryClient(_credential())
-
-    response = client.list_metric_definitions(os.environ['METRICS_RESOURCE_URI'], namespace='microsoft.eventgrid/topics')
-
-    assert response is not None
+        assert client._endpoint == endpoint
+        assert f"{audience}/.default" in client._client._config.authentication_policy._scopes

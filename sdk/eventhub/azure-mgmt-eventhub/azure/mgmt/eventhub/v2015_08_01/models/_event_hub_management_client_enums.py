@@ -6,35 +6,20 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class AccessRights(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+class AccessRights(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """AccessRights."""
 
     MANAGE = "Manage"
     SEND = "Send"
     LISTEN = "Listen"
 
-class EntityStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Enumerates the possible values for the status of the Event Hub.
-    """
+
+class EntityStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Enumerates the possible values for the status of the Event Hub."""
 
     ACTIVE = "Active"
     DISABLED = "Disabled"
@@ -46,9 +31,9 @@ class EntityStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     RENAMING = "Renaming"
     UNKNOWN = "Unknown"
 
-class NamespaceState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """State of the Namespace.
-    """
+
+class NamespaceState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """State of the Namespace."""
 
     UNKNOWN = "Unknown"
     CREATING = "Creating"
@@ -64,31 +49,31 @@ class NamespaceState(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     REMOVED = "Removed"
     FAILED = "Failed"
 
-class Policykey(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Key that needs to be regenerated.
-    """
+
+class Policykey(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Key that needs to be regenerated."""
 
     PRIMARY_KEY = "PrimaryKey"
     SECONDARY_KEY = "SecondaryKey"
 
-class SkuName(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Name of this SKU.
-    """
+
+class SkuName(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Name of this SKU."""
 
     BASIC = "Basic"
     STANDARD = "Standard"
 
-class SkuTier(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The billing tier of this particular SKU.
-    """
+
+class SkuTier(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The billing tier of this particular SKU."""
 
     BASIC = "Basic"
     STANDARD = "Standard"
     PREMIUM = "Premium"
 
-class UnavailableReason(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Specifies the reason for the unavailability of the service.
-    """
+
+class UnavailableReason(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Specifies the reason for the unavailability of the service."""
 
     NONE = "None"
     INVALID_NAME = "InvalidName"

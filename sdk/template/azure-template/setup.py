@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+
+# -------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for
+# license information.
+# --------------------------------------------------------------------------
+
 from setuptools import setup, find_packages
 import os
 from io import open
@@ -8,7 +16,7 @@ import re
 # your package.
 
 # this setup.py is set up in a specific way to keep the azure* and azure-mgmt-* namespaces WORKING all the way
-# up from python 2.7. Reference here: https://github.com/Azure/azure-sdk-for-python/wiki/Azure-packaging
+# up from python 2.7. Reference here: https://github.com/Azure/azure-sdk-for-python/blob/main/doc/dev/packaging.md
 
 PACKAGE_NAME = "azure-template"
 PACKAGE_PPRINT_NAME = "Template Package"
@@ -43,13 +51,13 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: MIT License",
     ],
     packages=find_packages(
@@ -62,14 +70,16 @@ setup(
             "azure",
         ]
     ),
-    install_requires=[
-        "azure-core<2.0.0,>=1.10.0",
-    ],
-    extras_require={
-        ":python_version<'3.0'": ["azure-nspkg"],
+    include_package_data=True,
+    package_data={
+        "azure.template": ["py.typed"],
     },
+    install_requires=[
+        "azure-core<2.0.0,>=1.23.0",
+    ],
+    python_requires=">=3.7",
     project_urls={
         "Bug Reports": "https://github.com/Azure/azure-sdk-for-python/issues",
-        "Source": "https://github.com/Azure/azure-sdk-python",
+        "Source": "https://github.com/Azure/azure-sdk-for-python",
     },
 )

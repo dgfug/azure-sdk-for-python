@@ -7,21 +7,80 @@
 # --------------------------------------------------------------------------
 
 from copy import deepcopy
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
+from azure.core.pipeline import policies
 from azure.core.rest import HttpRequest, HttpResponse
 from azure.mgmt.core import ARMPipelineClient
-from msrest import Deserializer, Serializer
+from azure.mgmt.core.policies import ARMAutoResourceProviderRegistrationPolicy
 
-from . import models
+from . import models as _models
 from ._configuration import RecoveryServicesBackupClientConfiguration
-from .operations import BMSPrepareDataMoveOperationResultOperations, BackupEnginesOperations, BackupJobsOperations, BackupOperationResultsOperations, BackupOperationStatusesOperations, BackupPoliciesOperations, BackupProtectableItemsOperations, BackupProtectedItemsOperations, BackupProtectionContainersOperations, BackupProtectionIntentOperations, BackupResourceEncryptionConfigsOperations, BackupResourceStorageConfigsNonCRROperations, BackupResourceVaultConfigsOperations, BackupStatusOperations, BackupUsageSummariesOperations, BackupWorkloadItemsOperations, BackupsOperations, ExportJobsOperationResultsOperations, FeatureSupportOperations, ItemLevelRecoveryConnectionsOperations, JobCancellationsOperations, JobDetailsOperations, JobOperationResultsOperations, JobsOperations, OperationOperations, Operations, PrivateEndpointConnectionOperations, PrivateEndpointOperations, ProtectableContainersOperations, ProtectedItemOperationResultsOperations, ProtectedItemOperationStatusesOperations, ProtectedItemsOperations, ProtectionContainerOperationResultsOperations, ProtectionContainerRefreshOperationResultsOperations, ProtectionContainersOperations, ProtectionIntentOperations, ProtectionPoliciesOperations, ProtectionPolicyOperationResultsOperations, ProtectionPolicyOperationStatusesOperations, RecoveryPointsOperations, RecoveryPointsRecommendedForMoveOperations, RecoveryServicesBackupClientOperationsMixin, ResourceGuardProxiesOperations, ResourceGuardProxyOperations, RestoresOperations, SecurityPINsOperations, ValidateOperationOperations, ValidateOperationResultsOperations, ValidateOperationStatusesOperations
+from ._serialization import Deserializer, Serializer
+from .operations import (
+    BMSPrepareDataMoveOperationResultOperations,
+    BackupEnginesOperations,
+    BackupJobsOperations,
+    BackupOperationResultsOperations,
+    BackupOperationStatusesOperations,
+    BackupPoliciesOperations,
+    BackupProtectableItemsOperations,
+    BackupProtectedItemsOperations,
+    BackupProtectionContainersOperations,
+    BackupProtectionIntentOperations,
+    BackupResourceEncryptionConfigsOperations,
+    BackupResourceStorageConfigsNonCRROperations,
+    BackupResourceVaultConfigsOperations,
+    BackupStatusOperations,
+    BackupUsageSummariesOperations,
+    BackupWorkloadItemsOperations,
+    BackupsOperations,
+    DeletedProtectionContainersOperations,
+    ExportJobsOperationResultsOperations,
+    FeatureSupportOperations,
+    FetchTieringCostOperations,
+    GetTieringCostOperationResultOperations,
+    ItemLevelRecoveryConnectionsOperations,
+    JobCancellationsOperations,
+    JobDetailsOperations,
+    JobOperationResultsOperations,
+    JobsOperations,
+    OperationOperations,
+    Operations,
+    PrivateEndpointConnectionOperations,
+    PrivateEndpointOperations,
+    ProtectableContainersOperations,
+    ProtectedItemOperationResultsOperations,
+    ProtectedItemOperationStatusesOperations,
+    ProtectedItemsOperations,
+    ProtectionContainerOperationResultsOperations,
+    ProtectionContainerRefreshOperationResultsOperations,
+    ProtectionContainersOperations,
+    ProtectionIntentOperations,
+    ProtectionPoliciesOperations,
+    ProtectionPolicyOperationResultsOperations,
+    ProtectionPolicyOperationStatusesOperations,
+    RecoveryPointsOperations,
+    RecoveryPointsRecommendedForMoveOperations,
+    RecoveryServicesBackupClientOperationsMixin,
+    ResourceGuardProxiesOperations,
+    ResourceGuardProxyOperations,
+    RestoresOperations,
+    SecurityPINsOperations,
+    TieringCostOperationStatusOperations,
+    ValidateOperationOperations,
+    ValidateOperationResultsOperations,
+    ValidateOperationStatusesOperations,
+)
 
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials import TokenCredential
 
-class RecoveryServicesBackupClient(RecoveryServicesBackupClientOperationsMixin):
+
+class RecoveryServicesBackupClient(
+    RecoveryServicesBackupClientOperationsMixin
+):  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """Open API 2.0 Specs for Azure RecoveryServices Backup service.
 
     :ivar backup_resource_storage_configs_non_crr: BackupResourceStorageConfigsNonCRROperations
@@ -158,6 +217,9 @@ class RecoveryServicesBackupClient(RecoveryServicesBackupClientOperationsMixin):
     :ivar backup_protection_containers: BackupProtectionContainersOperations operations
     :vartype backup_protection_containers:
      azure.mgmt.recoveryservicesbackup.activestamp.operations.BackupProtectionContainersOperations
+    :ivar deleted_protection_containers: DeletedProtectionContainersOperations operations
+    :vartype deleted_protection_containers:
+     azure.mgmt.recoveryservicesbackup.activestamp.operations.DeletedProtectionContainersOperations
     :ivar security_pins: SecurityPINsOperations operations
     :vartype security_pins:
      azure.mgmt.recoveryservicesbackup.activestamp.operations.SecurityPINsOperations
@@ -171,12 +233,24 @@ class RecoveryServicesBackupClient(RecoveryServicesBackupClientOperationsMixin):
     :ivar resource_guard_proxy: ResourceGuardProxyOperations operations
     :vartype resource_guard_proxy:
      azure.mgmt.recoveryservicesbackup.activestamp.operations.ResourceGuardProxyOperations
-    :param credential: Credential needed for the client to connect to Azure.
+    :ivar fetch_tiering_cost: FetchTieringCostOperations operations
+    :vartype fetch_tiering_cost:
+     azure.mgmt.recoveryservicesbackup.activestamp.operations.FetchTieringCostOperations
+    :ivar get_tiering_cost_operation_result: GetTieringCostOperationResultOperations operations
+    :vartype get_tiering_cost_operation_result:
+     azure.mgmt.recoveryservicesbackup.activestamp.operations.GetTieringCostOperationResultOperations
+    :ivar tiering_cost_operation_status: TieringCostOperationStatusOperations operations
+    :vartype tiering_cost_operation_status:
+     azure.mgmt.recoveryservicesbackup.activestamp.operations.TieringCostOperationStatusOperations
+    :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param subscription_id: The subscription Id.
+    :param subscription_id: The subscription Id. Required.
     :type subscription_id: str
-    :param base_url: Service URL. Default value is 'https://management.azure.com'.
+    :param base_url: Service URL. Default value is "https://management.azure.com".
     :type base_url: str
+    :keyword api_version: Api Version. Default value is "2024-04-01". Note that overriding this
+     default value may result in unsupported behavior.
+    :paramtype api_version: str
     :keyword int polling_interval: Default waiting time between two polls for LRO operations if no
      Retry-After header is present.
     """
@@ -188,68 +262,163 @@ class RecoveryServicesBackupClient(RecoveryServicesBackupClientOperationsMixin):
         base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
-        self._config = RecoveryServicesBackupClientConfiguration(credential=credential, subscription_id=subscription_id, **kwargs)
-        self._client = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        self._config = RecoveryServicesBackupClientConfiguration(
+            credential=credential, subscription_id=subscription_id, **kwargs
+        )
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                ARMAutoResourceProviderRegistrationPolicy(),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
-        self.backup_resource_storage_configs_non_crr = BackupResourceStorageConfigsNonCRROperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_intent = ProtectionIntentOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.backup_resource_storage_configs_non_crr = BackupResourceStorageConfigsNonCRROperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.protection_intent = ProtectionIntentOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.backup_status = BackupStatusOperations(self._client, self._config, self._serialize, self._deserialize)
         self.feature_support = FeatureSupportOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_protection_intent = BackupProtectionIntentOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_usage_summaries = BackupUsageSummariesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.backup_protection_intent = BackupProtectionIntentOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_usage_summaries = BackupUsageSummariesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_resource_vault_configs = BackupResourceVaultConfigsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_resource_encryption_configs = BackupResourceEncryptionConfigsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.private_endpoint_connection = PrivateEndpointConnectionOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.private_endpoint = PrivateEndpointOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.bms_prepare_data_move_operation_result = BMSPrepareDataMoveOperationResultOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.backup_resource_vault_configs = BackupResourceVaultConfigsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_resource_encryption_configs = BackupResourceEncryptionConfigsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.private_endpoint_connection = PrivateEndpointConnectionOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.private_endpoint = PrivateEndpointOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.bms_prepare_data_move_operation_result = BMSPrepareDataMoveOperationResultOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.protected_items = ProtectedItemsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protected_item_operation_results = ProtectedItemOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.protected_item_operation_results = ProtectedItemOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.recovery_points = RecoveryPointsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.restores = RestoresOperations(self._client, self._config, self._serialize, self._deserialize)
         self.backup_policies = BackupPoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_policies = ProtectionPoliciesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_policy_operation_results = ProtectionPolicyOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.protection_policies = ProtectionPoliciesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.protection_policy_operation_results = ProtectionPolicyOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.backup_jobs = BackupJobsOperations(self._client, self._config, self._serialize, self._deserialize)
         self.job_details = JobDetailsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.job_cancellations = JobCancellationsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.job_operation_results = JobOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.export_jobs_operation_results = ExportJobsOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.job_cancellations = JobCancellationsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.job_operation_results = JobOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.export_jobs_operation_results = ExportJobsOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.jobs = JobsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_protected_items = BackupProtectedItemsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.backup_protected_items = BackupProtectedItemsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.operation = OperationOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.validate_operation = ValidateOperationOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.validate_operation_results = ValidateOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.validate_operation_statuses = ValidateOperationStatusesOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.validate_operation = ValidateOperationOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.validate_operation_results = ValidateOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.validate_operation_statuses = ValidateOperationStatusesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.backup_engines = BackupEnginesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_container_refresh_operation_results = ProtectionContainerRefreshOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protectable_containers = ProtectableContainersOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_containers = ProtectionContainersOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_workload_items = BackupWorkloadItemsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_container_operation_results = ProtectionContainerOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.protection_container_refresh_operation_results = ProtectionContainerRefreshOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.protectable_containers = ProtectableContainersOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.protection_containers = ProtectionContainersOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_workload_items = BackupWorkloadItemsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.protection_container_operation_results = ProtectionContainerOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.backups = BackupsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protected_item_operation_statuses = ProtectedItemOperationStatusesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.item_level_recovery_connections = ItemLevelRecoveryConnectionsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_operation_results = BackupOperationResultsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_operation_statuses = BackupOperationStatusesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.protection_policy_operation_statuses = ProtectionPolicyOperationStatusesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_protectable_items = BackupProtectableItemsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.backup_protection_containers = BackupProtectionContainersOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.protected_item_operation_statuses = ProtectedItemOperationStatusesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.item_level_recovery_connections = ItemLevelRecoveryConnectionsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_operation_results = BackupOperationResultsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_operation_statuses = BackupOperationStatusesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.protection_policy_operation_statuses = ProtectionPolicyOperationStatusesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_protectable_items = BackupProtectableItemsOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.backup_protection_containers = BackupProtectionContainersOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.deleted_protection_containers = DeletedProtectionContainersOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
         self.security_pins = SecurityPINsOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.recovery_points_recommended_for_move = RecoveryPointsRecommendedForMoveOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.resource_guard_proxies = ResourceGuardProxiesOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.resource_guard_proxy = ResourceGuardProxyOperations(self._client, self._config, self._serialize, self._deserialize)
+        self.recovery_points_recommended_for_move = RecoveryPointsRecommendedForMoveOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.resource_guard_proxies = ResourceGuardProxiesOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.resource_guard_proxy = ResourceGuardProxyOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.fetch_tiering_cost = FetchTieringCostOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.get_tiering_cost_operation_result = GetTieringCostOperationResultOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
+        self.tiering_cost_operation_status = TieringCostOperationStatusOperations(
+            self._client, self._config, self._serialize, self._deserialize
+        )
 
-
-    def _send_request(
-        self,
-        request,  # type: HttpRequest
-        **kwargs: Any
-    ) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, *, stream: bool = False, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
@@ -258,7 +427,7 @@ class RecoveryServicesBackupClient(RecoveryServicesBackupClientOperationsMixin):
         >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -269,17 +438,14 @@ class RecoveryServicesBackupClient(RecoveryServicesBackupClientOperationsMixin):
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
-    def close(self):
-        # type: () -> None
+    def close(self) -> None:
         self._client.close()
 
-    def __enter__(self):
-        # type: () -> RecoveryServicesBackupClient
+    def __enter__(self) -> "RecoveryServicesBackupClient":
         self._client.__enter__()
         return self
 
-    def __exit__(self, *exc_details):
-        # type: (Any) -> None
+    def __exit__(self, *exc_details: Any) -> None:
         self._client.__exit__(*exc_details)

@@ -11,7 +11,7 @@ import pytest
 from devtools_testutils import AzureRecordedTestCase
 from devtools_testutils.aio import recorded_by_proxy_async
 
-from azure.core.exceptions import HttpResponseError
+from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
 
 from azure.data.tables import TableAnalyticsLogging, TableMetrics, TableRetentionPolicy, TableCorsRule
 from azure.data.tables.aio import TableServiceClient
@@ -25,7 +25,9 @@ from async_preparers import tables_decorator_async
 class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
     @tables_decorator_async
     @recorded_by_proxy_async
-    async def test_table_service_properties_async(self, tables_storage_account_name, tables_primary_storage_account_key):
+    async def test_table_service_properties_async(
+        self, tables_storage_account_name, tables_primary_storage_account_key
+    ):
         # Arrange
         url = self.account_url(tables_storage_account_name, "table")
         tsc = TableServiceClient(url, credential=tables_primary_storage_account_key, logging_enable=True)
@@ -34,7 +36,8 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
             analytics_logging=TableAnalyticsLogging(),
             hour_metrics=TableMetrics(),
             minute_metrics=TableMetrics(),
-            cors=list())
+            cors=list(),
+        )
 
         # Assert
         assert resp is None
@@ -49,7 +52,9 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         # Arrange
         url = self.account_url(tables_storage_account_name, "table")
         tsc = TableServiceClient(url, credential=tables_primary_storage_account_key)
-        logging = TableAnalyticsLogging(read=True, write=True, delete=True, retention_policy=TableRetentionPolicy(enabled=True, days=5))
+        logging = TableAnalyticsLogging(
+            read=True, write=True, delete=True, retention_policy=TableRetentionPolicy(enabled=True, days=5)
+        )
 
         # Act
         await tsc.set_service_properties(analytics_logging=logging)
@@ -58,7 +63,7 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         if self.is_live:
             time.sleep(45)
         received_props = await tsc.get_service_properties()
-        self._assert_logging_equal(received_props['analytics_logging'], logging)
+        self._assert_logging_equal(received_props["analytics_logging"], logging)
 
     @tables_decorator_async
     @recorded_by_proxy_async
@@ -66,7 +71,9 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         # Arrange
         url = self.account_url(tables_storage_account_name, "table")
         tsc = TableServiceClient(url, credential=tables_primary_storage_account_key)
-        hour_metrics = TableMetrics(enabled=True, include_apis=True, retention_policy=TableRetentionPolicy(enabled=True, days=5))
+        hour_metrics = TableMetrics(
+            enabled=True, include_apis=True, retention_policy=TableRetentionPolicy(enabled=True, days=5)
+        )
 
         # Act
         await tsc.set_service_properties(hour_metrics=hour_metrics)
@@ -75,7 +82,7 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         if self.is_live:
             time.sleep(45)
         received_props = await tsc.get_service_properties()
-        self._assert_metrics_equal(received_props['hour_metrics'], hour_metrics)
+        self._assert_metrics_equal(received_props["hour_metrics"], hour_metrics)
 
     @tables_decorator_async
     @recorded_by_proxy_async
@@ -83,8 +90,9 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         # Arrange
         url = self.account_url(tables_storage_account_name, "table")
         tsc = TableServiceClient(url, credential=tables_primary_storage_account_key)
-        minute_metrics = TableMetrics(enabled=True, include_apis=True,
-                                 retention_policy=TableRetentionPolicy(enabled=True, days=5))
+        minute_metrics = TableMetrics(
+            enabled=True, include_apis=True, retention_policy=TableRetentionPolicy(enabled=True, days=5)
+        )
 
         # Act
         await tsc.set_service_properties(minute_metrics=minute_metrics)
@@ -93,7 +101,7 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         if self.is_live:
             time.sleep(45)
         received_props = await tsc.get_service_properties()
-        self._assert_metrics_equal(received_props['minute_metrics'], minute_metrics)
+        self._assert_metrics_equal(received_props["minute_metrics"], minute_metrics)
 
     @tables_decorator_async
     @recorded_by_proxy_async
@@ -101,10 +109,10 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         # Arrange
         url = self.account_url(tables_storage_account_name, "table")
         tsc = TableServiceClient(url, credential=tables_primary_storage_account_key)
-        cors_rule1 = TableCorsRule(['www.xyz.com'], ['GET'])
+        cors_rule1 = TableCorsRule(["www.xyz.com"], ["GET"])
 
-        allowed_origins = ['www.xyz.com', "www.ab.com", "www.bc.com"]
-        allowed_methods = ['GET', 'PUT']
+        allowed_origins = ["www.xyz.com", "www.ab.com", "www.bc.com"]
+        allowed_methods = ["GET", "PUT"]
         max_age_in_seconds = 500
         exposed_headers = ["x-ms-meta-data*", "x-ms-meta-source*", "x-ms-meta-abc", "x-ms-meta-bcd"]
         allowed_headers = ["x-ms-meta-data*", "x-ms-meta-target*", "x-ms-meta-xyz", "x-ms-meta-foo"]
@@ -122,17 +130,19 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
         if self.is_live:
             time.sleep(45)
         received_props = await tsc.get_service_properties()
-        self._assert_cors_equal(received_props['cors'], cors)
+        self._assert_cors_equal(received_props["cors"], cors)
 
     # --Test cases for errors ---------------------------------------
     @tables_decorator_async
     @recorded_by_proxy_async
     async def test_too_many_cors_rules_async(self, tables_storage_account_name, tables_primary_storage_account_key):
         # Arrange
-        tsc = TableServiceClient(self.account_url(tables_storage_account_name, "table"), credential=tables_primary_storage_account_key)
+        tsc = TableServiceClient(
+            self.account_url(tables_storage_account_name, "table"), credential=tables_primary_storage_account_key
+        )
         cors = []
         for i in range(0, 6):
-            cors.append(TableCorsRule(['www.xyz.com'], ['GET']))
+            cors.append(TableCorsRule(["www.xyz.com"], ["GET"]))
 
         # Assert
         with pytest.raises(HttpResponseError):
@@ -142,17 +152,51 @@ class TestTableServicePropertiesAsync(AzureRecordedTestCase, TableTestCase):
     @recorded_by_proxy_async
     async def test_retention_too_long_async(self, tables_storage_account_name, tables_primary_storage_account_key):
         # Arrange
-        tsc = TableServiceClient(self.account_url(tables_storage_account_name, "table"), credential=tables_primary_storage_account_key)
-        minute_metrics = TableMetrics(enabled=True, include_apis=True,
-                                 retention_policy=TableRetentionPolicy(enabled=True, days=366))
+        tsc = TableServiceClient(
+            self.account_url(tables_storage_account_name, "table"), credential=tables_primary_storage_account_key
+        )
+        minute_metrics = TableMetrics(
+            enabled=True, include_apis=True, retention_policy=TableRetentionPolicy(enabled=True, days=366)
+        )
 
         # Assert
         with pytest.raises(HttpResponseError):
             await tsc.set_service_properties(minute_metrics=minute_metrics)
 
+    @tables_decorator_async
+    @recorded_by_proxy_async
+    async def test_client_with_url_ends_with_table_name(
+        self, tables_storage_account_name, tables_primary_storage_account_key
+    ):
+        url = self.account_url(tables_storage_account_name, "table")
+        table_name = self.get_resource_name("mytable")
+        invalid_url = url + "/" + table_name
+        tsc = TableServiceClient(invalid_url, credential=tables_primary_storage_account_key)
+
+        with pytest.raises(ResourceNotFoundError) as exc:
+            await tsc.create_table(table_name)
+        assert ("table specified does not exist") in str(exc.value)
+        assert ("Please check your account URL.") in str(exc.value)
+
+        with pytest.raises(ResourceNotFoundError) as exc:
+            await tsc.create_table_if_not_exists(table_name)
+        assert ("table specified does not exist") in str(exc.value)
+        assert ("Please check your account URL.") in str(exc.value)
+
+        with pytest.raises(HttpResponseError) as exc:
+            await tsc.set_service_properties(analytics_logging=TableAnalyticsLogging(write=True))
+        assert ("URI is invalid") in str(exc.value)
+        assert ("Please check your account URL.") in str(exc.value)
+
+        with pytest.raises(HttpResponseError) as exc:
+            await tsc.get_service_properties()
+        assert ("URI is invalid") in str(exc.value)
+        assert ("Please check your account URL.") in str(exc.value)
+
+        await tsc.delete_table(table_name)
+
 
 class TestTableUnitTest(TableTestCase):
-
     @pytest.mark.asyncio
     async def test_retention_no_days_async(self):
         # Assert

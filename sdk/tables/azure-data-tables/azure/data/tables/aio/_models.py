@@ -11,7 +11,6 @@ from .._deserialize import (
     _convert_to_entity,
     _extract_continuation_token,
 )
-from .._generated.models import QueryOptions
 from .._models import TableItem
 from .._error import _process_table_error
 from .._constants import NEXT_PARTITION_KEY, NEXT_TABLE_NAME, NEXT_ROW_KEY
@@ -40,10 +39,10 @@ class TablePropertiesPaged(AsyncPageIterator):
         self._location_mode = None
 
     async def _get_next_cb(self, continuation_token, **kwargs):
-        query_options = QueryOptions(top=self.results_per_page, filter=self.filter)
         try:
             return await self._command(
-                query_options=query_options,
+                top=self.results_per_page,
+                filter=self.filter,
                 next_table_name=continuation_token or None,
                 cls=kwargs.pop("cls", None) or _return_context_and_deserialized,
                 use_location=self._location_mode,
@@ -53,9 +52,7 @@ class TablePropertiesPaged(AsyncPageIterator):
 
     async def _extract_data_cb(self, get_next_return):
         self._location_mode, self._response, self._headers = get_next_return
-        props_list = [
-            TableItem._from_generated(t, **self._headers) for t in self._response.value  # pylint: disable=protected-access
-        ]
+        props_list = [TableItem(t.table_name) for t in self._response.value]
         return self._headers[NEXT_TABLE_NAME] or None, props_list
 
 
@@ -86,15 +83,12 @@ class TableEntityPropertiesPaged(AsyncPageIterator):
         self._location_mode = None
 
     async def _get_next_cb(self, continuation_token, **kwargs):
-        next_partition_key, next_row_key = _extract_continuation_token(
-            continuation_token
-        )
-        query_options = QueryOptions(
-            top=self.results_per_page, select=self.select, filter=self.filter
-        )
+        next_partition_key, next_row_key = _extract_continuation_token(continuation_token)
         try:
             return await self._command(
-                query_options=query_options,
+                top=self.results_per_page,
+                select=self.select,
+                filter=self.filter,
                 next_row_key=next_row_key,
                 next_partition_key=next_partition_key,
                 table=self.table,

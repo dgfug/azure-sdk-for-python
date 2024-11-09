@@ -8,17 +8,19 @@
 
 from copy import deepcopy
 from typing import Any, Awaitable
-
-from msrest import Deserializer, Serializer
+from typing_extensions import Self
 
 from azure.core import AsyncPipelineClient
+from azure.core.pipeline import policies
 from azure.core.rest import AsyncHttpResponse, HttpRequest
 
-from .. import models
+from .. import models as _models
+from .._serialization import Deserializer, Serializer
 from ._configuration import AzureQueueStorageConfiguration
 from .operations import MessageIdOperations, MessagesOperations, QueueOperations, ServiceOperations
 
-class AzureQueueStorage:
+
+class AzureQueueStorage:  # pylint: disable=client-accepts-api-version-keyword
     """AzureQueueStorage.
 
     :ivar service: ServiceOperations operations
@@ -30,25 +32,39 @@ class AzureQueueStorage:
     :ivar message_id: MessageIdOperations operations
     :vartype message_id: azure.storage.queue.aio.operations.MessageIdOperations
     :param url: The URL of the service account, queue or message that is the target of the desired
-     operation.
+     operation. Required.
     :type url: str
-    :param base_url: Service URL. Default value is "".
+    :param base_url: Service URL. Required. Default value is "".
     :type base_url: str
     :keyword version: Specifies the version of the operation to use for this request. Default value
      is "2018-03-28". Note that overriding this default value may result in unsupported behavior.
     :paramtype version: str
     """
 
-    def __init__(
-        self,
-        url: str,
-        base_url: str = "",
-        **kwargs: Any
+    def __init__(  # pylint: disable=missing-client-constructor-parameter-credential
+        self, url: str, base_url: str = "", **kwargs: Any
     ) -> None:
         self._config = AzureQueueStorageConfiguration(url=url, **kwargs)
-        self._client = AsyncPipelineClient(base_url=base_url, config=self._config, **kwargs)
+        _policies = kwargs.pop("policies", None)
+        if _policies is None:
+            _policies = [
+                policies.RequestIdPolicy(**kwargs),
+                self._config.headers_policy,
+                self._config.user_agent_policy,
+                self._config.proxy_policy,
+                policies.ContentDecodePolicy(**kwargs),
+                self._config.redirect_policy,
+                self._config.retry_policy,
+                self._config.authentication_policy,
+                self._config.custom_hook_policy,
+                self._config.logging_policy,
+                policies.DistributedTracingPolicy(**kwargs),
+                policies.SensitiveHeaderCleanupPolicy(**kwargs) if self._config.redirect_policy else None,
+                self._config.http_logging_policy,
+            ]
+        self._client: AsyncPipelineClient = AsyncPipelineClient(base_url=base_url, policies=_policies, **kwargs)
 
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
@@ -57,11 +73,8 @@ class AzureQueueStorage:
         self.messages = MessagesOperations(self._client, self._config, self._serialize, self._deserialize)
         self.message_id = MessageIdOperations(self._client, self._config, self._serialize, self._deserialize)
 
-
     def _send_request(
-        self,
-        request: HttpRequest,
-        **kwargs: Any
+        self, request: HttpRequest, *, stream: bool = False, **kwargs: Any
     ) -> Awaitable[AsyncHttpResponse]:
         """Runs the network request through the client's chained policies.
 
@@ -71,7 +84,7 @@ class AzureQueueStorage:
         >>> response = await client._send_request(request)
         <AsyncHttpResponse: 200 OK>
 
-        For more information on this code flow, see https://aka.ms/azsdk/python/protocol/quickstart
+        For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request
 
         :param request: The network request you want to make. Required.
         :type request: ~azure.core.rest.HttpRequest
@@ -82,14 +95,14 @@ class AzureQueueStorage:
 
         request_copy = deepcopy(request)
         request_copy.url = self._client.format_url(request_copy.url)
-        return self._client.send_request(request_copy, **kwargs)
+        return self._client.send_request(request_copy, stream=stream, **kwargs)  # type: ignore
 
     async def close(self) -> None:
         await self._client.close()
 
-    async def __aenter__(self) -> "AzureQueueStorage":
+    async def __aenter__(self) -> Self:
         await self._client.__aenter__()
         return self
 
-    async def __aexit__(self, *exc_details) -> None:
+    async def __aexit__(self, *exc_details: Any) -> None:
         await self._client.__aexit__(*exc_details)

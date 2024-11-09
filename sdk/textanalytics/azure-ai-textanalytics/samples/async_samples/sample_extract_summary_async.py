@@ -15,22 +15,21 @@ USAGE:
     python sample_extract_summary_async.py
 
     Set the environment variables with your own values before running the sample:
-    1) AZURE_TEXT_ANALYTICS_ENDPOINT - the endpoint to your Cognitive Services resource.
-    2) AZURE_TEXT_ANALYTICS_KEY - your Text Analytics subscription key
+    1) AZURE_LANGUAGE_ENDPOINT - the endpoint to your Language resource.
+    2) AZURE_LANGUAGE_KEY - your Language subscription key
 """
 
-
-import os
 import asyncio
 
 
 async def sample_extractive_summarization_async():
+    # [START extract_summary_async]
+    import os
     from azure.core.credentials import AzureKeyCredential
     from azure.ai.textanalytics.aio import TextAnalyticsClient
-    from azure.ai.textanalytics import ExtractSummaryAction
 
-    endpoint = os.environ["AZURE_TEXT_ANALYTICS_ENDPOINT"]
-    key = os.environ["AZURE_TEXT_ANALYTICS_KEY"]
+    endpoint = os.environ["AZURE_LANGUAGE_ENDPOINT"]
+    key = os.environ["AZURE_LANGUAGE_KEY"]
 
     text_analytics_client = TextAnalyticsClient(
         endpoint=endpoint,
@@ -57,24 +56,18 @@ async def sample_extractive_summarization_async():
     ]
 
     async with text_analytics_client:
-        poller = await text_analytics_client.begin_analyze_actions(
-            document,
-            actions=[
-                ExtractSummaryAction(),
-            ],
-        )
-
-        document_results = await poller.result()
-        async for result in document_results:
-            extract_summary_result = result[0]  # first document, first result
-            if extract_summary_result.is_error:
-                print("...Is an error with code '{}' and message '{}'".format(
-                    extract_summary_result.code, extract_summary_result.message
-                ))
-            else:
+        poller = await text_analytics_client.begin_extract_summary(document)
+        extract_summary_results = await poller.result()
+        async for result in extract_summary_results:
+            if result.kind == "ExtractiveSummarization":
                 print("Summary extracted: \n{}".format(
-                    " ".join([sentence.text for sentence in extract_summary_result.sentences]))
+                    " ".join([sentence.text for sentence in result.sentences]))
                 )
+            elif result.is_error is True:
+                print("...Is an error with code '{}' and message '{}'".format(
+                    result.error.code, result.error.message
+                ))
+    # [END extract_summary_async]
 
 
 async def main():

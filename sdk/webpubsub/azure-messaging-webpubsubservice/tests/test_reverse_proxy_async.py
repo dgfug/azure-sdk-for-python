@@ -6,29 +6,33 @@
 # -------------------------------------------------------------------------
 import pytest
 from azure.messaging.webpubsubservice.aio import WebPubSubServiceClient
-from azure.messaging.webpubsubservice._operations._operations import build_send_to_all_request
+from azure.messaging.webpubsubservice._operations._operations import build_web_pub_sub_service_send_to_all_request
 from azure.core.credentials import AzureKeyCredential
 
 from testcase import WebpubsubPowerShellPreparer
 from testcase_async import WebpubsubAsyncTest
+from devtools_testutils.aio import recorded_by_proxy_async 
 
-class WebpubsubReverseProxyTestAsync(WebpubsubAsyncTest):
+@pytest.mark.live_test_only
+class TestWebpubsubReverseProxyAsync(WebpubsubAsyncTest):
 
     @pytest.mark.asyncio
+    @recorded_by_proxy_async
     async def test_reverse_proxy_endpoint_redirection(self):
         def _callback(pipeline_request):
             assert pipeline_request.http_request.url.startswith("https://apim.contoso.com/")
             raise ValueError("Success!")
         wps_endpoint = "https://wps.contoso.com/"
         apim_endpoint = "https://apim.contoso.com/"
-        credential = AzureKeyCredential("abcdabcdabcdabcdabcdabcdabcdabcd")
-        request = build_send_to_all_request("Hub", content='test_webpubsub_send_request', content_type='text/plain')
+        credential = AzureKeyCredential("AzureKeyCredential")
+        request = build_web_pub_sub_service_send_to_all_request("Hub", content='test_webpubsub_send_request', content_type='text/plain')
         async with WebPubSubServiceClient(wps_endpoint, "Hub", credential, reverse_proxy_endpoint=apim_endpoint) as client:
             with pytest.raises(ValueError) as ex:
                 await client.send_request(request, raw_request_hook=_callback)
             assert "Success!" in str(ex.value)
 
     @pytest.mark.asyncio
+    @recorded_by_proxy_async
     async def test_reverse_proxy_endpoint_redirection_identity(self):
         def _callback(pipeline_request):
             assert pipeline_request.http_request.url.startswith("https://apim.contoso.com/")
@@ -36,7 +40,7 @@ class WebpubsubReverseProxyTestAsync(WebpubsubAsyncTest):
         wps_endpoint = "https://wps.contoso.com/"
         apim_endpoint = "https://apim.contoso.com/"
         credential = self.get_credential(WebPubSubServiceClient, is_async=True)
-        request = build_send_to_all_request('Hub', content='test_webpubsub_send_request', content_type='text/plain')
+        request = build_web_pub_sub_service_send_to_all_request('Hub', content='test_webpubsub_send_request', content_type='text/plain')
         async with WebPubSubServiceClient(wps_endpoint, "Hub", credential, reverse_proxy_endpoint=apim_endpoint) as client:
             with pytest.raises(ValueError) as ex:
                 await client.send_request(request, raw_request_hook=_callback)
@@ -44,6 +48,7 @@ class WebpubsubReverseProxyTestAsync(WebpubsubAsyncTest):
 
     @pytest.mark.asyncio
     @WebpubsubPowerShellPreparer()
+    @recorded_by_proxy_async
     async def test_reverse_proxy_call(self, webpubsub_connection_string, webpubsub_reverse_proxy_endpoint):
         client = self.create_client(
             connection_string=webpubsub_connection_string,
@@ -51,5 +56,6 @@ class WebpubsubReverseProxyTestAsync(WebpubsubAsyncTest):
             logging_enable=True,
             reverse_proxy_endpoint=webpubsub_reverse_proxy_endpoint
         )
+
         await client.send_to_all({'Hello': 'reverse_proxy_endpoint!'})
 

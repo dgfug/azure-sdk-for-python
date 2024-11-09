@@ -6,67 +6,53 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from enum import Enum, EnumMeta
-from six import with_metaclass
-
-class _CaseInsensitiveEnumMeta(EnumMeta):
-    def __getitem__(self, name):
-        return super().__getitem__(name.upper())
-
-    def __getattr__(cls, name):
-        """Return the enum member matching `name`
-        We use __getattr__ instead of descriptors or inserting into the enum
-        class' __dict__ in order to support `name` and `value` being both
-        properties for enum members (which live in the class' __dict__) and
-        enum members themselves.
-        """
-        try:
-            return cls._member_map_[name.upper()]
-        except KeyError:
-            raise AttributeError(name)
+from enum import Enum
+from azure.core import CaseInsensitiveEnumMeta
 
 
-class CreatedByType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The type of identity that created the resource.
-    """
+class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The type of identity that created the resource."""
 
     USER = "User"
     APPLICATION = "Application"
     MANAGED_IDENTITY = "ManagedIdentity"
     KEY = "Key"
 
-class ImpactType(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The impact type
-    """
 
-    #: Pending updates has no impact on resource.
+class ImpactType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The impact type."""
+
     NONE = "None"
-    #: Pending updates can freeze network or disk io operation on resource.
+    """Pending updates has no impact on resource."""
     FREEZE = "Freeze"
-    #: Pending updates can cause resource to restart.
+    """Pending updates can freeze network or disk io operation on resource."""
     RESTART = "Restart"
-    #: Pending updates can redeploy resource.
+    """Pending updates can cause resource to restart."""
     REDEPLOY = "Redeploy"
+    """Pending updates can redeploy resource."""
 
-class MaintenanceScope(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Gets or sets maintenanceScope of the configuration
-    """
 
-    #: This maintenance scope controls installation of azure platform updates i.e. services on
-    #: physical nodes hosting customer VMs.
+class MaintenanceScope(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Gets or sets maintenanceScope of the configuration."""
+
     HOST = "Host"
-    #: This maintenance scope controls os image installation on VM/VMSS.
+    """This maintenance scope controls installation of azure platform updates i.e. services on
+    physical nodes hosting customer VMs."""
+    RESOURCE = "Resource"
+    """This maintenance scope controls the default update maintenance of the Azure Resource"""
     OS_IMAGE = "OSImage"
-    #: This maintenance scope controls extension installation on VM/VMSS.
+    """This maintenance scope controls os image installation on VM/VMSS"""
     EXTENSION = "Extension"
-    #: This maintenance scope controls installation of windows and linux packages on VM/VMSS.
+    """This maintenance scope controls extension installation on VM/VMSS"""
     IN_GUEST_PATCH = "InGuestPatch"
-    #: This maintenance scope controls installation of SQL server platform updates.
+    """This maintenance scope controls installation of windows and linux packages on VM/VMSS"""
     SQLDB = "SQLDB"
-    #: This maintenance scope controls installation of SQL managed instance platform update.
+    """This maintenance scope controls installation of SQL server platform updates."""
     SQL_MANAGED_INSTANCE = "SQLManagedInstance"
+    """This maintenance scope controls installation of SQL managed instance platform update."""
 
-class RebootOptions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
+
+class RebootOptions(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Possible reboot preference as defined by the user based on which it would be decided to reboot
     the machine or not after the patch operation is completed.
     """
@@ -75,33 +61,41 @@ class RebootOptions(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
     NEVER = "Never"
     ALWAYS = "Always"
 
-class TaskScope(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Global Task execute once when schedule trigger. Resource task execute for each VM.
-    """
 
-    GLOBAL_ENUM = "Global"
-    RESOURCE = "Resource"
+class TagOperators(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Filter VMs by Any or All specified tags."""
 
-class UpdateStatus(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """The status
-    """
+    ALL = "All"
+    ANY = "Any"
 
-    #: There are pending updates to be installed.
+
+class UpdateStatus(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The status."""
+
     PENDING = "Pending"
-    #: Updates installation are in progress.
+    """There are pending updates to be installed."""
     IN_PROGRESS = "InProgress"
-    #: All updates are successfully applied.
+    """Updates installation are in progress."""
     COMPLETED = "Completed"
-    #: Updates installation failed but are ready to retry again.
+    """All updates are successfully applied."""
     RETRY_NOW = "RetryNow"
-    #: Updates installation failed and should be retried later.
+    """Updates installation failed but are ready to retry again."""
     RETRY_LATER = "RetryLater"
+    """Updates installation failed and should be retried later."""
+    NO_UPDATES_PENDING = "NoUpdatesPending"
+    """No updates are pending."""
+    CANCEL = "Cancel"
+    """Cancel the schedule and stop creating PMR for resources part of it. Applicable to Maintenance
+    Configuration resource type only."""
+    CANCELLED = "Cancelled"
+    """Send the Cancelled response to the user if request came to cancel the schedule. Applicable to
+    Maintenance Configuration resource type only."""
 
-class Visibility(with_metaclass(_CaseInsensitiveEnumMeta, str, Enum)):
-    """Gets or sets the visibility of the configuration. The default value is 'Custom'
-    """
 
-    #: Only visible to users with permissions.
+class Visibility(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """Gets or sets the visibility of the configuration. The default value is 'Custom'."""
+
     CUSTOM = "Custom"
-    #: Visible to all users.
+    """Only visible to users with permissions."""
     PUBLIC = "Public"
+    """Visible to all users."""

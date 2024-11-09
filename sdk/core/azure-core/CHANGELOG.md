@@ -1,6 +1,6 @@
 # Release History
 
-## 1.23.1 (Unreleased)
+## 1.32.1 (Unreleased)
 
 ### Features Added
 
@@ -9,6 +9,239 @@
 ### Bugs Fixed
 
 ### Other Changes
+
+## 1.32.0 (2024-10-31)
+
+### Features Added
+
+- Added a default implementation to handle token challenges in `BearerTokenCredentialPolicy` and `AsyncBearerTokenCredentialPolicy`.
+
+### Bugs Fixed
+
+- Fixed an issue where the `tracing_attributes` keyword argument wasn't being handled at the request/method level. #38164
+
+### Other Changes
+
+- Log "x-vss-e2eid" and "x-msedge-ref" headers in `HttpLoggingPolicy`.
+
+## 1.31.0 (2024-09-12)
+
+### Features Added
+
+- Added azure.core.AzureClouds enum to represent the different Azure clouds.
+- Added two new credential protocol classes, `SupportsTokenInfo` and `AsyncSupportsTokenInfo`, to offer more extensibility in supporting various token acquisition scenarios. #36565
+  - Each new protocol class defines a `get_token_info` method that returns an `AccessTokenInfo` object.
+- Added a new `TokenRequestOptions` class, which is a `TypedDict` with optional parameters, that can be used to define options for token requests through the `get_token_info` method. #36565
+- Added a new `AccessTokenInfo` class, which is returned by `get_token_info` implementations. This class contains the token, its expiration time, and optional additional information like when a token should be refreshed. #36565
+- `BearerTokenCredentialPolicy` and `AsyncBearerTokenCredentialPolicy` now first check if a credential has the `get_token_info` method defined. If so, the `get_token_info` method is used to acquire a token. Otherwise, the `get_token` method is used. #36565
+  - These policies now also check the `refresh_on` attribute when determining if a new token request should be made.
+
+### Other Changes
+
+- The Azure Core OpenTelemetry tracing plugin will now be the preferred tracing plugin over the OpenCensus plugin. If both plugins are installed and `opentelemetry` is imported, then OpenTelemetry will be used to trace Azure SDK operations.  #35050
+
+## 1.30.2 (2024-06-06)
+
+### Features Added
+
+- Tracing: `DistributedTracingPolicy` will now set an attribute, `http.request.resend_count`, on HTTP spans for resent requests to indicate the resend attempt number.  #35069
+
+### Bugs Fixed
+
+- Raise correct exception if transport is used while already closed  #35559
+
+### Other Changes
+
+- HTTP tracing spans will now include an `error.type` attribute if an error status code is returned.  #34619
+- Minimum required Python version is now 3.8
+
+## 1.30.1 (2024-02-29)
+
+### Other Changes
+
+- Accept float for `retry_after` header.  #34203
+
+## 1.30.0 (2024-02-01)
+
+### Features Added
+
+- Support tuple input for file values  to `azure.core.rest.HttpRequest`  #33948
+- Support tuple input to `files` with duplicate field names  `azure.core.rest.HttpRequest`  #34021
+
+## 1.29.7 (2024-01-18)
+
+### Other Changes
+
+- Removed dependency on `anyio`.  #33282
+
+## 1.29.6 (2023-12-14)
+
+### Bugs Fixed
+
+- Adjusted `AsyncBearerTokenCredentialPolicy` to work properly with `trio` concurrency mechanisms.   ([#33307](https://github.com/Azure/azure-sdk-for-python/pull/33307))
+
+### Other Changes
+
+- Added dependency on `anyio` >=3.0,<5.0
+- Bumped minimum dependency on `requests` to 2.21.0.
+
+## 1.29.5 (2023-10-19)
+
+### Bugs Fixed
+
+- Fixed an issue with `multipart/form-data` in the async transport where `data` was not getting encoded into the request body. #32473
+
+### Other Changes
+
+- Use ssl context from aiohttp by default.
+
+## 1.29.4 (2023-09-07)
+
+### Bugs Fixed
+
+- Fixed the issue that some urls trigger an infinite loop. #31346
+- Fixed issue where IndexError was raised if multipart responses did not match the number of requests. #31471
+- Fixed issue unbound variable exception if dict is invalid in CloudEvent.from_dict. #31835
+- Fixed issue asyncBearerTokenCredentialPolicy is not backward compatible with SansIOHTTPPolicy. #31836
+- Fixed issue mypy complains with new version of azure-core. #31564
+
+## 1.29.3 (2023-08-22)
+
+### Bugs Fixed
+
+- Typing fix: `message` cannot be `None` in `AzureError`. #31564
+
+## 1.29.2 (2023-08-14)
+
+### Bugs Fixed
+
+- Added a default implementation for `AsyncTokenCredential.__aexit__()` #31573
+
+### Other Changes
+
+- Bumped `typing-extensions` version to 4.6.0.
+
+## 1.29.1 (2023-08-09)
+
+### Bugs Fixed
+
+- Not pass `enabled_cae` unless it is explicitly enabled.
+
+## 1.29.0 (2023-08-03)
+
+### Features Added
+
+- A keyword argument `enable_cae` was added to the `get_token` method of the `TokenCredential` protocol.  #31012
+- `BearerTokenCredentialPolicy` and `AsyncBearerTokenCredentialPolicy` now accept `enable_cae` keyword arguments in their constructors. This is used in determining if [Continuous Access Evaluation (CAE)](https://learn.microsoft.com/azure/active-directory/conditional-access/concept-continuous-access-evaluation) should be enabled for each `get_token` request.  #31012
+
+## 1.28.0 (2023-07-06)
+
+### Features Added
+
+- Added header name parameter to `RequestIdPolicy`. #30772
+- Added `SensitiveHeaderCleanupPolicy` that cleans up sensitive headers if a redirect happens and the new destination is in another domain. #28349
+
+### Other Changes
+
+- Catch aiohttp errors and translate them into azure-core errors.
+
+## 1.27.1 (2023-06-13)
+
+### Bugs Fixed
+
+- Fix url building for some complex query parameters scenarios  #30707
+
+## 1.27.0 (2023-06-01)
+
+### Features Added
+
+- Added support to use sync credentials in `AsyncBearerTokenCredentialPolicy`. #30381
+- Added "prefix" parameter to AzureKeyCredentialPolicy #29901
+
+### Bugs Fixed
+
+- Improve error message when providing the wrong credential type for AzureKeyCredential  #30380
+
+## 1.26.4 (2023-04-06)
+
+### Features Added
+
+- Updated settings to include OpenTelemetry as a tracer provider.  #29095
+
+### Other Changes
+
+- Improved typing
+
+## 1.26.3 (2023-02-02)
+
+### Bugs Fixed
+
+- Fixed deflate decompression for aiohttp   #28483
+
+## 1.26.2 (2023-01-05)
+
+### Bugs Fixed
+
+- Fix 'ClientSession' object has no attribute 'auto_decompress'  (thanks to @mghextreme for the contribution)
+
+### Other Changes
+
+- Add "x-ms-error-code" as secure header to log
+- Rename "DEFAULT_HEADERS_WHITELIST" to "DEFAULT_HEADERS_ALLOWLIST". Added a backward compatible alias.
+
+## 1.26.1 (2022-11-03)
+
+### Other Changes
+
+- Added example of RequestsTransport with custom session.  (thanks to @inirudebwoy for the contribution)   #26768
+- Added Python 3.11 support.
+
+## 1.26.0 (2022-10-06)
+
+### Other Changes
+
+- LRO polling will not wait anymore before doing the first status check  #26376
+- Added extra dependency for [aio]. pip install azure-core[aio] installs aiohttp too.
+
+## 1.25.1 (2022-09-01)
+
+### Bugs Fixed
+
+- Added @runtime_checkable to `TokenCredential` protocol definitions  #25187
+
+## 1.25.0 (2022-08-04)
+
+Azure-core is supported on Python 3.7 or later. For more details, please read our page on [Azure SDK for Python version support policy](https://github.com/Azure/azure-sdk-for-python/wiki/Azure-SDKs-Python-version-support-policy).
+
+### Features Added
+
+- Added `CaseInsensitiveDict` implementation in `azure.core.utils` removing dependency on `requests` and `aiohttp`
+
+## 1.24.2 (2022-06-30)
+
+### Bugs Fixed
+
+- Fixed the bug that azure-core could not be imported under Python 3.11.0b3  #24928
+- `ContentDecodePolicy` can now correctly deserialize more JSON bodies with different mime types #22410
+
+## 1.24.1 (2022-06-01)
+
+### Bugs Fixed
+
+- Declare method level span as INTERNAL by default  #24492
+- Fixed type hints for `azure.core.paging.ItemPaged` #24548
+
+## 1.24.0 (2022-05-06)
+
+### Features Added
+
+- Add `SerializationError` and `DeserializationError` in `azure.core.exceptions` for errors raised during serialization / deserialization  #24312
+
+## 1.23.1 (2022-03-31)
+
+### Bugs Fixed
+
+- Allow stream inputs to the `content` kwarg of `azure.core.rest.HttpRequest` from objects with a `read` method  #23578
 
 ## 1.23.0 (2022-03-03)
 
@@ -430,7 +663,7 @@ set the http logging policy of the config  #12218
 - Tracing: `azure.core.tracing.context.tracing_context.with_current_context` renamed to `azure.core.tracing.common.with_current_context`  #7252
 - Tracing: `link` renamed `link_from_headers`  and `link` takes now a string
 - Tracing: opencensus implementation has been moved to the package `azure-core-tracing-opencensus`
-- Some modules and classes that were importables from several differente places have been removed:
+- Some modules and classes that were importables from several different places have been removed:
 
    - `azure.core.HttpResponseError` is now only `azure.core.exceptions.HttpResponseError`
    - `azure.core.Configuration` is now only `azure.core.configuration.Configuration`

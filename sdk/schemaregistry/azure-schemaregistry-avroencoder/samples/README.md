@@ -23,7 +23,7 @@ Several Schema Registry Avro Encoder Python SDK samples are available to you in 
     * Receive `EventData` from Event Hubs and decode the received bytes.
 
 ## Prerequisites
-- Python 3.6 or later.
+- Python 3.7 or later.
 - **Microsoft Azure Subscription:**  To use Azure services, including Azure Schema Registry, you'll need a subscription.
 If you do not have an existing Azure account, you may sign up for a free trial or use your MSDN subscriber benefits when you [create an account](https://account.windowsazure.com/Home/Index).
 
@@ -35,10 +35,10 @@ If you do not have an existing Azure account, you may sign up for a free trial o
 pip install azure-schemaregistry-avroencoder azure-identity
 ```
 
-Additionally, if using with `azure.eventhub.EventData`, install `azure-eventhub==5.9.0b2`:
+Additionally, if using with `azure.eventhub.EventData`, install `azure-eventhub>=5.9.0`:
 
 ```bash
-pip install azure-eventhub==5.9.0b2
+pip install azure-eventhub>=5.9.0
 ```
 
 2. Clone or download this sample repository

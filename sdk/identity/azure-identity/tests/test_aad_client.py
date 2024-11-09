@@ -3,6 +3,7 @@
 # Licensed under the MIT License.
 # ------------------------------------
 import functools
+from unittest.mock import Mock, patch
 
 from azure.core.exceptions import ClientAuthenticationError, ServiceRequestError
 from azure.identity._constants import EnvironmentVariables
@@ -10,15 +11,20 @@ from azure.identity._internal import AadClient, AadClientCertificate
 
 import pytest
 from msal import TokenCache
-from six.moves.urllib_parse import urlparse
+from urllib.parse import urlparse
 
 from helpers import build_aad_response, mock_response
 from test_certificate_credential import PEM_CERT_PATH
 
-try:
-    from unittest.mock import Mock, patch
-except ImportError:  # python < 3.3
-    from mock import Mock, patch  # type: ignore
+
+BASE_CLASS_METHODS = [
+    ("_get_auth_code_request", ("code", "redirect_uri")),
+    ("_get_client_secret_request", ("secret",)),
+    ("_get_jwt_assertion_request", ("assertion",)),
+    ("_get_refresh_token_request", ("refresh_token",)),
+    ("_get_on_behalf_of_request", ("client_credential", "user_assertion")),
+    ("_get_refresh_token_on_behalf_of_request", ("client_credential", "refresh_token")),
+]
 
 
 def test_error_reporting():
@@ -35,7 +41,7 @@ def test_error_reporting():
         functools.partial(client.obtain_token_by_refresh_token, ("scope",), "refresh token"),
     ]
 
-    # exceptions raised for AAD errors should contain AAD's error description
+    # exceptions raised for Microsoft Entra errors should contain Microsoft Entra's error description
     for fn in fns:
         with pytest.raises(ClientAuthenticationError) as ex:
             fn()
@@ -43,6 +49,7 @@ def test_error_reporting():
         assert error_name in message and error_description in message
         assert transport.send.call_count == 1
         transport.send.reset_mock()
+
 
 @pytest.mark.skip(reason="Adding body to HttpResponseError str. Not an issue bc we don't automatically log errors")
 def test_exceptions_do_not_expose_secrets():
@@ -70,10 +77,10 @@ def test_exceptions_do_not_expose_secrets():
             assert transport.send.call_count == 1
             transport.send.reset_mock()
 
-    # AAD errors shouldn't provoke exceptions exposing secrets
+    # Microsoft Entra errors shouldn't provoke exceptions exposing secrets
     assert_secrets_not_exposed()
 
-    # neither should unexpected AAD responses
+    # neither should unexpected Microsoft Entra responses
     del body["error"]
     assert_secrets_not_exposed()
 
@@ -95,6 +102,9 @@ def test_request_url(authority):
 
     client.obtain_token_by_authorization_code("scope", "code", "uri")
     client.obtain_token_by_refresh_token("scope", "refresh token")
+
+    # obtain_token_by_refresh_token is client_secret safe
+    client.obtain_token_by_refresh_token("scope", "refresh token", client_secret="secret")
 
     # authority can be configured via environment variable
     with patch.dict("os.environ", {EnvironmentVariables.AZURE_AUTHORITY_HOST: authority}, clear=True):
@@ -182,7 +192,7 @@ def test_refresh_token():
 
 
 def test_evicts_invalid_refresh_token():
-    """when AAD rejects a refresh token, the client should evict that token from its cache"""
+    """when Microsoft Entra ID rejects a refresh token, the client should evict that token from its cache"""
 
     tenant_id = "tenant-id"
     client_id = "client-id"
@@ -191,8 +201,8 @@ def test_evicts_invalid_refresh_token():
     cache = TokenCache()
     cache.add({"response": build_aad_response(uid="id1", utid="tid1", access_token="*", refresh_token=invalid_token)})
     cache.add({"response": build_aad_response(uid="id2", utid="tid2", access_token="*", refresh_token="...")})
-    assert len(cache.find(TokenCache.CredentialType.REFRESH_TOKEN)) == 2
-    assert len(cache.find(TokenCache.CredentialType.REFRESH_TOKEN, query={"secret": invalid_token})) == 1
+    assert len(list(cache.search(TokenCache.CredentialType.REFRESH_TOKEN))) == 2
+    assert len(list(cache.search(TokenCache.CredentialType.REFRESH_TOKEN, query={"secret": invalid_token}))) == 1
 
     def send(request, **_):
         assert request.data["refresh_token"] == invalid_token
@@ -205,8 +215,8 @@ def test_evicts_invalid_refresh_token():
         client.obtain_token_by_refresh_token(scopes=("scope",), refresh_token=invalid_token)
 
     assert transport.send.call_count == 1
-    assert len(cache.find(TokenCache.CredentialType.REFRESH_TOKEN)) == 1
-    assert len(cache.find(TokenCache.CredentialType.REFRESH_TOKEN, query={"secret": invalid_token})) == 0
+    assert len(list(cache.search(TokenCache.CredentialType.REFRESH_TOKEN))) == 1
+    assert len(list(cache.search(TokenCache.CredentialType.REFRESH_TOKEN, query={"secret": invalid_token}))) == 0
 
 
 def test_retries_token_requests():
@@ -280,7 +290,9 @@ def test_multitenant_cache():
     tenant_a = "tenant-a"
     tenant_b = "tenant-b"
     tenant_c = "tenant-c"
+    tenant_d = "tenant-d"
     authority = "https://localhost/" + tenant_a
+    message = "additionally_allowed_tenants"
 
     cache = TokenCache()
     cache.add(
@@ -304,7 +316,38 @@ def test_multitenant_cache():
     assert client_b.get_cached_access_token([scope]) is None
 
     # but C allows multitenant auth and should therefore return the token from tenant_a when appropriate
-    client_c = AadClient(tenant_id=tenant_c, **common_args)
+    client_c = AadClient(tenant_id=tenant_c, additionally_allowed_tenants=["*"], **common_args)
     assert client_c.get_cached_access_token([scope]) is None
     token = client_c.get_cached_access_token([scope], tenant_id=tenant_a)
     assert token.token == expected_token
+
+    # but d does not add target tenant into allowed list therefore fail
+    client_d = AadClient(tenant_id=tenant_d, **common_args)
+    assert client_d.get_cached_access_token([scope]) is None
+    with pytest.raises(ClientAuthenticationError, match=message):
+        client_d.get_cached_access_token([scope], tenant_id=tenant_a)
+
+
+@pytest.mark.parametrize("method,args", BASE_CLASS_METHODS)
+def test_claims(method, args):
+
+    scopes = ["scope"]
+    claims = '{"access_token": {"essential": "true"}}'
+
+    client = AadClient("tenant_id", "client_id")
+
+    cae_merged_claims = '{"access_token": {"essential": "true", "xms_cc": {"values": ["CP1"]}}}'
+
+    with patch.object(AadClient, "_post") as post_mock:
+        func = getattr(client, method)
+        func(scopes, *args, claims=claims)
+
+        assert post_mock.call_count == 1
+        data, _ = post_mock.call_args
+        assert len(data) == 1
+        assert data[0]["claims"] == claims
+
+        func(scopes, *args, claims=claims, enable_cae=True)
+        assert post_mock.call_count == 2
+        data, _ = post_mock.call_args
+        assert data[0]["claims"] == cae_merged_claims

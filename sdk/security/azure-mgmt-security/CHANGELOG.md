@@ -1,5 +1,293 @@
 # Release History
 
+## 7.0.0 (2024-05-20)
+
+### Features Added
+
+  - Added operation HealthReportsOperations.get
+  - Added operation PricingsOperations.delete
+  - Added operation group AzureDevOpsOrgsOperations
+  - Added operation group AzureDevOpsProjectsOperations
+  - Added operation group AzureDevOpsReposOperations
+  - Added operation group DevOpsConfigurationsOperations
+  - Added operation group DevOpsOperationResultsOperations
+  - Added operation group GitHubOwnersOperations
+  - Added operation group GitHubReposOperations
+  - Added operation group GitLabGroupsOperations
+  - Added operation group GitLabProjectsOperations
+  - Added operation group GitLabSubgroupsOperations
+  - Added operation group SensitivitySettingsOperations
+  - Added operation group ServerVulnerabilityAssessmentsSettingsOperations
+  - Model AwsEnvironmentData has a new parameter scan_interval
+  - Model DefenderCspmAwsOffering has a new parameter ciem
+  - Model DefenderCspmAwsOffering has a new parameter mdc_containers_agentless_discovery_k8_s
+  - Model DefenderCspmAwsOffering has a new parameter mdc_containers_image_assessment
+  - Model DefenderCspmGcpOffering has a new parameter ciem_discovery
+  - Model DefenderCspmGcpOffering has a new parameter data_sensitivity_discovery
+  - Model DefenderCspmGcpOffering has a new parameter mdc_containers_agentless_discovery_k8_s
+  - Model DefenderCspmGcpOffering has a new parameter mdc_containers_image_assessment
+  - Model DefenderCspmGcpOffering has a new parameter vm_scanners
+  - Model DefenderForContainersAwsOffering has a new parameter mdc_containers_agentless_discovery_k8_s
+  - Model DefenderForContainersAwsOffering has a new parameter mdc_containers_image_assessment
+  - Model DefenderForContainersGcpOffering has a new parameter mdc_containers_agentless_discovery_k8_s
+  - Model DefenderForContainersGcpOffering has a new parameter mdc_containers_image_assessment
+  - Model GcpProjectEnvironmentData has a new parameter scan_interval
+  - Model HealthReport has a new parameter affected_defenders_sub_plans
+  - Model HealthReport has a new parameter report_additional_data
+  - Model Pricing has a new parameter enforce
+  - Model Pricing has a new parameter inherited
+  - Model Pricing has a new parameter inherited_from
+  - Model Pricing has a new parameter resources_coverage_status
+  - Model Status has a new parameter last_scanned_date
+  - Model Status has a new parameter reason
+  - Operation PricingsOperations.list has a new optional parameter filter
+
+### Breaking Changes
+
+  - Operation PricingsOperations.get has a new required parameter scope_id
+  - Operation PricingsOperations.list has a new required parameter scope_id
+  - Operation PricingsOperations.update has a new required parameter scope_id
+  - Removed operation group IngestionSettingsOperations
+
+## 6.0.0 (2024-01-19)
+
+### Features Added
+
+  - Added operation group APICollectionsOperations
+  - Added operation group DefenderForStorageOperations
+  - Model SecurityContact has a new parameter emails
+  - Model SecurityContact has a new parameter notifications_by_role
+
+### Breaking Changes
+
+  - Model SecurityContact no longer has parameter alerts_to_admins
+  - Model SecurityContact no longer has parameter email
+  - Removed operation SecurityContactsOperations.update
+
+## 5.0.0 (2023-04-20)
+
+### Features Added
+
+  - Added operation group APICollectionOffboardingOperations
+  - Added operation group APICollectionOnboardingOperations
+  - Added operation group APICollectionOperations
+  - Added operation group SecurityOperatorsOperations
+  - Model AwsEnvironmentData has a new parameter account_name
+  - Model AwsEnvironmentData has a new parameter regions
+  - Model DefenderCspmAwsOffering has a new parameter data_sensitivity_discovery
+  - Model DefenderCspmAwsOffering has a new parameter databases_dspm
+  - Model DefenderFoDatabasesAwsOffering has a new parameter databases_dspm
+  - Model DefenderFoDatabasesAwsOfferingArcAutoProvisioning has a new parameter configuration
+  - Model DefenderForDatabasesGcpOfferingArcAutoProvisioning has a new parameter configuration
+  - Model DefenderForDatabasesGcpOfferingArcAutoProvisioningConfiguration has a new parameter private_link_scope
+  - Model DefenderForDatabasesGcpOfferingArcAutoProvisioningConfiguration has a new parameter proxy
+  - Model DefenderForServersAwsOfferingArcAutoProvisioning has a new parameter configuration
+  - Model DefenderForServersGcpOffering has a new parameter vm_scanners
+  - Model DefenderForServersGcpOfferingArcAutoProvisioning has a new parameter configuration
+  - Model DefenderForServersGcpOfferingArcAutoProvisioningConfiguration has a new parameter private_link_scope
+  - Model DefenderForServersGcpOfferingArcAutoProvisioningConfiguration has a new parameter proxy
+  - Model GcpOrganizationalDataOrganization has a new parameter organization_name
+  - Model GcpProjectDetails has a new parameter project_name
+  - Model Pricing has a new parameter enablement_time
+  - Model Pricing has a new parameter extensions
+
+### Breaking Changes
+
+  - Model DefenderForDatabasesGcpOfferingArcAutoProvisioningConfiguration no longer has parameter agent_onboarding_service_account_numeric_id
+  - Model DefenderForDatabasesGcpOfferingArcAutoProvisioningConfiguration no longer has parameter client_id
+  - Model DefenderForServersGcpOfferingArcAutoProvisioningConfiguration no longer has parameter agent_onboarding_service_account_numeric_id
+  - Model DefenderForServersGcpOfferingArcAutoProvisioningConfiguration no longer has parameter client_id
+
+## 4.0.0 (2023-03-20)
+
+### Features Added
+
+  - Added operation GovernanceRulesOperations.begin_execute
+  - Added operation GovernanceRulesOperations.list
+  - Added operation GovernanceRulesOperations.operation_results
+  - Added operation group HealthReportOperations
+  - Added operation group HealthReportsOperations
+  - Model GovernanceRule has a new parameter excluded_scopes
+  - Model GovernanceRule has a new parameter include_member_scopes
+  - Model GovernanceRule has a new parameter metadata
+  - Model GovernanceRule has a new parameter tenant_id
+  - Model ResourceDetails has a new parameter connector_id
+  - Model ResourceDetails has a new parameter id
+  - Model ScanProperties has a new parameter last_scan_time
+
+### Breaking Changes
+
+  - Operation GovernanceRulesOperations.create_or_update has a new required parameter scope
+  - Operation GovernanceRulesOperations.get has a new required parameter scope
+  - Removed operation GovernanceRulesOperations.begin_rule_id_execute_single_security_connector
+  - Removed operation GovernanceRulesOperations.begin_rule_id_execute_single_subscription
+  - Removed operation group GovernanceRuleOperations
+  - Removed operation group SecurityConnectorGovernanceRuleOperations
+  - Removed operation group SecurityConnectorGovernanceRulesExecuteStatusOperations
+  - Removed operation group SecurityConnectorGovernanceRulesOperations
+  - Removed operation group SubscriptionGovernanceRulesExecuteStatusOperations
+  - Renamed operation GovernanceRulesOperations.delete to GovernanceRulesOperations.begin_delete
+
+## 4.0.0b2 (2023-03-06)
+
+### Features Added
+
+  - Added operation GovernanceRulesOperations.begin_execute
+  - Added operation GovernanceRulesOperations.list
+  - Added operation GovernanceRulesOperations.operation_results
+  - Model GovernanceRule has a new parameter excluded_scopes
+  - Model GovernanceRule has a new parameter include_member_scopes
+  - Model GovernanceRule has a new parameter metadata
+  - Model GovernanceRule has a new parameter tenant_id
+
+### Breaking Changes
+
+  - Operation GovernanceRulesOperations.create_or_update has a new required parameter scope
+  - Operation GovernanceRulesOperations.get has a new required parameter scope
+  - Removed operation GovernanceRulesOperations.begin_rule_id_execute_single_security_connector
+  - Removed operation GovernanceRulesOperations.begin_rule_id_execute_single_subscription
+  - Removed operation group GovernanceRuleOperations
+  - Removed operation group SecurityConnectorGovernanceRuleOperations
+  - Removed operation group SecurityConnectorGovernanceRulesExecuteStatusOperations
+  - Removed operation group SecurityConnectorGovernanceRulesOperations
+  - Removed operation group SubscriptionGovernanceRulesExecuteStatusOperations
+  - Renamed operation GovernanceRulesOperations.delete to GovernanceRulesOperations.begin_delete
+
+## 4.0.0b1 (2023-02-16)
+
+### Features Added
+
+  - Added operation GovernanceRulesOperations.begin_execute
+  - Added operation GovernanceRulesOperations.list
+  - Added operation GovernanceRulesOperations.operation_results
+  - Model GovernanceRule has a new parameter excluded_scopes
+  - Model GovernanceRule has a new parameter include_member_scopes
+  - Model GovernanceRule has a new parameter metadata
+  - Model GovernanceRule has a new parameter tenant_id
+
+### Breaking Changes
+
+  - Operation GovernanceRulesOperations.create_or_update has a new required parameter scope
+  - Operation GovernanceRulesOperations.get has a new required parameter scope
+  - Removed operation GovernanceRulesOperations.begin_rule_id_execute_single_security_connector
+  - Removed operation GovernanceRulesOperations.begin_rule_id_execute_single_subscription
+  - Removed operation group GovernanceRuleOperations
+  - Removed operation group SecurityConnectorGovernanceRuleOperations
+  - Removed operation group SecurityConnectorGovernanceRulesExecuteStatusOperations
+  - Removed operation group SecurityConnectorGovernanceRulesOperations
+  - Removed operation group SubscriptionGovernanceRulesExecuteStatusOperations
+  - Renamed operation GovernanceRulesOperations.delete to GovernanceRulesOperations.begin_delete
+
+## 3.0.0 (2022-11-17)
+
+### Features Added
+
+  - Model DefenderFoDatabasesAwsOffering has a new parameter rds
+
+### Breaking Changes
+
+  - Model DefenderFoDatabasesAwsOfferingArcAutoProvisioning no longer has parameter service_principal_secret_metadata
+  - Model DefenderForDatabasesGcpOfferingArcAutoProvisioning no longer has parameter configuration
+  - Model DefenderForServersAwsOfferingArcAutoProvisioning no longer has parameter service_principal_secret_metadata
+  - Model DefenderForServersGcpOfferingArcAutoProvisioning no longer has parameter configuration
+
+## 2.0.0 (2022-09-28)
+
+### Features Added
+
+  - Added operation AlertsOperations.begin_simulate
+  - Added operation AlertsOperations.get_resource_group_level
+  - Added operation AlertsOperations.get_subscription_level
+  - Added operation AlertsOperations.list_resource_group_level_by_region
+  - Added operation AlertsOperations.list_subscription_level_by_region
+  - Added operation AlertsOperations.update_resource_group_level_state_to_activate
+  - Added operation AlertsOperations.update_resource_group_level_state_to_dismiss
+  - Added operation AlertsOperations.update_resource_group_level_state_to_in_progress
+  - Added operation AlertsOperations.update_subscription_level_state_to_activate
+  - Added operation AlertsOperations.update_subscription_level_state_to_dismiss
+  - Added operation AlertsOperations.update_subscription_level_state_to_in_progress
+  - Added operation group ApplicationOperations
+  - Added operation group ApplicationsOperations
+  - Added operation group CustomAssessmentAutomationsOperations
+  - Added operation group CustomEntityStoreAssignmentsOperations
+  - Added operation group GovernanceAssignmentsOperations
+  - Added operation group GovernanceRuleOperations
+  - Added operation group GovernanceRulesOperations
+  - Added operation group IngestionSettingsOperations
+  - Added operation group MdeOnboardingsOperations
+  - Added operation group SecurityConnectorApplicationOperations
+  - Added operation group SecurityConnectorApplicationsOperations
+  - Added operation group SecurityConnectorGovernanceRuleOperations
+  - Added operation group SecurityConnectorGovernanceRulesExecuteStatusOperations
+  - Added operation group SecurityConnectorGovernanceRulesOperations
+  - Added operation group SecurityConnectorsOperations
+  - Added operation group SoftwareInventoriesOperations
+  - Added operation group SubscriptionGovernanceRulesExecuteStatusOperations
+  - Model Alert has a new parameter sub_techniques
+  - Model Alert has a new parameter supporting_evidence
+  - Model Alert has a new parameter techniques
+  - Model Alert has a new parameter version
+  - Model IoTSecuritySolutionModel has a new parameter additional_workspaces
+  - Model IoTSecuritySolutionModel has a new parameter system_data
+  - Model Pricing has a new parameter deprecated
+  - Model Pricing has a new parameter replaced_by
+  - Model Pricing has a new parameter sub_plan
+  - Model SecurityAssessmentMetadata has a new parameter categories
+  - Model SecurityAssessmentMetadataProperties has a new parameter categories
+
+### Breaking Changes
+
+  - Model SecurityAssessmentMetadata no longer has parameter category
+  - Model SecurityAssessmentMetadataProperties no longer has parameter category
+  - Operation AdaptiveApplicationControlsOperations.delete has a new parameter asc_location
+  - Operation AdaptiveApplicationControlsOperations.get has a new parameter asc_location
+  - Operation AdaptiveApplicationControlsOperations.put has a new parameter asc_location
+  - Operation AlertsOperations.update_resource_group_level_state_to_resolve has a new parameter asc_location
+  - Operation AlertsOperations.update_subscription_level_state_to_resolve has a new parameter asc_location
+  - Operation AllowedConnectionsOperations.get has a new parameter asc_location
+  - Operation AllowedConnectionsOperations.list_by_home_region has a new parameter asc_location
+  - Operation DiscoveredSecuritySolutionsOperations.get has a new parameter asc_location
+  - Operation DiscoveredSecuritySolutionsOperations.list_by_home_region has a new parameter asc_location
+  - Operation ExternalSecuritySolutionsOperations.get has a new parameter asc_location
+  - Operation ExternalSecuritySolutionsOperations.list_by_home_region has a new parameter asc_location
+  - Operation JitNetworkAccessPoliciesOperations.create_or_update has a new parameter asc_location
+  - Operation JitNetworkAccessPoliciesOperations.delete has a new parameter asc_location
+  - Operation JitNetworkAccessPoliciesOperations.get has a new parameter asc_location
+  - Operation JitNetworkAccessPoliciesOperations.initiate has a new parameter asc_location
+  - Operation JitNetworkAccessPoliciesOperations.list_by_region has a new parameter asc_location
+  - Operation JitNetworkAccessPoliciesOperations.list_by_resource_group_and_region has a new parameter asc_location
+  - Operation LocationsOperations.get has a new parameter asc_location
+  - Operation SecuritySolutionsOperations.get has a new parameter asc_location
+  - Operation SecuritySolutionsReferenceDataOperations.list_by_home_region has a new parameter asc_location
+  - Operation TasksOperations.get_resource_group_level_task has a new parameter asc_location
+  - Operation TasksOperations.get_subscription_level_task has a new parameter asc_location
+  - Operation TasksOperations.list_by_home_region has a new parameter asc_location
+  - Operation TasksOperations.list_by_resource_group has a new parameter asc_location
+  - Operation TasksOperations.update_resource_group_level_task_state has a new parameter asc_location
+  - Operation TasksOperations.update_subscription_level_task_state has a new parameter asc_location
+  - Operation TopologyOperations.get has a new parameter asc_location
+  - Operation TopologyOperations.list_by_home_region has a new parameter asc_location
+  - Removed operation AlertsOperations.get_resource_group_level_alerts
+  - Removed operation AlertsOperations.get_subscription_level_alert
+  - Removed operation AlertsOperations.list_resource_group_level_alerts_by_region
+  - Removed operation AlertsOperations.list_subscription_level_alerts_by_region
+  - Removed operation AlertsOperations.update_resource_group_level_alert_state_to_dismiss
+  - Removed operation AlertsOperations.update_resource_group_level_alert_state_to_reactivate
+  - Removed operation AlertsOperations.update_subscription_level_alert_state_to_dismiss
+  - Removed operation AlertsOperations.update_subscription_level_alert_state_to_reactivate
+  - Removed operation group DeviceOperations
+  - Removed operation group DevicesForHubOperations
+  - Removed operation group DevicesForSubscriptionOperations
+  - Removed operation group IotAlertTypesOperations
+  - Removed operation group IotAlertsOperations
+  - Removed operation group IotDefenderSettingsOperations
+  - Removed operation group IotRecommendationTypesOperations
+  - Removed operation group IotRecommendationsOperations
+  - Removed operation group IotSensorsOperations
+  - Removed operation group IotSitesOperations
+  - Removed operation group OnPremiseIotSensorsOperations
+  - Renamed operation ServerVulnerabilityAssessmentOperations.delete to ServerVulnerabilityAssessmentOperations.begin_delete
+
 ## 2.0.0b1 (2021-08-10)
 
 **Features**

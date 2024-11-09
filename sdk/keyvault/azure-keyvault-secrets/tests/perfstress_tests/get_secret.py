@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 # ------------------------------------
-from azure_devtools.perfstress_tests import PerfStressTest
+from devtools_testutils.perfstress_tests import PerfStressTest
 from azure.identity import DefaultAzureCredential
 from azure.identity.aio import DefaultAzureCredential as AsyncDefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
@@ -10,7 +10,6 @@ from azure.keyvault.secrets.aio import SecretClient as AsyncSecretClient
 
 
 class GetSecretTest(PerfStressTest):
-
     def __init__(self, arguments):
         super().__init__(arguments)
 

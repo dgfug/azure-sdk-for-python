@@ -15,18 +15,19 @@ autorest ./SWAGGER.md
 
 ### Settings
 ``` yaml
-tag: package-preview-2021-10
+tag: package-2023-10
 require:
-    -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/6f40b65610a4fad7a03f3fe8c57e8c0a9c3b77d0/specification/communication/data-plane/Identity/readme.md
+    -  https://raw.githubusercontent.com/Azure/azure-rest-api-specs/5797d78f04cd8ca773be82d2c99a3294009b3f0a/specification/communication/data-plane/Identity/readme.md
 output-folder: ../azure/communication/identity/_generated/
 namespace: azure.communication.identity
+title: Communication Identity Client
 license-header: MICROSOFT_MIT_NO_VERSION
 payload-flattening-threshold: 3
 no-namespace-folders: true
 clear-output-folder: true
 v3: true
 python: true
-title: Communication Identity Client
+models-mode: msrest
 ```
 
 ### Rename CommunicationIdentityTokenScope to CommunicationTokenScope
@@ -36,3 +37,14 @@ directive:
     where: $.definitions.CommunicationIdentityTokenScope
     transform: >
       $["x-ms-enum"].name = "CommunicationTokenScope";
+```      
+
+###### Regenerating the service layer with a new version of the autorest(DPG), introduced a breaking change by changing the format of property "expires_on" from string to datetime. In order to avoid this breaking change, we added this directive to remove the format datetime from the expires_on property.
+### Removes the "format": "date-time" from property expiresOn
+```yaml
+directive:
+  - from: swagger-document
+    where: $["definitions"]
+    transform: >
+      delete $["CommunicationIdentityAccessToken"]["properties"]["expiresOn"]["format"];
+```

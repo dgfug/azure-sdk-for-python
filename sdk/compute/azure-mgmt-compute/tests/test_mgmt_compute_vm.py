@@ -22,8 +22,9 @@ import azure.mgmt.compute
 from azure.core.exceptions import ResourceExistsError
 from devtools_testutils import AzureMgmtRecordedTestCase, RandomNameResourceGroupPreparer, recorded_by_proxy
 
-AZURE_LOCATION = 'eastus'
+AZURE_LOCATION = 'eastus2'
 
+@pytest.mark.live_test_only
 class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
     def setup_method(self, method):
@@ -80,7 +81,6 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         return nic_info.id
 
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_vm(self, resource_group):
@@ -100,7 +100,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create a vm with empty data disks.[put]
         BODY = {
-          "location": "eastus",
+          "location": "eastus2",
           "hardware_profile": {
             "vm_size": "Standard_D2_v2"
           },
@@ -157,7 +157,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create virtual machine extension (TODO: need swagger file)
         BODY = {
-          "location": "eastus",
+          "location": "eastus2",
           "auto_upgrade_minor_version": True,
           "publisher": "Microsoft.Azure.NetworkWatcher",
           # "virtual_machine_extension_type": "NetworkWatcherAgentWindows",
@@ -312,7 +312,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
 
         # Create a vm with empty data disks.[put]
         BODY = {
-          "location": "eastus",
+          "location": "eastus2",
           "hardware_profile": {
             "vm_size": "Standard_D2_v2"
           },
@@ -389,7 +389,7 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         result = self.mgmt_client.virtual_machines.begin_delete(resource_group.name, VIRTUAL_MACHINE_NAME)
         result = result.result()
 
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
+    @unittest.skip("image deprecated.")
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_vm_image(self, resource_group):
@@ -413,7 +413,6 @@ class TestMgmtCompute(AzureMgmtRecordedTestCase):
         # List Virtual Machine image skus (TODO: need swagger file)
         result = self.mgmt_client.virtual_machine_images.list_skus(AZURE_LOCATION, PUBLISHER_NAME, OFFER)
 
-    @pytest.mark.skipif(os.getenv('AZURE_TEST_RUN_LIVE') not in ('true', 'yes'), reason='only run live test')
     @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)
     @recorded_by_proxy
     def test_compute_vm_extension_image(self, resource_group):

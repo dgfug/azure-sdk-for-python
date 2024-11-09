@@ -3,14 +3,17 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
+# pylint: disable=docstring-keyword-should-match-keyword-only
 
 import uuid
 
-from typing import (  # pylint: disable=unused-import
+from typing import (
     Union, Optional, Any,
     TypeVar, TYPE_CHECKING
 )
+from azure.core.tracing.decorator import distributed_trace
 from azure.storage.blob import BlobLeaseClient
+
 
 
 if TYPE_CHECKING:
@@ -20,7 +23,7 @@ if TYPE_CHECKING:
     DataLakeFileClient = TypeVar("DataLakeFileClient")
 
 
-class DataLakeLeaseClient(object):
+class DataLakeLeaseClient(object):  # pylint: disable=client-accepts-api-version-keyword
     """Creates a new DataLakeLeaseClient.
 
     This client provides lease operations on a FileSystemClient, DataLakeDirectoryClient or DataLakeFileClient.
@@ -52,9 +55,9 @@ class DataLakeLeaseClient(object):
         self.etag = None
 
         if hasattr(client, '_blob_client'):
-            _client = client._blob_client  # type: ignore # pylint: disable=protected-access
+            _client = client._blob_client  # type: ignore
         elif hasattr(client, '_container_client'):
-            _client = client._container_client  # type: ignore # pylint: disable=protected-access
+            _client = client._container_client  # type: ignore
         else:
             raise TypeError("Lease must use any of FileSystemClient DataLakeDirectoryClient, or DataLakeFileClient.")
 
@@ -66,6 +69,7 @@ class DataLakeLeaseClient(object):
     def __exit__(self, *args):
         self.release()
 
+    @distributed_trace
     def acquire(self, lease_duration=-1, **kwargs):
         # type: (int, Optional[int], **Any) -> None
         """Requests a new lease.
@@ -96,12 +100,17 @@ class DataLakeLeaseClient(object):
         :keyword ~azure.core.MatchConditions match_condition:
             The match condition to use upon the etag.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :rtype: None
         """
         self._blob_lease_client.acquire(lease_duration=lease_duration, **kwargs)
         self._update_lease_client_attributes()
 
+    @distributed_trace
     def renew(self, **kwargs):
         # type: (Any) -> None
         """Renews the lease.
@@ -130,12 +139,17 @@ class DataLakeLeaseClient(object):
         :keyword ~azure.core.MatchConditions match_condition:
             The match condition to use upon the etag.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :return: None
         """
         self._blob_lease_client.renew(**kwargs)
         self._update_lease_client_attributes()
 
+    @distributed_trace
     def release(self, **kwargs):
         # type: (Any) -> None
         """Release the lease.
@@ -162,12 +176,17 @@ class DataLakeLeaseClient(object):
         :keyword ~azure.core.MatchConditions match_condition:
             The match condition to use upon the etag.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :return: None
         """
         self._blob_lease_client.release(**kwargs)
         self._update_lease_client_attributes()
 
+    @distributed_trace
     def change(self, proposed_lease_id, **kwargs):
         # type: (str, Any) -> None
         """Change the lease ID of an active lease.
@@ -193,12 +212,17 @@ class DataLakeLeaseClient(object):
         :keyword ~azure.core.MatchConditions match_condition:
             The match condition to use upon the etag.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :return: None
         """
         self._blob_lease_client.change(proposed_lease_id=proposed_lease_id, **kwargs)
         self._update_lease_client_attributes()
 
+    @distributed_trace
     def break_lease(self, lease_break_period=None, **kwargs):
         # type: (Optional[int], Any) -> int
         """Break the lease, if the file system or file has an active lease.
@@ -233,7 +257,11 @@ class DataLakeLeaseClient(object):
             Specify this header to perform the operation only if
             the resource has not been modified since the specified date/time.
         :keyword int timeout:
-            The timeout parameter is expressed in seconds.
+            Sets the server-side timeout for the operation in seconds. For more details see
+            https://learn.microsoft.com/rest/api/storageservices/setting-timeouts-for-blob-service-operations.
+            This value is not tracked or validated on the client. To configure client-side network timesouts
+            see `here <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-file-datalake
+            #other-client--per-operation-configuration>`_.
         :return: Approximate time remaining in the lease period, in seconds.
         :rtype: int
         """

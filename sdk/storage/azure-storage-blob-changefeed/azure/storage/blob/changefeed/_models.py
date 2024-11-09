@@ -3,8 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for
 # license information.
 # --------------------------------------------------------------------------
-# pylint: disable=too-few-public-methods, too-many-instance-attributes
-# pylint: disable=super-init-not-called, too-many-lines
+# pylint: disable=too-few-public-methods
 import collections
 import copy
 import json
@@ -70,7 +69,7 @@ class ChangeFeedPaged(PageIterator):
                                        end_time=end_time,
                                        cf_cursor=dict_continuation_token)
 
-    def _get_next_cf(self, continuation_token):  # pylint:disable=unused-argument
+    def _get_next_cf(self, continuation_token):  # pylint:disable=inconsistent-return-statements, unused-argument
         try:
             return next(self._change_feed)
         except HttpResponseError:
@@ -354,10 +353,10 @@ class Chunk(object):
             self.cursor["EventIndex"] = self._data_stream.event_index
             self.cursor["BlockOffset"] = self._data_stream.object_position
             return event
-        except StopIteration:
+        except StopIteration as exc:
             self.cursor["EventIndex"] = self._data_stream.event_index
             self.cursor["BlockOffset"] = self._data_stream.object_position
-            raise StopIteration
+            raise StopIteration from exc
 
     next = __next__  # Python 2 compatibility.
 
@@ -389,13 +388,12 @@ class ChangeFeedStreamer(object):
         self.object_position = self._chunk_file_start  # track the most recently read sync marker position
         self.event_index = 0
         self._point = self._chunk_file_start  # file cursor position relative to the whole chunk file, not the buffered
-        self._chunk_size = 4 * 1024 * 1024
         self._buf = b""
         self._buf_start = self._chunk_file_start  # the start position of the chunk file to buffer
         self._chunk_size_snapshot = blob_client.get_blob_properties().size
         length = self._chunk_size_snapshot - self._chunk_file_start
         self._iterator = blob_client.download_blob(offset=self._chunk_file_start,
-                                                   length=length).chunks() if length > 0 else iter(list())
+                                                   length=length).chunks() if length > 0 else iter([])
 
     def __len__(self):
         return self._download_offset

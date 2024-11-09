@@ -24,21 +24,21 @@
 #
 # --------------------------------------------------------------------------
 from enum import Enum
-from six import with_metaclass
 
 from azure.core import CaseInsensitiveEnumMeta
 
-class MyCustomEnum(with_metaclass(CaseInsensitiveEnumMeta, str, Enum)):
-    FOO = 'foo'
-    BAR = 'bar'
+
+class MyCustomEnum(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    FOO = "foo"
+    BAR = "bar"
 
 
 def test_case_insensitive_enums():
-    assert MyCustomEnum.foo.value == 'foo'
-    assert MyCustomEnum.FOO.value == 'foo'
-    assert MyCustomEnum('bar').value == 'bar'
-    assert 'bar' == MyCustomEnum.BAR
-    assert 'bar' == MyCustomEnum.bar
-    assert MyCustomEnum['foo'] == 'foo'
-    assert MyCustomEnum['FOO'] == 'foo'
+    assert MyCustomEnum.foo.value == "foo"
+    assert MyCustomEnum.FOO.value == "foo"
+    assert MyCustomEnum("bar").value == "bar"
+    assert "bar" == MyCustomEnum.BAR
+    assert "bar" == MyCustomEnum.bar
+    assert MyCustomEnum["foo"] == "foo"
+    assert MyCustomEnum["FOO"] == "foo"
     assert isinstance(MyCustomEnum.BAR, str)

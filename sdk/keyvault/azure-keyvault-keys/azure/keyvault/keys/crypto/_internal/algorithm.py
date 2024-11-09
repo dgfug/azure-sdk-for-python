@@ -3,22 +3,17 @@
 # Licensed under the MIT License.
 # ------------------------------------
 from abc import abstractmethod
-
-try:
-    from typing import TYPE_CHECKING
-except ImportError:
-    TYPE_CHECKING = False
+from typing import Optional, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
-    # pylint:disable=unused-import
-    from typing import Optional, Union
     from cryptography.hazmat.primitives import hashes
+
 
 _alg_registry = {}
 
 
 class Algorithm(object):
-    _name = None  # type: Optional[str]
+    _name: Optional[str] = None
 
     @classmethod
     def name(cls):
@@ -55,7 +50,7 @@ class SymmetricEncryptionAlgorithm(Algorithm):
         raise NotImplementedError()
 
 
-class AuthenticatedSymmetricEncryptionAlgorithm(Algorithm):
+class AuthenticatedSymmetricEncryptionAlgorithm(Algorithm):  # pylint:disable=bad-option-value,name-too-long
     @abstractmethod
     def create_encryptor(self, key, iv, auth_data, auth_tag):
         raise NotImplementedError()
@@ -66,7 +61,7 @@ class AuthenticatedSymmetricEncryptionAlgorithm(Algorithm):
 
 
 class SignatureAlgorithm(Algorithm):
-    _default_hash_algorithm = None  # type: Union[hashes.SHA256, hashes.SHA384, hashes.SHA512, None]
+    _default_hash_algorithm: "Union[hashes.SHA256, hashes.SHA384, hashes.SHA512, None]" = None
 
     @property
     def default_hash_algorithm(self):

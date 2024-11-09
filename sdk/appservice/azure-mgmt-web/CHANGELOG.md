@@ -1,5 +1,165 @@
 # Release History
 
+## 7.3.1 (2024-08-19)
+
+### Bugs Fixed
+
+  - Fix type of property instance_count in model FunctionsAlwaysReadyConfig from float to int
+  - Fix type of property maximum_instance_count in model FunctionsScaleAndConcurrency from float to int
+  - Fix type of property instance_memory_mb in model FunctionsScaleAndConcurrency from float to int
+  - Fix type of property per_instance_concurrency in model FunctionsScaleAndConcurrencyTriggersHttp from float to int
+
+## 7.3.0 (2024-06-17)
+
+### Features Added
+
+  - Added operation WebAppsOperations.create_or_update_site_container
+  - Added operation WebAppsOperations.create_or_update_site_container_slot
+  - Added operation WebAppsOperations.delete_site_container
+  - Added operation WebAppsOperations.delete_site_container_slot
+  - Added operation WebAppsOperations.get_site_container
+  - Added operation WebAppsOperations.get_site_container_slot
+  - Added operation WebAppsOperations.list_site_containers
+  - Added operation WebAppsOperations.list_site_containers_slot
+  - Model AzureStorageInfoValue has a new parameter protocol
+  - Model Site has a new parameter dns_configuration
+  - Model Site has a new parameter function_app_config
+  - Model Site has a new parameter vnet_backup_restore_enabled
+  - Model SitePatchResource has a new parameter dns_configuration
+
+## 7.2.0 (2023-11-20)
+
+### Features Added
+
+  - Added operation WebSiteManagementClientOperationsMixin.list_ase_regions
+  - Added operation group GetUsagesInLocationOperations
+  - Model ResourceNameAvailabilityRequest has a new parameter environment_id
+  - Model Site has a new parameter dapr_config
+  - Model Site has a new parameter resource_config
+  - Model Site has a new parameter workload_profile_name
+  - Model SiteConfig has a new parameter min_tls_cipher_suite
+  - Model SiteConfigResource has a new parameter min_tls_cipher_suite
+  - Operation WebSiteManagementClientOperationsMixin.check_name_availability has a new optional parameter environment_id
+
+## 7.1.0 (2023-04-20)
+
+### Features Added
+
+  - Added operation StaticSitesOperations.create_or_update_basic_auth
+  - Added operation StaticSitesOperations.create_or_update_build_database_connection
+  - Added operation StaticSitesOperations.create_or_update_database_connection
+  - Added operation StaticSitesOperations.delete_build_database_connection
+  - Added operation StaticSitesOperations.delete_database_connection
+  - Added operation StaticSitesOperations.get_basic_auth
+  - Added operation StaticSitesOperations.get_build_database_connection
+  - Added operation StaticSitesOperations.get_build_database_connection_with_details
+  - Added operation StaticSitesOperations.get_build_database_connections
+  - Added operation StaticSitesOperations.get_build_database_connections_with_details
+  - Added operation StaticSitesOperations.get_database_connection
+  - Added operation StaticSitesOperations.get_database_connection_with_details
+  - Added operation StaticSitesOperations.get_database_connections
+  - Added operation StaticSitesOperations.get_database_connections_with_details
+  - Added operation StaticSitesOperations.list_basic_auth
+  - Added operation StaticSitesOperations.update_build_database_connection
+  - Added operation StaticSitesOperations.update_database_connection
+  - Added operation WebAppsOperations.deploy_workflow_artifacts
+  - Added operation WebAppsOperations.deploy_workflow_artifacts_slot
+  - Added operation WebAppsOperations.get_instance_workflow_slot
+  - Added operation WebAppsOperations.get_workflow
+  - Added operation WebAppsOperations.list_instance_workflows_slot
+  - Added operation WebAppsOperations.list_workflows
+  - Added operation WebAppsOperations.list_workflows_connections
+  - Added operation WebAppsOperations.list_workflows_connections_slot
+  - Model Site has a new parameter managed_environment_id
+  - Model SiteConfig has a new parameter elastic_web_app_scale_limit
+  - Model SiteConfig has a new parameter ip_security_restrictions_default_action
+  - Model SiteConfig has a new parameter metadata
+  - Model SiteConfig has a new parameter scm_ip_security_restrictions_default_action
+  - Model SiteConfigResource has a new parameter elastic_web_app_scale_limit
+  - Model SiteConfigResource has a new parameter ip_security_restrictions_default_action
+  - Model SiteConfigResource has a new parameter metadata
+  - Model SiteConfigResource has a new parameter scm_ip_security_restrictions_default_action
+  - Model StaticSiteARMResource has a new parameter database_connections
+  - Model StaticSiteBuildARMResource has a new parameter database_connections
+  - Model StaticSitePatchResource has a new parameter database_connections
+
+## 7.0.0 (2022-07-04)
+
+**Features**
+
+  - Added operation AppServiceEnvironmentsOperations.begin_upgrade
+  - Added operation AppServiceEnvironmentsOperations.delete_ase_custom_dns_suffix_configuration
+  - Added operation AppServiceEnvironmentsOperations.get_ase_custom_dns_suffix_configuration
+  - Added operation AppServiceEnvironmentsOperations.test_upgrade_available_notification
+  - Added operation AppServiceEnvironmentsOperations.update_ase_custom_dns_suffix_configuration
+  - Added operation StaticSitesOperations.begin_link_backend
+  - Added operation StaticSitesOperations.begin_link_backend_to_build
+  - Added operation StaticSitesOperations.begin_validate_backend
+  - Added operation StaticSitesOperations.begin_validate_backend_for_build
+  - Added operation StaticSitesOperations.get_linked_backend
+  - Added operation StaticSitesOperations.get_linked_backend_for_build
+  - Added operation StaticSitesOperations.get_linked_backends
+  - Added operation StaticSitesOperations.get_linked_backends_for_build
+  - Added operation StaticSitesOperations.unlink_backend
+  - Added operation StaticSitesOperations.unlink_backend_from_build
+  - Added operation WebAppsOperations.begin_get_production_site_deployment_status
+  - Added operation WebAppsOperations.begin_get_slot_site_deployment_status_slot
+  - Added operation WebAppsOperations.get_auth_settings_v2_without_secrets_slot
+  - Added operation WebAppsOperations.list_production_site_deployment_statuses
+  - Added operation WebAppsOperations.list_slot_site_deployment_statuses_slot
+  - Added operation group WorkflowRunActionRepetitionsOperations
+  - Added operation group WorkflowRunActionRepetitionsRequestHistoriesOperations
+  - Added operation group WorkflowRunActionScopeRepetitionsOperations
+  - Added operation group WorkflowRunActionsOperations
+  - Added operation group WorkflowRunsOperations
+  - Added operation group WorkflowTriggerHistoriesOperations
+  - Added operation group WorkflowTriggersOperations
+  - Added operation group WorkflowVersionsOperations
+  - Added operation group WorkflowsOperations
+  - Model AppServiceEnvironment has a new parameter custom_dns_suffix_configuration
+  - Model AppServiceEnvironment has a new parameter networking_configuration
+  - Model AppServiceEnvironment has a new parameter upgrade_availability
+  - Model AppServiceEnvironment has a new parameter upgrade_preference
+  - Model AppServiceEnvironmentPatchResource has a new parameter custom_dns_suffix_configuration
+  - Model AppServiceEnvironmentPatchResource has a new parameter networking_configuration
+  - Model AppServiceEnvironmentPatchResource has a new parameter upgrade_availability
+  - Model AppServiceEnvironmentPatchResource has a new parameter upgrade_preference
+  - Model AppServiceEnvironmentResource has a new parameter custom_dns_suffix_configuration
+  - Model AppServiceEnvironmentResource has a new parameter networking_configuration
+  - Model AppServiceEnvironmentResource has a new parameter upgrade_availability
+  - Model AppServiceEnvironmentResource has a new parameter upgrade_preference
+  - Model AppServicePlan has a new parameter number_of_workers
+  - Model AppServicePlanPatchResource has a new parameter number_of_workers
+  - Model AseV3NetworkingConfiguration has a new parameter ftp_enabled
+  - Model AseV3NetworkingConfiguration has a new parameter inbound_ip_address_override
+  - Model AseV3NetworkingConfiguration has a new parameter remote_debug_enabled
+  - Model ErrorResponse has a new parameter error
+  - Model Site has a new parameter public_network_access
+  - Model Site has a new parameter vnet_content_share_enabled
+  - Model Site has a new parameter vnet_image_pull_enabled
+  - Model Site has a new parameter vnet_route_all_enabled
+  - Model StaticSiteARMResource has a new parameter linked_backends
+  - Model StaticSiteARMResource has a new parameter public_network_access
+  - Model StaticSiteBuildARMResource has a new parameter linked_backends
+  - Model StaticSitePatchResource has a new parameter linked_backends
+  - Model StaticSitePatchResource has a new parameter public_network_access
+  - Model TriggeredWebJob has a new parameter public_network_access
+  - Model TriggeredWebJob has a new parameter storage_account_required
+
+**Breaking changes**
+
+  - Model CertificateEmail no longer has parameter id
+  - Model CertificateEmail no longer has parameter kind
+  - Model CertificateEmail no longer has parameter name
+  - Model CertificateEmail no longer has parameter type
+  - Model CertificateOrderAction no longer has parameter id
+  - Model CertificateOrderAction no longer has parameter kind
+  - Model CertificateOrderAction no longer has parameter name
+  - Model CertificateOrderAction no longer has parameter type
+  - Model ErrorResponse no longer has parameter code
+  - Model ErrorResponse no longer has parameter message
+  - Operation WebSiteManagementClientOperationsMixin.list_custom_host_name_sites has a new parameter hostname
+
 ## 6.1.0 (2022-01-24)
 
 **Features**

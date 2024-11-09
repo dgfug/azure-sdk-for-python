@@ -15,6 +15,7 @@ from azure.monitor.opentelemetry.exporter._storage import (
 
 TEST_FOLDER = os.path.abspath(".test.storage")
 
+
 def throw(exc_type, *args, **kwargs):
     def func(*_args, **_kwargs):
         raise exc_type(*args, **kwargs)
@@ -32,7 +33,7 @@ def clean_folder(folder):
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+                print("Failed to delete %s. Reason: %s" % (file_path, e))
 
 
 # pylint: disable=no-self-use
@@ -112,7 +113,7 @@ class TestLocalFileStorage(unittest.TestCase):
     def test_put(self):
         test_input = (1, 2, 3)
         with LocalFileStorage(os.path.join(TEST_FOLDER, "bar")) as stor:
-            stor.put(test_input)
+            stor.put(test_input, 0)
             self.assertEqual(stor.get().get(), test_input)
         with LocalFileStorage(os.path.join(TEST_FOLDER, "bar")) as stor:
             self.assertEqual(stor.get().get(), test_input)
@@ -161,7 +162,7 @@ class TestLocalFileStorage(unittest.TestCase):
                     os_mock.return_value = True
                 self.assertTrue(stor._check_storage_size())
 
-    def test_maintanence_routine(self):
+    def test_maintenance_routine(self):
         with mock.patch("os.makedirs") as m:
             with LocalFileStorage(os.path.join(TEST_FOLDER, "baz")) as stor:
                 m.return_value = None

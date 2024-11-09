@@ -9,6 +9,7 @@ from ._exceptions import AuthenticationRequiredError, CredentialUnavailableError
 from ._constants import AzureAuthorityHosts, KnownAuthorities
 from ._credentials import (
     AuthorizationCodeCredential,
+    AzureDeveloperCliCredential,
     AzureCliCredential,
     AzurePowerShellCredential,
     CertificateCredential,
@@ -24,8 +25,11 @@ from ._credentials import (
     SharedTokenCacheCredential,
     UsernamePasswordCredential,
     VisualStudioCodeCredential,
+    WorkloadIdentityCredential,
+    AzurePipelinesCredential,
 )
 from ._persistent_cache import TokenCachePersistenceOptions
+from ._bearer_token_provider import get_bearer_token_provider
 
 
 __all__ = [
@@ -34,6 +38,8 @@ __all__ = [
     "AuthorizationCodeCredential",
     "AzureAuthorityHosts",
     "AzureCliCredential",
+    "AzureDeveloperCliCredential",
+    "AzurePipelinesCredential",
     "AzurePowerShellCredential",
     "CertificateCredential",
     "ChainedTokenCredential",
@@ -51,6 +57,8 @@ __all__ = [
     "TokenCachePersistenceOptions",
     "UsernamePasswordCredential",
     "VisualStudioCodeCredential",
+    "WorkloadIdentityCredential",
+    "get_bearer_token_provider",
 ]
 
 from ._version import VERSION

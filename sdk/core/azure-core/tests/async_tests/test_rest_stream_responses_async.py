@@ -8,6 +8,7 @@ import pytest
 from azure.core.rest import HttpRequest
 from azure.core.exceptions import StreamClosedError, StreamConsumedError, ResponseNotReadError
 
+
 @pytest.mark.asyncio
 async def test_iter_raw(client):
     request = HttpRequest("GET", "/streams/basic")
@@ -16,6 +17,7 @@ async def test_iter_raw(client):
         async for part in response.iter_raw():
             raw += part
         assert raw == b"Hello, world!"
+
 
 @pytest.mark.asyncio
 async def test_iter_raw_on_iterable(client):
@@ -26,6 +28,7 @@ async def test_iter_raw_on_iterable(client):
         async for part in response.iter_raw():
             raw += part
         assert raw == b"Hello, world!"
+
 
 @pytest.mark.asyncio
 async def test_iter_with_error(client):
@@ -48,9 +51,10 @@ async def test_iter_with_error(client):
 
     request = HttpRequest("GET", "http://doesNotExist")
     with pytest.raises(ServiceRequestError):
-        async with (await client.send_request(request, stream=True)):
+        async with await client.send_request(request, stream=True):
             raise ValueError("Should error before entering")
     assert response.is_closed
+
 
 @pytest.mark.asyncio
 async def test_iter_bytes(client):
@@ -66,6 +70,7 @@ async def test_iter_bytes(client):
         assert response.is_closed
         assert raw == b"Hello, world!"
 
+
 @pytest.mark.skip(reason="We've gotten rid of iter_text for now")
 @pytest.mark.asyncio
 async def test_iter_text(client):
@@ -76,6 +81,7 @@ async def test_iter_text(client):
         async for part in response.iter_text():
             content += part
         assert content == "Hello, world!"
+
 
 @pytest.mark.skip(reason="We've gotten rid of iter_lines for now")
 @pytest.mark.asyncio
@@ -102,6 +108,7 @@ async def test_streaming_response(client):
         assert response.content == b"Hello, world!"
         assert response.is_closed
 
+
 @pytest.mark.asyncio
 async def test_cannot_read_after_stream_consumed(port, client):
     request = HttpRequest("GET", "/streams/basic")
@@ -127,12 +134,11 @@ async def test_cannot_read_after_response_closed(port, client):
     assert "<HttpRequest [GET], url: 'http://localhost:{}/streams/basic'>".format(port) in str(ex.value)
     assert "can no longer be read or streamed, since the response has already been closed" in str(ex.value)
 
+
 @pytest.mark.asyncio
 async def test_decompress_plain_no_header(client):
     # thanks to Xiang Yan for this test!
-    account_name = "coretests"
-    url = "https://{}.blob.core.windows.net/tests/test.txt".format(account_name)
-    request = HttpRequest("GET", url)
+    request = HttpRequest("GET", "/streams/string")
     async with client:
         response = await client.send_request(request, stream=True)
         with pytest.raises(ResponseNotReadError):
@@ -140,12 +146,11 @@ async def test_decompress_plain_no_header(client):
         await response.read()
         assert response.content == b"test"
 
+
 @pytest.mark.asyncio
 async def test_compress_plain_no_header(client):
     # thanks to Xiang Yan for this test!
-    account_name = "coretests"
-    url = "https://{}.blob.core.windows.net/tests/test.txt".format(account_name)
-    request = HttpRequest("GET", url)
+    request = HttpRequest("GET", "/streams/string")
     async with client:
         response = await client.send_request(request, stream=True)
         iter = response.iter_raw()
@@ -153,6 +158,7 @@ async def test_compress_plain_no_header(client):
         async for d in iter:
             data += d
         assert data == b"test"
+
 
 @pytest.mark.asyncio
 async def test_iter_read_back_and_forth(client):
@@ -174,6 +180,7 @@ async def test_iter_read_back_and_forth(client):
         with pytest.raises(ResponseNotReadError):
             response.text()
 
+
 @pytest.mark.asyncio
 async def test_stream_with_return_pipeline_response(client):
     request = HttpRequest("GET", "/basic/string")
@@ -185,8 +192,9 @@ async def test_stream_with_return_pipeline_response(client):
     parts = []
     async for part in pipeline_response.http_response.iter_bytes():
         parts.append(part)
-    assert parts == [b'Hello, world!']
+    assert parts == [b"Hello, world!"]
     await client.close()
+
 
 @pytest.mark.asyncio
 async def test_error_reading(client):
@@ -203,6 +211,7 @@ async def test_error_reading(client):
     assert response.content == b""
     await client.close()
 
+
 @pytest.mark.asyncio
 async def test_pass_kwarg_to_iter_bytes(client):
     request = HttpRequest("GET", "/basic/string")
@@ -210,12 +219,14 @@ async def test_pass_kwarg_to_iter_bytes(client):
     async for part in response.iter_bytes(chunk_size=5):
         assert part
 
+
 @pytest.mark.asyncio
 async def test_pass_kwarg_to_iter_raw(client):
     request = HttpRequest("GET", "/basic/string")
     response = await client.send_request(request, stream=True)
     async for part in response.iter_raw(chunk_size=5):
         assert part
+
 
 @pytest.mark.asyncio
 async def test_decompress_compressed_header(client):
@@ -227,6 +238,18 @@ async def test_decompress_compressed_header(client):
     assert response.content == content
     assert response.text() == "hello world"
 
+
+@pytest.mark.asyncio
+async def test_deflate_decompress_compressed_header(client):
+    # expect plain text
+    request = HttpRequest("GET", "/encoding/deflate")
+    response = await client.send_request(request)
+    content = await response.read()
+    assert content == b"hi there"
+    assert response.content == content
+    assert response.text() == "hi there"
+
+
 @pytest.mark.asyncio
 async def test_decompress_compressed_header_stream(client):
     # expect plain text
@@ -236,6 +259,7 @@ async def test_decompress_compressed_header_stream(client):
     assert content == b"hello world"
     assert response.content == content
     assert response.text() == "hello world"
+
 
 @pytest.mark.asyncio
 async def test_decompress_compressed_header_stream_body_content(client):

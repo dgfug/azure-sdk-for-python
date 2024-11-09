@@ -1,7 +1,7 @@
 trigger: none
 
-stages:
- - template: ../../eng/pipelines/templates/stages/archetype-sdk-tests.yml
+extends:
+   template: ../../eng/pipelines/templates/stages/archetype-sdk-tests.yml
    parameters:
      ServiceDirectory: attestation
      Location: westus
@@ -35,3 +35,5 @@ stages:
        ATTESTATION_SERIALIZED_POLICY_SIGNING_KEY2: "$(ATTESTATION_SERIALIZED_POLICY_SIGNING_KEY2)"
        ATTESTATION_SERIALIZED_POLICY_SIGNING_KEY0: "$(ATTESTATION_SERIALIZED_POLICY_SIGNING_KEY0)"
        ATTESTATION_SERIALIZED_POLICY_SIGNING_KEY1: "$(ATTESTATION_SERIALIZED_POLICY_SIGNING_KEY1)"
+       AZURE_SKIP_LIVE_RECORDING: 'True'
+       AZURE_TEST_RUN_LIVE: 'True'
